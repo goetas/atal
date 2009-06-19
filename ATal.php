@@ -1,8 +1,13 @@
 <?php
 class ATal {
 	const NS ="ATal";
+	/**
+	 * directory di file comiplati
+	 *
+	 * @var string
+	 */
 	protected $compileDir;
-	protected $cacheDir;
+
 	/**
 	 * @var ATalCompiler
 	 */
