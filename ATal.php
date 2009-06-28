@@ -20,7 +20,7 @@ class ATal {
 	/**
 	 * @var ATalAttrRuntime
 	 */	
-	protected $runtimeAttrManager ;
+	protected $runtimeAttrManager;
 	protected $data=array();
 	
 	public $xmlDeclaration=false,$dtdDeclaration=true;
@@ -45,6 +45,10 @@ class ATal {
 		$this->compiler = new ATalCompiler($this);
 		
 		//$this->compiler->addPostFilter(array(__CLASS__,'makeHXTML'));
+		$this->addSelector("id",'ATalIdSelector');
+		$this->addSelector("childid",'ATalChildIdSelector');
+		$this->addSelector("xpath",'ATalXPathSelector');
+		$this->addSelector("css",'ATalCssSelector');
 	}
 
 	function __clone(){
@@ -142,7 +146,10 @@ class ATal {
 	}
 	public function unsetDefaultModifier(){
 		$this->compiler->unsetDefaultModifier();
-	}	
+	}
+	public function addSelector($name, $class){
+		$this->compiler->addSelector($name, $class);
+	}
 		
 	public function getCompileDir(){
 		if ($this->compileDir === null) {
