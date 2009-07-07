@@ -25,6 +25,10 @@ class ATalCompiler {
 	/**
 	 * @var array
 	 */
+	protected $selectors = array();	
+	/**
+	 * @var array
+	 */
 	protected $prefilters = array();
 	/**
 	 * @var ATal
@@ -49,6 +53,26 @@ class ATalCompiler {
 	public function getTemplate() {
 		return $this->template;
 	}
+	/**
+	 * 
+	 * @param ATal_XMLDom $tipo
+	 * @param $dom
+	 * @return ATalSelector
+	 */
+	public function getSelector($tipo, XMLDom $dom){
+		$ref = new ReflectionClass($this->selectors[$tipo]);
+		if ($ref->isSubclassOf('ATalSelector')){
+			return $ref->newInstance($dom,$this->tal);	
+		}else{
+			throw new ATalException("Non trovo un selettore adatto per '$tipo'");
+		}
+	}
+	public function addSelector($name, $class){
+		$this->selectors[$name]=$class;
+	}
+	public function getSelectors() {
+		return $this->selectors;
+	}
 	
 	public function compile($tpl, $tipo, $query) {
 		$this->template = $tpl;
@@ -64,30 +88,22 @@ class ATalCompiler {
 			$xmlString = str_replace( array_keys( self::$htmlEntities ), self::$htmlEntities, $xmlString );
 			
 			$tplDom = ATal_XMLDom::loadXMLString( $xmlString );
+			try{
+				
+			
 			
 			if($tipo){
-				if($tipo == "id"){
-					$res = $tplDom->query( "//*[@id = '$query' ]" );
-				}elseif($tipo == "childid"){
-					$res = $tplDom->query( "//*[@id = '$query' ]/node()" );
-				}elseif($tipo == "xpath"){
-					
-					$parts = self::splitExpression( $query, ';' );
-					$ns = array();
-					for($i = 1; $i < count( $parts ); $i ++){
-						list ( $prefix, $uri ) = self::splitExpression( $parts [$i], '=' );
-						$ns [$prefix] = trim( $uri, "'\t\n\r\"" );
-					}
-					
-					$res = $tplDom->query( $parts [0], $ns );
-				}
+				$selector = $this->getSelector($tipo,$tplDom);
+				$res = $selector->select($query);
 				foreach ( $res as $node ){
 					$root->appendChild( $xml->importNode( $node, 1 ) );
 				}
 			}else{
 				$root->appendChild( $xml->importNode( $tplDom->documentElement, 1 ) );
 			}
-			
+			}catch(Exception $e){
+				die($e);	
+			}
 			foreach ( $xml->query( "//*" ) as $node ){
 				$node->setAttributeNS( ATal::NS, "id", uniqid() );
 			}

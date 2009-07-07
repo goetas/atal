@@ -20,7 +20,7 @@ class ATal {
 	/**
 	 * @var ATalAttrRuntime
 	 */	
-	protected $runtimeAttrManager ;
+	protected $runtimeAttrManager;
 	protected $data=array();
 	
 	public $xmlDeclaration=false,$dtdDeclaration=true;
@@ -45,11 +45,19 @@ class ATal {
 		$this->compiler = new ATalCompiler($this);
 		
 		//$this->compiler->addPostFilter(array(__CLASS__,'makeHXTML'));
+		$this->addSelector("id",'ATalIdSelector');
+		$this->addSelector("childid",'ATalChildIdSelector');
+		$this->addSelector("xpath",'ATalXPathSelector');
+		$this->addSelector("css",'ATalCssSelector');
 	}
 
 	function __clone(){
 		$this->clear();
+		$sel = $this->compiler->getSelectors();
 		$this->compiler = new ATalCompiler($this);
+		foreach ($sel as $name => $class) {
+			$this->addSelector($name,$class);
+		}
 	}
 	/*
 	public static function makeHXTML($str){
@@ -76,7 +84,9 @@ class ATal {
 		$pname = str_replace("-","_",$cname);
 		
 		if(in_array($cname,array("XMLAble","XMLDom","XMLDomElement","XPath"))){
-			$file = 'xml'.DIRECTORY_SEPARATOR.$pname.'.php';	
+			$file = 'xml'.DIRECTORY_SEPARATOR.$pname.'.php';
+		}elseif(contains($cname,"Selector") && $cname!='ATalSelector' ){
+			$file = 'selectors'.DIRECTORY_SEPARATOR.$pname.'.php';	
 		}else{
 			$file = $pname.'.php';	
 		}
@@ -87,6 +97,7 @@ class ATal {
 		if(is_readable(self::$paths[$cname])){
 			include (self::$paths[$cname]);
 		}
+		echo $file;
 		
 	}
 	protected function runCompiled($__file){
@@ -95,7 +106,7 @@ class ATal {
 		include $__file;
 	}
 	public function output($tplFile){
-		list($tpl, $query)=ATalCompiler::splitExpression($tplFile,'#');
+		list($tpl, $query)=explode('#',$tplFile,2);
 		$mch=array();
 		if(strlen($query) && preg_match("/^([a-z]+)\s*:(.+)$/i",$query,$mch)){
 			$tipo  = $mch[1];
@@ -142,7 +153,10 @@ class ATal {
 	}
 	public function unsetDefaultModifier(){
 		$this->compiler->unsetDefaultModifier();
-	}	
+	}
+	public function addSelector($name, $class){
+		$this->compiler->addSelector($name, $class);
+	}
 		
 	public function getCompileDir(){
 		if ($this->compileDir === null) {
