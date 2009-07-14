@@ -89,7 +89,7 @@ class ATalCompiler {
 			
 			$tplDom = ATal_XMLDom::loadXMLString( $xmlString );
 			try{
-				
+			
 			
 			
 			if($tipo){
@@ -246,7 +246,12 @@ class ATalCompiler {
 			
 			foreach ( $tdom->childNodes as $k => $el ){
 				$nel [$k] = $nodo->ownerDocument->importNode( $el, true );
-				$nodo->parentNode->insertBefore( $nel [$k], $nodo );
+				if($nodo->parentNode instanceof DOMNode ){
+					$nodo->parentNode->insertBefore( $nel [$k], $nodo );
+				}else{
+					throw new ATalException($nodo->nodeName.' non ha un padre. '.$nodo->nodeValue);
+				}	
+				
 				if($nel [$k] instanceof XMLDomElement){
 					$this->applyTemplats( $nel [$k] );
 				}
