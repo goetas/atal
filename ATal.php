@@ -96,9 +96,7 @@ class ATal {
 		}
 		if(is_readable(self::$paths[$cname])){
 			include (self::$paths[$cname]);
-		}
-		echo $file;
-		
+		}		
 	}
 	protected function runCompiled($__file){
 		extract($this->getData());
