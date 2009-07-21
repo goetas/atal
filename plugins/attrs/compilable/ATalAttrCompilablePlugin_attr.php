@@ -47,6 +47,9 @@ class ATalAttrCompilablePlugin_attr extends ATalAttrCompilablePlugin {
 			$code .= "if ($condition) { " . $varName . "['$attName']=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
 		}
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
+		if(!$node->parentNode instanceof DOMElement ){
+			throw new ATalException("Errore di compilazione del nodo $node->nodeName. ($node->nodeValue)");
+		}
 		$node->parentNode->insertBefore( $pi, $node );
 		$node->setAttribute( "atal-attr", "__atal-attr($varName)" );
 	}
