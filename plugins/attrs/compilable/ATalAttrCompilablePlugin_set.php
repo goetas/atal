@@ -1,6 +1,6 @@
 <?php
 class ATalAttrCompilablePlugin_set extends ATalAttrCompilablePlugin{
-	function start(XMLDomElement $node, $attValue){
+	function start(ATal_XMLDomElement $node, $attValue){
 		$expressions=ATalCompiler::splitExpression($attValue,";");
 		$code='';
 		foreach ($expressions as $expression){

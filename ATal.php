@@ -85,7 +85,7 @@ class ATal {
 		
 		if(in_array($cname,array("XMLAble","XMLDom","XMLDomElement","XPath"))){
 			$file = 'xml'.DIRECTORY_SEPARATOR.$pname.'.php';
-		}elseif(contains($cname,"Selector") && $cname!='ATalSelector' ){
+		}elseif(\ambient\contains($cname,"Selector") && $cname!='ATalSelector' ){
 			$file = 'selectors'.DIRECTORY_SEPARATOR.$pname.'.php';	
 		}else{
 			$file = $pname.'.php';	

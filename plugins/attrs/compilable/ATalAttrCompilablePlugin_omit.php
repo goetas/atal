@@ -1,7 +1,7 @@
 <?php
 class ATalAttrCompilablePlugin_omit extends ATalAttrCompilablePlugin {
 	static $cnt = 0;
-	function start(XMLDomElement $node, $attValue) {
+	function start(ATal_XMLDomElement $node, $attValue) {
 		
 		$piIf = $this->dom->createProcessingInstruction( "php", "if( !( $attValue ) ){ // omit " . self::$cnt . " " );
 		$piElse = $this->dom->createProcessingInstruction( "php", "} else {  // omit " . self::$cnt . " " );

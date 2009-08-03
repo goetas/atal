@@ -1,6 +1,6 @@
 <?php
 class ATalAttrCompilablePlugin_capture extends ATalAttrCompilablePlugin{
-	function start(XMLDomElement $node, $attValue){
+	function start(ATal_XMLDomElement $node, $attValue){
 		
 		$piS = $this->dom->createProcessingInstruction("php"," ob_start(); ");
 		$piE = $this->dom->createProcessingInstruction("php"," \$$attValue = ob_get_clean() ; ");

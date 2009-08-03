@@ -7,14 +7,14 @@
  */
 
 class ATalAttrCompilablePlugin_translate_var extends ATalAttrCompilablePlugin {
-	function start(XMLDomElement $node, $attValue) {
+	function start(ATal_XMLDomElement $node, $attValue) {
 		$code = '';
 		foreach ( ATalCompiler::splitExpression( $attValue, ";" ) as $part ){
 			list ( $varName, $expr ) = ATalCompiler::splitExpression( $part, "=" );
-			if(! ((starts_with( $expr, "\"" ) && ends_with( $expr, "\"" )) || (starts_with( $expr, "'" ) && ends_with( $expr, "'" )))){
+			if(! ((\ambient\starts_with( $expr, "\"" ) && \ambient\ends_with( $expr, "\"" )) || (\ambient\starts_with( $expr, "'" ) && \ambient\ends_with( $expr, "'" )))){
 				throw new ATalException( "errore di sintassi vicino a '" . $expr . "'" );
 			}
-			if(! starts_with($varName,'$') ){
+			if(! \ambient\starts_with($varName,'$') ){
 				throw new ATalException( "errore di sintassi vicino a '" . $varName . "'" );
 			}
 			$code .= "$varName = " . $expr . ";\n";

@@ -1,6 +1,6 @@
 <?php
 
-class ATal_XMLDomElement extends XMLDomElement {
+class ATal_XMLDomElement extends \goetas\xml\XMLDomElement {
 	public function uniqueId() {
 		return $this->getAttributeNS(ATal::NS,"id");
 	}

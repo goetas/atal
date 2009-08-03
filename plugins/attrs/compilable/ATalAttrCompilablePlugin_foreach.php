@@ -6,7 +6,7 @@ class ATalAttrCompilablePlugin_foreach extends ATalAttrCompilablePlugin{
 		$this->dom->insertBefore( $pi, $this->dom->documentElement );
 		
 	}	
-	function start(XMLDomElement $node, $attValue){
+	function start(ATal_XMLDomElement $node, $attValue){
 		$mch=array();
 		
 		if(preg_match("/^([a-zA-Z_0-9]+)\s*:\s*([^:]+)/",$attValue,$mch) ){

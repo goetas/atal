@@ -27,7 +27,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 			$attrData [0]->removeAttribute( $attrData [1] );
 		}
 	}
-	function start(XMLDomElement $node, $attValue) {
+	function start(ATal_XMLDomElement $node, $attValue) {
 		$parts = ATalCompiler::splitExpression( $attValue, ";" );
 		$attrs = array();
 		
@@ -53,19 +53,19 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 			foreach ( ATalCompiler::splitExpression( $attParams, ";" ) as $part ){
 				list ( $k, $v ) = ATalCompiler::splitExpression( $part, "=" );
 				if(strlen( $v )){
-					if (starts_with($v, '(') && ends_with($v, ')')){
+					if (\ambient\starts_with($v, '(') && \ambient\ends_with($v, ')')){
 						$v = substr($v, 1, -1);
 					}
 					$params [$k] = $this->compiler->parsedExpression( $v );
 					
 				}else{
-					if (starts_with($k, '(') && ends_with($k, ')')){
+					if (\ambient\starts_with($k, '(') && \ambient\ends_with($k, ')')){
 						$k = substr($k, 1, -1);
 					}
 					$params [] = $this->compiler->parsedExpression( $k );
 				}
 			}
-			$code .= $varName . "['$attName']=xmlentities(" . __CLASS__ . "::translate('" . addcslashes( $node->getAttribute( $attName ), "'\\" ) . "',array(" . ATalCompiler::implodeKeyed( $params ) . "), \$__tal->getTemplate()));\n";
+			$code .= $varName . "['$attName']=htmlspecialchars(" . __CLASS__ . "::translate('" . addcslashes( $node->getAttribute( $attName ), "'\\" ) . "',array(" . ATalCompiler::implodeKeyed( $params ) . "), \$__tal->getTemplate()),ENT_NOQUOTES,'UTF-8');\n";
 			$this->attrs [] = array($node, $attName );
 		}
 		$pi = $this->dom->createProcessingInstruction( "php", $code );

@@ -1,7 +1,7 @@
 <?php
 class ATalAttrCompilablePlugin_call extends ATalAttrCompilablePlugin{
-	function start(XMLDomElement $node, $attValue){
-		$pi = $this->dom->createProcessingInstruction("php",self::prepareCode($attValue));		
+	function start(ATal_XMLDomElement $node, $attValue){
+		$pi = $this->dom->createProcessingInstruction("php",self::prepareCode($attValue));
 		$node->removeChilds();
 		$node->appendChild($pi);
 

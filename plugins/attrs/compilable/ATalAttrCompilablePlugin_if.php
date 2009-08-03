@@ -1,7 +1,7 @@
 <?php
 class ATalAttrCompilablePlugin_if extends ATalAttrCompilablePlugin {
 	static $cnt = 0;
-	function start(XMLDomElement $node, $attValue) {
+	function start(ATal_XMLDomElement $node, $attValue) {
 		self::$cnt ++;
 		$piS = $this->dom->createProcessingInstruction( "php", "if( $attValue ) :  // if " . self::$cnt . " " );
 		$piE = $this->dom->createProcessingInstruction( "php", " endif; // if " . self::$cnt . " " );

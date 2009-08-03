@@ -25,7 +25,7 @@ class ATalCompiler {
 	/**
 	 * @var array
 	 */
-	protected $selectors = array();	
+	protected $selectors = array();
 	/**
 	 * @var array
 	 */
@@ -54,15 +54,15 @@ class ATalCompiler {
 		return $this->template;
 	}
 	/**
-	 * 
+	 *
 	 * @param ATal_XMLDom $tipo
 	 * @param $dom
 	 * @return ATalSelector
 	 */
-	public function getSelector($tipo, XMLDom $dom){
+	public function getSelector($tipo, ATal_XMLDom $dom){
 		$ref = new ReflectionClass($this->selectors[$tipo]);
 		if ($ref->isSubclassOf('ATalSelector')){
-			return $ref->newInstance($dom,$this->tal);	
+			return $ref->newInstance($dom,$this->tal);
 		}else{
 			throw new ATalException("Non trovo un selettore adatto per '$tipo'");
 		}
@@ -73,25 +73,25 @@ class ATalCompiler {
 	public function getSelectors() {
 		return $this->selectors;
 	}
-	
+
 	public function compile($tpl, $tipo, $query) {
 		$this->template = $tpl;
 		$fileName = $this->tal->getCompileDir() . DIRECTORY_SEPARATOR . basename( $tpl ) . "_" . md5( $tipo . $query . realpath( $tpl ) ) . ".php";
-		
+
 		if($this->tal->debug || ! is_file( $fileName ) || filemtime( $fileName ) < filemtime( $tpl )){
 			$this->attrs->reset();
 			$xml = new ATal_XMLDom( );
 			$root = $xml->addChildNS( self::NS, "atal-content" );
-			
+
 			$xmlString = file_get_contents( $tpl );
-			
+
 			$xmlString = str_replace( array_keys( self::$htmlEntities ), self::$htmlEntities, $xmlString );
-			
+
 			$tplDom = ATal_XMLDom::loadXMLString( $xmlString );
 			try{
-			
-			
-			
+
+
+
 			if($tipo){
 				$selector = $this->getSelector($tipo,$tplDom);
 				$res = $selector->select($query);
@@ -101,22 +101,22 @@ class ATalCompiler {
 			}else{
 				$root->appendChild( $xml->importNode( $tplDom->documentElement, 1 ) );
 			}
-			}catch(Exception $e){
-				die($e);	
+			}catch(\Exception $e){
+				die($e);
 			}
 			foreach ( $xml->query( "//*" ) as $node ){
 				$node->setAttributeNS( ATal::NS, "id", uniqid() );
 			}
 			$this->applyTemplats( $xml->documentElement );
-			
+
 			$this->addPreWriteFilter( array($this, 'removeTIDAttrs' ) );
 			$this->applyPreFilters( $xml );
-			
+
 			if(ini_get( "short_open_tag" )){
 				$this->addPostFilter( array(__CLASS__, 'replaceShortTags' ) );
 			}
 			$this->addPostFilter( array(__CLASS__, 'removeXMLNS' ) );
-			
+
 			$cnt = '';
 			if($this->tal->xmlDeclaration){
 				$cnt .= '<?xml version="1.0" encoding="utf-8"?>' . "\n";
@@ -124,7 +124,7 @@ class ATalCompiler {
 			if($tplDom->doctype && $this->tal->dtdDeclaration){
 				$cnt .= $tplDom->saveXML( $tplDom->doctype ) . "\n";
 			}
-			
+
 			// mettendo queste 2 query xpath insieme il php genera i nodi in ordine sbagliato
 			foreach ( $xml->query( "/processing-instruction()" ) as $node ){
 				$cnt .= $xml->saveXML( $node );
@@ -133,15 +133,15 @@ class ATalCompiler {
 				$cnt .= $xml->saveXML( $node );
 			}
 			$cnt = $this->applyFilters( $cnt );
-			// fine bug		
-			
+			// fine bug
+
 
 			file_put_contents( $fileName, $cnt );
 			chmod( $fileName, 0666 );
 		}
 		return $fileName;
 	}
-	public function removeTIDAttrs(XMLDom $xml) {
+	public function removeTIDAttrs(ATal_XMLDom  $xml) {
 		foreach ( $xml->query( "//*[@t:id]/@t:id", array("t" => ATal::NS ) ) as $tt ){
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
@@ -153,41 +153,41 @@ class ATalCompiler {
 		$str = preg_replace( "/xmlns:([a-zA-Z][a-zA-Z0-9_\-]*)=" . preg_quote( '"' . self::NS . '"', "/" ) . "/", "", $str );
 		return str_replace( "xmlns=\"" . self::NS . "\"", "", $str );
 	}
-	
-	public function applyTemplats(XMLDomElement $node, $skip = array()) {
+
+	public function applyTemplats(ATal_XMLDomElement $node, $skip = array()) {
 		$attributes = array();
 		$childNodes = array();
-		
+
 		foreach ( $node->attributes as $attr ){
 			$attributes [] = $attr;
 		}
 		foreach ( $node->childNodes as $child ){
 			$childNodes [] = $child;
 		}
-		
+
 		foreach ( $attributes as $attr ){
 			if($attr->namespaceURI == self::NS && $attr->localName == 'id'){
-			
+
 			}elseif($attr->namespaceURI == self::NS && isset( $this->attrs [$attr->localName] )){
-				
+
 				$attPlugin = $this->attrs->newInstance( $attr->localName, $this, $node->ownerDocument );
 				if(! in_array( $attr->localName, $skip ) && $attr->ownerElement === $node && $attPlugin->start( $node, $attr->value ) === false){
 					try{
 						$node->removeAttributeNode( $attr );
 					}catch ( DOMException $e ){
-					
+
 					}
 					break;
 				}else{
 					try{
 						$node->removeAttributeNode( $attr );
 					}catch ( DOMException $e ){
-					
+
 					}
 				}
 			}elseif($attr->namespaceURI == self::NS){
 				$this->runtimeAttrManager->setName( $attr->name );
-				
+
 				$content = '';
 				foreach ( $node->childNodes as $child ){
 					$content .= $node->ownerDocument->saveXML( $child );
@@ -202,7 +202,7 @@ class ATalCompiler {
 					}
 				}
 				$pi = $node->ownerDocument->createProcessingInstruction( "php", "print ( " . $this->runtimeAttrManager->runAttr( $params, $content ) . " ); " );
-				
+
 				$node->removeChilds();
 				$node->appendChild( $pi );
 				$node->removeAttributeNode( $attr );
@@ -210,9 +210,9 @@ class ATalCompiler {
 				$this->applyAttributeVars( $attr );
 			}
 		}
-		
+
 		foreach ( $childNodes as $child ){
-			if($child instanceof XMLDomElement){
+			if($child instanceof ATal_XMLDomElement){
 				$this->applyTemplats( $child );
 			}elseif($child instanceof DOMText || $child instanceof DOMCDATASection){
 				$this->applyTextVars( $child );
@@ -223,36 +223,36 @@ class ATalCompiler {
 		$mch = array();
 		if($nodo instanceof DOMText && preg_match_all( "/\{([a-z" . preg_quote( '$', '/' ) . "][^\}]*)}/", $nodo->data, $mch )){
 			$cdata = ($nodo instanceof DOMCdataSection);
-			
+
 			if($cdata){
 				$xml = '<![CDATA[' . $nodo->data . ']]>';
-			
+
 			}else{
 				$xml = $nodo->data;
 			}
-			
+
 			$tdom = new ATal_XMLDom( );
 			$frag = $tdom->createDocumentFragment();
 			foreach ( $mch [0] as $k => $pattern ){
 				$xml = str_replace( $pattern, ($cdata ? "]]>" : "") . '<?php echo ' . ($cdata ? "'<![CDATA['." : "") . $this->parsedExpression( $mch [1] [$k] ) . ($cdata ? ".']]>'" : "") . '; ?>' . ($cdata ? "<![CDATA[" : ""), $xml );
 			}
-			
+
 			if(! $cdata){
 				$xml = str_replace( "&", "&amp;", $xml );
 			}
 			$frag->appendXML( $xml );
-			
+
 			$tdom->appendChild( $frag );
-			
+
 			foreach ( $tdom->childNodes as $k => $el ){
 				$nel [$k] = $nodo->ownerDocument->importNode( $el, true );
 				if($nodo->parentNode instanceof DOMNode ){
 					$nodo->parentNode->insertBefore( $nel [$k], $nodo );
 				}else{
 					throw new ATalException($nodo->nodeName.' non ha un padre. '.$nodo->nodeValue);
-				}	
-				
-				if($nel [$k] instanceof XMLDomElement){
+				}
+
+				if($nel [$k] instanceof ATal_XMLDomElement){
 					$this->applyTemplats( $nel [$k] );
 				}
 			}
@@ -265,14 +265,14 @@ class ATalCompiler {
 			$code = '';
 			$nodo = $attr->ownerElement;
 			$val = $attr->value;
-			
+
 			foreach ( $mch [1] as $k => $mc ){
 				$attName = "\$__tal_attr_" . md5( $k . microtime() );
 				$code .= "$attName  =  " . $this->parsedExpression( $mc ) . " ;\n ";
 				$val = str_replace( $mch [0] [$k], "[#tal_attr#" . $attName . "#tal_attr#]", $val );
 			}
 			$attr->value = htmlspecialchars( $val, ENT_QUOTES, 'UTF-8' );
-			
+
 			$pi = $nodo->ownerDocument->createProcessingInstruction( "php", $code );
 			$nodo->parentNode->insertBefore( $pi, $nodo );
 		}
@@ -297,11 +297,11 @@ class ATalCompiler {
 			throw new ATalException( "callback non valida per  addPreWriteFilter '" . (is_array( $callback ) ? implode( ",", $callback ) : $callback) . "'" );
 		}
 	}
-	
+
 	public function setDefaultModifier($modifierName) {
 		$this->defaultModifier = $modifierName;
 	}
-	protected function applyPreFilters(XMLDom $dom) {
+	protected function applyPreFilters(ATal_XMLDom $dom) {
 		foreach ( $this->prefilters as $filter ){
 			call_user_func( $filter, $dom );
 		}
@@ -313,13 +313,13 @@ class ATalCompiler {
 		}
 		return preg_replace( "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/", "<?php print( \\1 ) ?>", $string );
 	}
-	
+
 	/* compiler utils */
 	public function parsedExpression($exp, $skip = false) {
 		$parts = self::splitExpression( $exp, '|' );
 		$var = trim( array_shift( $parts ) );
 		$mch = array();
-		
+
 		if($skip){
 			//$parts [] = $defaultModifier;
 		}elseif(preg_match( "/^([a-zA-Z_]+)\s*:\s*([^:]+)/", $var, $mch )){ // cerco un pre-modifier
@@ -328,7 +328,7 @@ class ATalCompiler {
 		}elseif($this->defaultModifier){
 			$parts [] = $this->defaultModifier;
 		}
-		
+
 		foreach ( $parts as $part ){
 			if(preg_match( '#(^[a-z][a-z0-9_\-]*$)|(^[a-z][a-z0-9_\-]*\s*:)#i', $part, $mch )){
 				$modifierParts = self::splitExpression( $part, ':' );
@@ -351,21 +351,21 @@ class ATalCompiler {
 		}
 		return $var;
 	}
-	
+
 	public static function splitExpression($str, $splitrer) {
 		$str = str_split( $str, 1 );
 		$str [] = " ";
 		$str_len = count( $str );
-		
+
 		$splitrer = str_split( $splitrer, 1 );
 		$splitrer_len = count( $splitrer );
-		
+
 		$parts = array();
 		$inApex = false;
 		$next = 0;
 		$pcount = 0;
 		for($i = 0; $i < $str_len; $i ++){
-			if(! $inApex && ($i === 0 || $str [$i - 1] !== "\\") && ($str [$i] === "\"" || $str [$i] === "'")){ // ingresso 
+			if(! $inApex && ($i === 0 || $str [$i - 1] !== "\\") && ($str [$i] === "\"" || $str [$i] === "'")){ // ingresso
 				$inApex = $str [$i];
 			}elseif($inApex === $str [$i] && $str [$i - 1] !== "\\"){ // uscita
 				$inApex = false;

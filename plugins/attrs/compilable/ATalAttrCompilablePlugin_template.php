@@ -1,6 +1,6 @@
 <?php
 class ATalAttrCompilablePlugin_template extends ATalAttrCompilablePlugin{
-	function start(XMLDomElement $node, $attValue){
+	function start(ATal_XMLDomElement $node, $attValue){
 		$piStart = $this->dom->createProcessingInstruction("php",
 		" function __atal_template_".$attValue." (\$__tal ){ ".
 		" extract(\$__tal->getData()); ");

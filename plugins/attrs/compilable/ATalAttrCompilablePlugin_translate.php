@@ -4,7 +4,7 @@ class ATalAttrCompilablePlugin_translate extends ATalAttrCompilablePlugin {
 		$pi = $this->dom->createProcessingInstruction( "php", " require_once( '" . addslashes( __FILE__ ) . "'); " );
 		$this->dom->insertBefore( $pi, $this->dom->documentElement );
 	}
-	function start(XMLDomElement $node, $attValue) {
+	function start(ATal_XMLDomElement $node, $attValue) {
 		$parts = ATalCompiler::splitExpression( $attValue, ";" );
 		$params = array();
 		foreach ( $parts as $part ){
