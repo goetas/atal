@@ -9,7 +9,7 @@ class ATalAttrRuntimePlugin_vld_error_array extends ATalAttrRuntimePlugin {
 		if(! is_array( $errorData ) && ! ($errorData instanceof Traversable)){
 			return '';
 		}
-		$dom = new XMLDom( );
+		$dom = new \goetas\xml\XMLDom( );
 		foreach ( $errorData as $index => $errori ){
 			$root = $dom->addChildNS( "Validation", "validation" )->setAttr( "index", $index );
 			//main

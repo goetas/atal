@@ -1,4 +1,6 @@
 <?php
+
+use \ambient\core\Controller;
 class ATalAttrRuntimePlugin_vld_error extends ATalAttrRuntimePlugin {
 	function run(array $params = array(), $content = '') {
 
@@ -8,7 +10,7 @@ class ATalAttrRuntimePlugin_vld_error extends ATalAttrRuntimePlugin {
 		
 		$errorData = $params ["error"] ? $params ["error"] : $params [0];
 		
-		$dom = new XMLDom( );
+		$dom = new \goetas\xml\XMLDom( );
 		$root = $dom->addChildNS( "Validation", "validation" );
 		
 		if(isset( $params ["index"] )){
