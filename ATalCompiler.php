@@ -89,18 +89,15 @@ class ATalCompiler {
 
 			$tplDom = ATal_XMLDom::loadXMLString( $xmlString );
 			try{
-
-
-
-			if($tipo){
-				$selector = $this->getSelector($tipo,$tplDom);
-				$res = $selector->select($query);
-				foreach ( $res as $node ){
-					$root->appendChild( $xml->importNode( $node, 1 ) );
+				if($tipo){
+					$selector = $this->getSelector($tipo,$tplDom);
+					$res = $selector->select($query);
+					foreach ( $res as $node ){
+						$root->appendChild( $xml->importNode( $node, 1 ) );
+					}
+				}else{
+					$root->appendChild( $xml->importNode( $tplDom->documentElement, 1 ) );
 				}
-			}else{
-				$root->appendChild( $xml->importNode( $tplDom->documentElement, 1 ) );
-			}
 			}catch(\Exception $e){
 				die($e);
 			}
