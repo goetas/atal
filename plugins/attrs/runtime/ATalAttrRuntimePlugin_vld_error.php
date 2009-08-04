@@ -1,6 +1,4 @@
 <?php
-
-use \ambient\core\Controller;
 class ATalAttrRuntimePlugin_vld_error extends ATalAttrRuntimePlugin {
 	function run(array $params = array(), $content = '') {
 
