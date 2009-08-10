@@ -19,31 +19,31 @@ class ATal {
 	protected $modifierManager ;
 	/**
 	 * @var ATalAttrRuntime
-	 */	
+	 */
 	protected $runtimeAttrManager;
 	protected $data=array();
-	
+
 	public $xmlDeclaration=false,$dtdDeclaration=true;
-	
+
 	public $debug=0;
-	
+
 	protected $scope=array();
-	
+
 	public function __construct($compileDir = null){
-		
+
 		$this->addScope(array(
 			'now'		=>	$_SERVER['REQUEST_TIME'],
 		));
 		if ($compileDir !== null) {
 			$this->setCompileDir($compileDir);
 		}
-		
-		
+
+
 		$this->modifierManager = new ATalModifier($this);
 		$this->runtimeAttrManager = new ATalAttrRuntime($this);
-		
+
 		$this->compiler = new ATalCompiler($this);
-		
+
 		//$this->compiler->addPostFilter(array(__CLASS__,'makeHXTML'));
 		$this->addSelector("id",'ATalIdSelector');
 		$this->addSelector("childid",'ATalChildIdSelector');
@@ -70,9 +70,9 @@ class ATal {
 	public function getRuntimeAttrManager(){
 		return $this->runtimeAttrManager;
 	}
-	
+
 	protected static $paths=array();
-	
+
 	public static function autoLoadAdd($cname, $path){
 		if(is_file($path)){
 			self::$paths[$cname]=realpath($path);
@@ -82,13 +82,13 @@ class ATal {
 	}
 	public static function autoLoad($cname){
 		$pname = str_replace("-","_",$cname);
-		
+
 		if(in_array($cname,array("XMLAble","XMLDom","XMLDomElement","XPath"))){
 			$file = 'xml'.DIRECTORY_SEPARATOR.$pname.'.php';
 		}elseif(\ambient\contains($cname,"Selector") && $cname!='ATalSelector' ){
-			$file = 'selectors'.DIRECTORY_SEPARATOR.$pname.'.php';	
+			$file = 'selectors'.DIRECTORY_SEPARATOR.$pname.'.php';
 		}else{
-			$file = $pname.'.php';	
+			$file = $pname.'.php';
 		}
 		if(is_readable(dirname(__FILE__).DIRECTORY_SEPARATOR.$file)){
 			include (dirname(__FILE__).DIRECTORY_SEPARATOR.$file);
@@ -96,7 +96,7 @@ class ATal {
 		}
 		if(is_readable(self::$paths[$cname])){
 			include (self::$paths[$cname]);
-		}		
+		}
 	}
 	protected function runCompiled($__file){
 		extract($this->getData());
@@ -113,7 +113,7 @@ class ATal {
 			$tipo  = "id";
 		}
 		if(!is_file($tpl)){
-			throw new FileNotFoundException("non trovo il file '$tpl'");
+			throw new ATalException("non trovo il file '$tpl'");
 		}
 		$this->template = realpath($tpl);
 		try {
@@ -128,7 +128,7 @@ class ATal {
 		ob_start();
 		$this->output($tpl);
 		return ob_get_clean();
-	}	
+	}
 	function addCompiledAttr($name, ATalDynamicClass $plugin){
 		$this->compiler->addCompiledAttr( $name, $plugin);
 	}
@@ -145,7 +145,7 @@ class ATal {
 			throw new ATalException(__CLASS__." modifier $name non valido");
 		}
 	}
-	
+
 	public function setDefaultModifier($plugin){
 		$this->compiler->setDefaultModifier($plugin);
 	}
@@ -155,7 +155,7 @@ class ATal {
 	public function addSelector($name, $class){
 		$this->compiler->addSelector($name, $class);
 	}
-		
+
 	public function getCompileDir(){
 		if ($this->compileDir === null) {
 			$this->setCompileDir(dirname(__FILE__).DIRECTORY_SEPARATOR.'compiled');
@@ -191,7 +191,7 @@ class ATal {
 	public function &getData(){
 		return $this->data;
 	}
-	
+
 	public function addScope(array $vars=array()){
 		unset($vars["this"],$vars["__file"]);
 		$this->scope[]=array_merge($this->data,$vars);
@@ -211,10 +211,10 @@ class ATal {
     }
 	public function __set($varName, $value){
 		$this->data[$varName] = $value;
-	}	
+	}
 	public function & __get($varName){
 		return $this->data[$varName];
-	}	
+	}
 
     /**
      * assigns values to template variables by reference
@@ -230,9 +230,9 @@ class ATal {
 	public function clear() {
 		$this->scope = array();
 		$this->data = array();
-		$this->addScope();	
+		$this->addScope();
 	}
-		
+
     /**
      * appends values to template variables
      *
