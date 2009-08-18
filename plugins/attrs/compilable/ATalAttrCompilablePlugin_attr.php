@@ -18,6 +18,8 @@ class ATalAttrCompilablePlugin_attr extends ATalAttrCompilablePlugin {
 
 		$varName = "\$__attr_" . $node->uniqueId();
 
+
+
 		$precode = $varName . " = (array)$varName;\n";
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
@@ -27,9 +29,11 @@ class ATalAttrCompilablePlugin_attr extends ATalAttrCompilablePlugin {
 				$attVal = $node->getAttribute( $attName );
 
 				if(preg_match( $regex, $attVal )){
-					$precode = $varName . "['$attName']=" . preg_replace( $regex, "\\1", $attVal ) . ";\n";
+
+					$precode = $varName . "['$attName']='" . str_replace(array("___\\'.___","___.\\'___"),array("'.",".'"),addcslashes(  preg_replace( $regex, "___'.___\\1___.'___", $attVal ),"'" )) . "';\n";
+
 				}else{
-					$precode .= $varName . "['$attName']='" . addcslashes( $node->getAttribute( $attName ), "'" ) . "';\n";
+					$precode .= $varName . "['$attName']='" . addcslashes( $attVal, "'" ) . "';\n";
 				}
 
 				$this->attrs [] = array($node, $attName );
