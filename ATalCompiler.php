@@ -220,7 +220,7 @@ class ATalCompiler {
 	 * Espressione regolare per trovare le variabili racchiuse tra parentresi graffe
 	 * @var string
 	 */
-	const VAR_REGEX =  "/\\{([\\a-z\\$][^\}]*)\\}/";
+	const VAR_REGEX = '/\\{([a-z\$\\\\][^\\}]*)}/';
 	public function applyTextVars($nodo) {
 		$mch = array();
 		if($nodo instanceof DOMText && preg_match_all(self::VAR_REGEX, $nodo->data, $mch )){
