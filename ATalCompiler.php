@@ -216,9 +216,14 @@ class ATalCompiler {
 			}
 		}
 	}
+	/**
+	 * Espressione regolare per trovare le variabili racchiuse tra parentresi graffe
+	 * @var string
+	 */
+	const VAR_REGEX =  "/\\{([\\a-z\\$][^\}]*)\\}/";
 	public function applyTextVars($nodo) {
 		$mch = array();
-		if($nodo instanceof DOMText && preg_match_all( "/\{([a-z" . preg_quote( '$', '/' ) . "][^\}]*)}/", $nodo->data, $mch )){
+		if($nodo instanceof DOMText && preg_match_all(self::VAR_REGEX, $nodo->data, $mch )){
 			$cdata = ($nodo instanceof DOMCdataSection);
 
 			if($cdata){
@@ -258,7 +263,7 @@ class ATalCompiler {
 	}
 	public function applyAttributeVars($attr) {
 		$mch = array();
-		if(preg_match_all( "/\{([a-z" . preg_quote( '$', '/' ) . "][^\}]*)}/", $attr->value, $mch )){
+		if(preg_match_all(self::VAR_REGEX, $attr->value, $mch )){
 			$code = '';
 			$nodo = $attr->ownerElement;
 			$val = $attr->value;
