@@ -101,6 +101,9 @@ class ATalCompiler {
 			}catch(\Exception $e){
 				die($e);
 			}
+			foreach ( $xml->query( "//t:t[not(@t:omit)]", array("t" => self::NS ) ) as $node ){
+				$node->setAttributeNS( ATal::NS, "omit", 'true' );
+			}
 			foreach ( $xml->query( "//*" ) as $node ){
 				$node->setAttributeNS( ATal::NS, "id", uniqid() );
 			}
