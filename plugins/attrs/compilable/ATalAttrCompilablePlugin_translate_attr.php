@@ -74,7 +74,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 	}
 	
 	public static function translate($str, array $params, $path) {
-		return I18nClass::t( $str, $params, $path );
+		return \ambient\i18n\I18nClass::t( $str, $params, $path );
 	}
 
 }
