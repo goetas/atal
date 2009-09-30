@@ -327,25 +327,26 @@ class ATalCompiler {
 
 		if($skip){
 			//$parts [] = $defaultModifier;
-		}elseif(preg_match( "/^([a-zA-Z_]+)\s*:\s*([^:]+)/", $var, $mch )){ // cerco un pre-modifier
+		}elseif(preg_match( "/^([a-zA-Z_]+)\\s*:\\s*([^:]+)/", $var, $mch )){ // cerco un pre-modifier
 			$parts [] = trim( $mch [1] );
 			$var = trim( $mch [2] );
 		}elseif($this->defaultModifier){
 			$parts [] = $this->defaultModifier;
 		}
-
 		foreach ( $parts as $part ){
-			if(preg_match( '#(^[a-z][a-z0-9_\-]*$)|(^[a-z][a-z0-9_\-]*\s*:)#i', $part, $mch )){
+			if(preg_match( '#(^[a-z][a-z0-9_\\-]*$)|(^[a-z][a-z0-9_\\-]*\s*:)#i', $part, $mch )){
 				$modifierParts = self::splitExpression( $part, ':' );
 				$mname = array_shift( $modifierParts );
 				$modifierManager = clone $this->modifierManager;
 				$modifierManager->setModifierName( $mname );
 				foreach ( $modifierParts as $modifierParam ){
 					$mch = array();
-					if(preg_match( "/^([a-z][a-z0-9_\-]*)\s*\=(.*)/i", $modifierParam, $mch )){
+					if(preg_match( "/^([a-z][a-z0-9_\\-]*)\\s*\\=(.*)/i", $modifierParam, $mch )){
 						$modifierManager->addNamedParam( $mch [1], $this->parsedExpression( trim( $mch [2], "()" ), true ) );
 					}else{
-						$modifierManager->addParam( $this->parsedExpression( trim( $modifierParam, "()" ), true ) );
+						$paramStr = trim($modifierParam);
+						$paramStr = $paramStr[0]=="(" && $paramStr[strlen($paramStr)-1]==")"?substr($paramStr,1,-1):$paramStr;
+						$modifierManager->addParam( $this->parsedExpression( $paramStr , true ) );
 					}
 				}
 				$var = $modifierManager->runModifier( $var );
