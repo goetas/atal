@@ -4,11 +4,13 @@ class ATalModifierPlugin_rewrite extends ATalModifierPlugin {
 		return self::rewrite($str, $params);
 	}
 	public static function rewrite($url, array $params=array()){
+		list($url, $request) = explode('?', $url);
+		
 		list($modulo, $metodo) = explode('/', $url);
 		$modulo = strtolower($modulo);
 		
 		if ($modulo == 'web'){
-			return "{$metodo}.html";
+			$url = "{$metodo}.html";
 		} else {
 			if ($params['id']){
 				$params['id'] = "_{$params['id']}";
@@ -18,7 +20,8 @@ class ATalModifierPlugin_rewrite extends ATalModifierPlugin {
 			} else {
 				$params['keys'] = $modulo;
 			}
-			return "{$modulo}/{$params['keys']}/{$metodo}{$params['id']}.html";
+			$url = "{$modulo}/{$params['keys']}/{$metodo}{$params['id']}.html";
 		}
+		return $url.(($request)?"?{$request}":'');
 	}
 }
