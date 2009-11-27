@@ -342,7 +342,9 @@ class ATalCompiler {
 				foreach ( $modifierParts as $modifierParam ){
 					$mch = array();
 					if(preg_match( "/^([a-z][a-z0-9_\\-]*)\\s*\\=(.*)/i", $modifierParam, $mch )){
-						$modifierManager->addNamedParam( $mch [1], $this->parsedExpression( trim( $mch [2], "()" ), true ) );
+						$exs = trim($mch [2]);
+						$exs = $exs=="(" && $exs[strlen($exs)-1]==")"?substr($exs,1,-1):$exs;
+						$modifierManager->addNamedParam( $mch [1], $this->parsedExpression( $exs, true ) );
 					}else{
 						$paramStr = trim($modifierParam);
 						$paramStr = $paramStr[0]=="(" && $paramStr[strlen($paramStr)-1]==")"?substr($paramStr,1,-1):$paramStr;
