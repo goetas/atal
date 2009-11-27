@@ -16,11 +16,9 @@ class ATalModifierPlugin_rewrite extends ATalModifierPlugin {
 				$params['id'] = "_{$params['id']}";
 			}
 			if ($params['keys']){
-				$params['keys'] = preg_replace('/[^a-z0-9_]+/i', '-', iconv("UTF-8", "ASCII//TRANSLIT", $params['keys']));
-			} else {
-				$params['keys'] = $modulo;
+				$params['keys'] = str_replace($modulo, '', preg_replace('/[^a-z0-9_]+/i', '-', strtolower(iconv("UTF-8", "ASCII//TRANSLIT", $params['keys']))));
 			}
-			$url = "{$modulo}/{$params['keys']}/{$metodo}{$params['id']}.html";
+			$url = "{$modulo}/".(($params['keys'])?"{$params['keys']}/":'')."{$metodo}{$params['id']}.html";
 		}
 		return $url.(($request)?"?{$request}":'');
 	}
