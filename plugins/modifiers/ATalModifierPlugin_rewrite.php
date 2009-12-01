@@ -5,20 +5,24 @@ class ATalModifierPlugin_rewrite extends ATalModifierPlugin {
 	}
 	public static function rewrite($url, array $params=array()){
 		list($url, $request) = explode('?', $url);
-		
+
 		list($modulo, $metodo) = explode('/', $url);
 		$modulo = strtolower($modulo);
-		
-		if ($modulo == 'web'){
-			$url = "{$metodo}.html";
+
+		if ($params['id']){
+			$p = "_{$params['id']}";
+		}
+		if ($params['keys']){
+			$params['keys'] = trim(str_replace($modulo, '', preg_replace('/[^a-z0-9_]+/i', '-', strtolower(iconv("UTF-8", "ASCII//TRANSLIT", $params['keys'])))),"-");
+		}
+		if ($modulo == 'web' && !$params['keys']){
+			if($params['id']){
+				$url = "{$metodo}{$p}.html";
+			}else{
+				$url = "{$metodo}.html";
+			}
 		} else {
-			if ($params['id']){
-				$params['id'] = "_{$params['id']}";
-			}
-			if ($params['keys']){
-				$params['keys'] = str_replace($modulo, '', preg_replace('/[^a-z0-9_]+/i', '-', strtolower(iconv("UTF-8", "ASCII//TRANSLIT", $params['keys']))));
-			}
-			$url = "{$modulo}/".(($params['keys'])?"{$params['keys']}/":'')."{$metodo}{$params['id']}.html";
+			$url = "{$modulo}/".(($params['keys'])?"{$params['keys']}/":'')."{$metodo}{$p}.html";
 		}
 		return $url.(($request)?"?{$request}":'');
 	}
