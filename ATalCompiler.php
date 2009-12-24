@@ -391,6 +391,9 @@ class ATalCompiler {
 				$next = $i + $splitrer_len;
 			}
 		}
+		if($pcount!=0){
+			throw new ATalException("Perentesi non bilanciate nell'espressione '$str'");
+		}
 		return $parts;
 	}
 	public static function implodeKeyed(array $parts) {

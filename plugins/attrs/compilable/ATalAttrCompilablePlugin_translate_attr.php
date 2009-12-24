@@ -5,7 +5,7 @@
  * &lt;img xmlns:t="ATal" title="eventi" t:translate-attr="title"/&gt;
  * si possono tradurre più attributi allo stesso tempo e si possono specificare più variabili per ogni attributo
  * ES:
- * &lt;img xmlns:t="ATal" alt="eventi del %periodo" title="eventi dell'%anno" t:translate-attr="title(anno='2009',mese='10');alt(periodo='10-2009')"/&gt;
+ * &lt;img xmlns:t="ATal" alt="eventi del %periodo" title="eventi dell'%anno" t:translate-attr="title(anno='2009';mese='10');alt(periodo='10-2009')"/&gt;
  * si possono applicare dei modificatori ai valori delle variabili degli attributi, basta dividere le espressioni con le parentesi tonde
  * ES:
  * &lt;img xmlns:t="ATal" title="eventi dell'%anno" t:translate-attr="title(anno=('2009'|modificatore_generico))"/&gt;
@@ -30,7 +30,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 	function start(ATal_XMLDomElement $node, $attValue) {
 		$parts = ATalCompiler::splitExpression( $attValue, ";" );
 		$attrs = array();
-		
+
 		foreach ( $parts as $part ){
 			$mch = array();
 			if(preg_match( "/^([a-z:_\-]+)\s*\((.+)/i", $part, $mch )){
@@ -44,11 +44,11 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 			}
 		}
 		$varName = "\$__attr_" . $node->uniqueId();
-		
+
 		$code = $varName . " = (array)$varName;\n";
-		
+
 		foreach ( $attrs as $attName => $attParams ){
-			
+
 			$params = array();
 			foreach ( ATalCompiler::splitExpression( $attParams, ";" ) as $part ){
 				list ( $k, $v ) = ATalCompiler::splitExpression( $part, "=" );
@@ -57,7 +57,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 						$v = substr($v, 1, -1);
 					}
 					$params [$k] = $this->compiler->parsedExpression( $v );
-					
+
 				}else{
 					if (\ambient\starts_with($k, '(') && \ambient\ends_with($k, ')')){
 						$k = substr($k, 1, -1);
@@ -65,6 +65,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 					$params [] = $this->compiler->parsedExpression( $k );
 				}
 			}
+
 			$code .= $varName . "['$attName']=htmlspecialchars(" . __CLASS__ . "::translate('" . addcslashes( $node->getAttribute( $attName ), "'\\" ) . "',array(" . ATalCompiler::implodeKeyed( $params ) . "), \$__tal->getTemplate()),ENT_NOQUOTES,'UTF-8');\n";
 			$this->attrs [] = array($node, $attName );
 		}
@@ -72,7 +73,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 		$node->parentNode->insertBefore( $pi, $node );
 		$node->setAttribute( "atal-attr", "__atal-attr($varName)" );
 	}
-	
+
 	public static function translate($str, array $params, $path) {
 		return \ambient\i18n\I18nClass::t( $str, $params, $path );
 	}
