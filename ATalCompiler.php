@@ -180,13 +180,10 @@ class ATalCompiler {
 
 					}
 					if($continueRule & ATalAttrCompilablePlugin::STOP_NODE && $continueRule & ATalAttrCompilablePlugin::STOP_ATTRIBUTE){
-						echo $attr->localName."++<br/>";
 						return;
 					}elseif($continueRule & ATalAttrCompilablePlugin::STOP_NODE){
-						echo $attr->localName."--<br/>";
 						$stopNode = 1;
 					}elseif($continueRule & ATalAttrCompilablePlugin::STOP_ATTRIBUTE){
-						echo $attr->localName."==<br/>";
 						break;
 					}
 				}
