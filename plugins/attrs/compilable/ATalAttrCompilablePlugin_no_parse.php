@@ -4,7 +4,7 @@ class ATalAttrCompilablePlugin_no_parse extends ATalAttrCompilablePlugin {
 		foreach ( $node->query( ".//*[@t:id]/@t:id", array("t" => ATal::NS ) ) as $tt ){
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
-		return false;
+		return self::STOP_NODE;
 	}
 
 }

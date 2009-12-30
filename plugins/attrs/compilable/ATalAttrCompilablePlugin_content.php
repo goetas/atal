@@ -9,6 +9,7 @@ class ATalAttrCompilablePlugin_content extends ATalAttrCompilablePlugin{
 		}else{
 			$node->removeChilds();
 		}
+		return self::STOP_NODE;
 	}
 
 

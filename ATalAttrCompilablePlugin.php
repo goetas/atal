@@ -1,6 +1,16 @@
 <?php
 abstract class ATalAttrCompilablePlugin extends ATalPlugin{
 	/**
+	 * Ferma l'elaborazione del contenuto del nodo
+	 * @var int
+	 */
+	const STOP_NODE=1;
+	/**
+	 * Ferma l'elaborazione degli attributi del nodo
+	 * @var int
+	 */
+	const STOP_ATTRIBUTE=2;
+	/**
 	 * @var XMLDom
 	 */
 	protected $dom;

@@ -164,27 +164,33 @@ class ATalCompiler {
 		foreach ( $node->childNodes as $child ){
 			$childNodes [] = $child;
 		}
-
+		$stopNode=0;
 		foreach ( $attributes as $attr ){
 			if($attr->namespaceURI == self::NS && $attr->localName == 'id'){
 
 			}elseif($attr->namespaceURI == self::NS && isset( $this->attrs [$attr->localName] )){
 
 				$attPlugin = $this->attrs->newInstance( $attr->localName, $this, $node->ownerDocument );
-				if(! in_array( $attr->localName, $skip ) && $attr->ownerElement === $node && $attPlugin->start( $node, $attr->value ) === false){
+
+				if(! in_array( $attr->localName, $skip ) && $attr->ownerElement === $node){
+					$continueRule = $attPlugin->start( $node, $attr->value );
 					try{
 						$node->removeAttributeNode( $attr );
 					}catch ( DOMException $e ){
 
 					}
-					return;
-				}else{
-					try{
-						$node->removeAttributeNode( $attr );
-					}catch ( DOMException $e ){
-
+					if($continueRule & ATalAttrCompilablePlugin::STOP_NODE && $continueRule & ATalAttrCompilablePlugin::STOP_ATTRIBUTE){
+						echo $attr->localName."++<br/>";
+						return;
+					}elseif($continueRule & ATalAttrCompilablePlugin::STOP_NODE){
+						echo $attr->localName."--<br/>";
+						$stopNode = 1;
+					}elseif($continueRule & ATalAttrCompilablePlugin::STOP_ATTRIBUTE){
+						echo $attr->localName."==<br/>";
+						break;
 					}
 				}
+
 			}elseif($attr->namespaceURI == self::NS){
 				$this->runtimeAttrManager->setName( $attr->name );
 
@@ -206,16 +212,18 @@ class ATalCompiler {
 				$node->removeChilds();
 				$node->appendChild( $pi );
 				$node->removeAttributeNode( $attr );
+				$stopNode = 1;
 			}else{
 				$this->applyAttributeVars( $attr );
 			}
 		}
-
-		foreach ( $childNodes as $child ){
-			if($child instanceof ATal_XMLDomElement){
-				$this->applyTemplats( $child );
-			}elseif($child instanceof DOMText || $child instanceof DOMCDATASection){
-				$this->applyTextVars( $child );
+		if(!$stopNode){
+			foreach ( $childNodes as $child ){
+				if($child instanceof ATal_XMLDomElement){
+					$this->applyTemplats( $child );
+				}elseif($child instanceof DOMText || $child instanceof DOMCDATASection){
+					$this->applyTextVars( $child );
+				}
 			}
 		}
 	}
