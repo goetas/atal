@@ -22,6 +22,7 @@ class ATalAttrCompilablePlugin_translate extends ATalAttrCompilablePlugin {
 		$pi = $this->dom->createProcessingInstruction( "php", " print( " . __CLASS__ . "::translate( '" . addcslashes( trim( $node->saveXML( false ) ), "\\'" ) . "', array(" . ATalCompiler::implodeKeyed( $params ) . ")  , \$__tal->getTemplate() ,array(" . ATalCompiler::implodeKeyed( $options ) . ")));" );
 		$node->removeChilds();
 		$node->appendChild( $pi );
+		return false;
 	}
 
 	public static function translate($str, array $params, $path, $options=array()) {

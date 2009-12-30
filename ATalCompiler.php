@@ -177,7 +177,7 @@ class ATalCompiler {
 					}catch ( DOMException $e ){
 
 					}
-					break;
+					return;
 				}else{
 					try{
 						$node->removeAttributeNode( $attr );
