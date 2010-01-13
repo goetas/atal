@@ -15,7 +15,7 @@ class ATalAttrCompilablePlugin_include extends ATalAttrCompilablePlugin{
 
 		" echo \$__ntal->get(\"$attValue\"); unset(\$__ntal);".
 		" chdir(\$__tal_odir); \n".
-		"}catch(\Exception \$__tal_exception){".
+		"}catch(\\Exception \$__tal_exception){".
 		"chdir(\$__tal_odir);".
 		"echo htmlspecialchars(\$__tal_exception->getMessage(),ENT_QUOTES,'utf-8');".
 		"}"
