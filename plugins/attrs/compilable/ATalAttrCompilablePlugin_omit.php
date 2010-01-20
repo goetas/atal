@@ -26,7 +26,6 @@ class ATalAttrCompilablePlugin_omit extends ATalAttrCompilablePlugin {
 				$this->compiler->applyTextVars( $newNode );
 			}
 		}
-		return self::STOP_ATTRIBUTE;
 	}
 }
 ?>
