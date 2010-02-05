@@ -18,8 +18,6 @@ class ATalAttrCompilablePlugin_attr extends ATalAttrCompilablePlugin {
 
 		$varName = "\$__attr_" . $node->uniqueId();
 
-
-
 		$precode = $varName . " = (array)$varName;\n";
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
