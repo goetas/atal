@@ -21,7 +21,7 @@ class ATalAttrCompilablePlugin_foreach extends ATalAttrCompilablePlugin{
 		$itname= "\$__tal_".$name;
 
 
-		$code .= " $itname = ".($mch[0][0]=="$"?"&".$mch[0]:$mch[0])."; \n ";
+		$code .= " $itname = ".($mch[0][0]=="$" && $mch[0][strlen($mch[0])-1]!=")"?"&".$mch[0]:$mch[0])."; \n ";
 		$code .= " if ( is_array($itname) || ( $itname instanceof Traversable ) ) : ";
 
 		$code .= " \$__foreach[$loopName]=null;\$__foreach[$loopName]=new stdClass(); \n";
