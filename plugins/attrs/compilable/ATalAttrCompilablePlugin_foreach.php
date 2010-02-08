@@ -2,7 +2,7 @@
 class ATalAttrCompilablePlugin_foreach extends ATalAttrCompilablePlugin{
 	public function init() {
 		$str =" require_once( '" . addslashes( __FILE__ ) . "'); \n";
-		$code  =" if(!(\$__foreach instanceof ATalAttrCompilablePlugin_foreach_helper))  \$__foreach = new ATalAttrCompilablePlugin_foreach_helper();\n";
+		$str .=" if(!(\$__foreach instanceof ATalAttrCompilablePlugin_foreach_helper))  \$__foreach = new ATalAttrCompilablePlugin_foreach_helper();\n";
 		$pi = $this->dom->createProcessingInstruction( "php", $str );
 		$this->dom->insertBefore( $pi, $this->dom->documentElement );
 
