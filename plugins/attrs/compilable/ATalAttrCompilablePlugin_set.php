@@ -5,10 +5,10 @@ class ATalAttrCompilablePlugin_set extends ATalAttrCompilablePlugin{
 		$code='';
 		foreach ($expressions as $expression){
 			$mch=array();
-			if(preg_match("/^(".preg_quote( '$', "/" ) . "[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\\s*=\\s*(.+)/",$expression,$mch)){
-				$code.="$mch[1] = $mch[2];\n";
+			if(preg_match("/^(".preg_quote( '$', "/" ) . "[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)(.*)\\s*=\\s*(.+)/",$expression,$mch)){
+				$code.="$mch[1]$mch[2] = $mch[3];\n";
 			}else{
-				throw new ATalException("Sintassi plugin set non valida");
+				throw new ATalException("Sintassi plugin set non valida: '$attValue'");
 			}
 		}
 		$pi = $this->dom->createProcessingInstruction("php",$code);
