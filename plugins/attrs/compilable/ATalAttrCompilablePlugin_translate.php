@@ -31,9 +31,16 @@ class ATalAttrCompilablePlugin_translate extends ATalAttrCompilablePlugin {
 		}
 		$t = \ambient\i18n\I18nClass::t( $str, $params, $path );
 		if($options["nl2br"]){
-			return nl2br(trim($t));
+			return nl2br(self::checkHtml(trim($t)));
 		}else{
-			return $t;
+			return self::checkHtml($t);
+		}
+	}
+	public static function checkHtml($s) {
+		if(strpos($s,"&")!==false){
+			return preg_replace("/&(?![a-z]+;)/i","&amp;",$s);  // in caso che i traduttori sbaglino, sistemo le "&" con la relativa entita html
+		}else{
+			return $s;
 		}
 	}
 	public static function soloPrimitivi($v){
