@@ -9,10 +9,12 @@ class ATalAttrCompilablePlugin_translate extends ATalAttrCompilablePlugin {
 		$examine = $node;
 		$domain = "null";
 		do{
-			foreach ($examine->attributes as $attr) {
-				if($attr->namespaceURI == ATal::NS && $attr->locanName == 'translate-domain'){
-					$domain = "'".addcslashes($attr->value,"\\'")."'";
-					break 2;
+			if(is_array($examine->attributes)){
+				foreach ($examine->attributes as $attr) {
+					if($attr->namespaceURI == ATal::NS && $attr->locanName == 'translate-domain'){
+						$domain = "'".addcslashes($attr->value,"\\'")."'";
+						break 2;
+					}
 				}
 			}
 		}while($examine = $examine->parentNode);
