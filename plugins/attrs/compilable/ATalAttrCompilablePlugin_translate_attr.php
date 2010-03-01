@@ -31,6 +31,17 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 		$parts = ATalCompiler::splitExpression( $attValue, ";" );
 		$attrs = array();
 
+		$examine = $node;
+		$domain = "null";
+		do{
+			foreach ($examine->attributes as $attr) {
+				if($attr->namespaceURI==ATal::NS && $attr->locanName=='translate-domain'){
+					$domain = "'".addcslashes($attr->value,"\\\'")."'";
+					break 2;
+				}
+			}
+		}while($examine = $examine->parentNode);
+
 		foreach ( $parts as $part ){
 			$mch = array();
 			if(preg_match( "/^([a-z:_\-]+)\s*\((.+)/i", $part, $mch )){
@@ -66,7 +77,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 				}
 			}
 
-			$code .= $varName . "['$attName']=htmlspecialchars(" . __CLASS__ . "::translate('" . addcslashes( $node->getAttribute( $attName ), "'\\" ) . "',array(" . ATalCompiler::implodeKeyed( $params ) . "), \$__tal->getTemplate()),ENT_NOQUOTES,'UTF-8');\n";
+			$code .= $varName . "['$attName']=htmlspecialchars(" . __CLASS__ . "::translate('" . addcslashes( $node->getAttribute( $attName ), "'\\" ) . "',array(" . ATalCompiler::implodeKeyed( $params ) . "), $domain ),ENT_NOQUOTES,'UTF-8');\n";
 			$this->attrs [] = array($node, $attName );
 		}
 		$pi = $this->dom->createProcessingInstruction( "php", $code );
@@ -74,8 +85,8 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 		$node->setAttribute( "atal-attr", "__atal-attr($varName)" );
 	}
 
-	public static function translate($str, array $params, $path) {
-		return \ambient\i18n\I18nClass::t( $str, $params, $path );
+	public static function translate($str, array $params, $domain) {
+		return \ambient\i18n\I18nClass::t( $str, $params, $domain );
 	}
 
 }

@@ -5,6 +5,19 @@ class ATalAttrCompilablePlugin_translate extends ATalAttrCompilablePlugin {
 		$this->dom->insertBefore( $pi, $this->dom->documentElement );
 	}
 	function start(ATal_XMLDomElement $node, $attValue) {
+
+		$examine = $node;
+		$domain = "null";
+		do{
+			foreach ($examine->attributes as $attr) {
+				if($attr->namespaceURI == ATal::NS && $attr->locanName == 'translate-domain'){
+					$domain = "'".addcslashes($attr->value,"\\'")."'";
+					break 2;
+				}
+			}
+		}while($examine = $examine->parentNode);
+
+
 		$parts = ATalCompiler::splitExpression( $attValue, ";" );
 		$params = array();
 		$options=array();
@@ -19,7 +32,7 @@ class ATalAttrCompilablePlugin_translate extends ATalAttrCompilablePlugin {
 		foreach ( $node->query( ".//*[@t:id]/@t:id", array("t" => ATal::NS ) ) as $tt ){
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
-		$pi = $this->dom->createProcessingInstruction( "php", " print( " . __CLASS__ . "::translate( '" . addcslashes( trim( $node->saveXML( false ) ), "\\'" ) . "', array(" . ATalCompiler::implodeKeyed( $params ) . ")  , \$__tal->getTemplate() ,array(" . ATalCompiler::implodeKeyed( $options ) . ")));" );
+		$pi = $this->dom->createProcessingInstruction( "php", " print( " . __CLASS__ . "::translate( '" . addcslashes( trim( $node->saveXML( false ) ), "\\'" ) . "', array(" . ATalCompiler::implodeKeyed( $params ) . ")  , $domain ,array(" . ATalCompiler::implodeKeyed( $options ) . ")));" );
 		$node->removeChilds();
 		$node->appendChild( $pi );
 		return self::STOP_NODE;
