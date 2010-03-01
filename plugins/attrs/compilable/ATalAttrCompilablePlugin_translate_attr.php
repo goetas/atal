@@ -37,7 +37,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 			if(is_array($examine->attributes)){
 				foreach ($examine->attributes as $attr) {
 					if($attr->namespaceURI==ATal::NS && $attr->locanName=='translate-domain'){
-						$domain = "'".addcslashes($attr->value,"\\\'")."'";
+						$domain = "'".addcslashes($attr->value,"\\'")."'";
 						break 2;
 					}
 				}
@@ -46,7 +46,7 @@ class ATalAttrCompilablePlugin_translate_attr extends ATalAttrCompilablePlugin {
 
 		foreach ( $parts as $part ){
 			$mch = array();
-			if(preg_match( "/^([a-z:_\-]+)\s*\((.+)/i", $part, $mch )){
+			if(preg_match( "/^([a-z:_\\-]+)\\s*\\((.+)/i", $part, $mch )){
 				$mch [2] = trim( $mch [2] );
 				if($mch [2] [strlen( $mch [2] ) - 1] != ')'){
 					throw new ATalException( "errore di sintassi vicino a '" . $part . "'" );
