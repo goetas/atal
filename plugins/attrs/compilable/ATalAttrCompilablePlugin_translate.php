@@ -34,7 +34,13 @@ class ATalAttrCompilablePlugin_translate extends ATalAttrCompilablePlugin {
 		foreach ( $node->query( ".//*[@t:id]/@t:id", array("t" => ATal::NS ) ) as $tt ){
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
-		$pi = $this->dom->createProcessingInstruction( "php", " print( " . __CLASS__ . "::translate( '" . addcslashes( trim( $node->saveXML( false ) ), "\\'" ) . "', array(" . ATalCompiler::implodeKeyed( $params ) . ")  , $domain ,array(" . ATalCompiler::implodeKeyed( $options ) . ")));" );
+
+		$nsp = " xmlns=\"".$node->lookupNamespaceURI(null)."\"";
+
+		$str = str_replace($nsp,"", trim( $node->saveXML( false )) ) ;
+
+		$pi = $this->dom->createProcessingInstruction( "php", " print( " . __CLASS__ . "::translate( '" . addcslashes( $str , "\\'" ) . "', array(" . ATalCompiler::implodeKeyed( $params ) . ")  , $domain ,array(" . ATalCompiler::implodeKeyed( $options ) . ")));" );
+
 		$node->removeChilds();
 		$node->appendChild( $pi );
 		return self::STOP_NODE;
