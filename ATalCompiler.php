@@ -378,7 +378,7 @@ class ATalCompiler {
 		$next = 0;
 		$pcount = 0;
 		for($i = 0; $i < $str_len; $i ++){
-			if(! $inApex && ($i === 0 || $str [$i - 1] !== "\\") && ($str [$i] === "\"" || $str [$i] === "'")){ // ingresso
+			if($inApex === false && ($i === 0 || $str [$i - 1] !== "\\") && ($str [$i] === "\"" || $str [$i] === "'")){ // ingresso
 				$inApex = $str [$i];
 			}elseif($inApex === $str [$i] && $str [$i - 1] !== "\\"){ // uscita
 				$inApex = false;
@@ -398,6 +398,9 @@ class ATalCompiler {
 		}
 		if($pcount!=0){
 			throw new ATalException("Perentesi non bilanciate nell'espressione '$str'");
+		}
+		if($inApex!==false){
+			throw new ATalException("Apici non bilanciati nell'espressione '$str'");
 		}
 		return $parts;
 	}

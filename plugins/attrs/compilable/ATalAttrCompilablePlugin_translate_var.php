@@ -8,9 +8,9 @@
 
 class ATalAttrCompilablePlugin_translate_var extends ATalAttrCompilablePlugin {
 	function start(ATal_XMLDomElement $node, $attValue) {
-		$code = '';
 		foreach ( ATalCompiler::splitExpression( $attValue, ";" ) as $part ){
 			list ( $varName, $expr ) = ATalCompiler::splitExpression( $part, "=" );
+
 			if(! ((\ambient\starts_with( $expr, "\"" ) && \ambient\ends_with( $expr, "\"" )) || (\ambient\starts_with( $expr, "'" ) && \ambient\ends_with( $expr, "'" )))){
 				throw new ATalException( "errore di sintassi vicino a '" . $expr . "'" );
 			}
@@ -19,7 +19,7 @@ class ATalAttrCompilablePlugin_translate_var extends ATalAttrCompilablePlugin {
 			}
 			$code .= "$varName = " . $expr . ";\n";
 		}
-		
+
 		$pi = $this->dom->createProcessingInstruction( "php", $code );
 		$node->parentNode->insertBefore( $pi, $node );
 	}
