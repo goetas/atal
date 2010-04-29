@@ -85,7 +85,7 @@ class ATal {
 
 		if(in_array($cname,array("XMLAble","XMLDom","XMLDomElement","XPath"))){
 			$file = 'xml'.DIRECTORY_SEPARATOR.$pname.'.php';
-		}elseif(\ambient\contains($cname,"Selector") && $cname!='ATalSelector' ){
+		}elseif(strpos($cname,"Selector")!==false && $cname!='ATalSelector' ){
 			$file = 'selectors'.DIRECTORY_SEPARATOR.$pname.'.php';
 		}else{
 			$file = $pname.'.php';
@@ -166,7 +166,7 @@ class ATal {
 	public function setCompileDir($dir){
 		$this->compileDir = rtrim($dir, '/\\');
 		if (is_writable($this->compileDir) === false) {
-			throw new ATal_Exception('The compile directory must be writable, chmod "'.$this->compileDir.'" to make it writable');
+			throw new ATalException('The compile directory must be writable, chmod "'.$this->compileDir.'" to make it writable');
 		}
 	}
 	public function getTemplate(){
