@@ -16,7 +16,7 @@ class ATalAttrCompilablePlugin_attr_append extends ATalAttrCompilablePlugin_attr
 				$attVal = $node->getAttribute( $attName );
 
 				if(preg_match( $regex, $attVal )){
-					$precode = $varName . "['$attName']=(isset({$varName}['$attName']))?{$varName}['$attName']:" . preg_replace( $regex, "\\1", $attVal ) . ";\n";
+					$precode = $varName . "['$attName']=(isset({$varName}['$attName']))?{$varName}['$attName']:\"" . addcslashes(preg_replace( $regex, "{\\1}", $attVal ),"\"\\") . "\";\n";
 				}else{
 					$precode .= $varName . "['$attName']=(isset({$varName}['$attName']))?{$varName}['$attName']:'" . addcslashes( $node->getAttribute( $attName ), "'" ) . "';\n";
 				}
