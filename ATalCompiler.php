@@ -76,7 +76,7 @@ class ATalCompiler {
 
 	public function compile($tpl, $tipo, $query) {
 		$this->template = $tpl;
-		$fileName = $this->tal->getCompileDir() . DIRECTORY_SEPARATOR . basename( $tpl ) . "_" . md5( $tipo . $query . realpath( $tpl ) ) . ".php";
+		$fileName = $this->tal->getCompileDir() . DIRECTORY_SEPARATOR . basename( $tpl ) . "_" . md5( strval($this->tal->xmlDeclaration).strval($this->tal->dtdDeclaration). $tipo . $query . realpath( $tpl ) ) . ".php";
 
 		if($this->tal->debug || ! is_file( $fileName ) || filemtime( $fileName ) < filemtime( $tpl )){
 			$this->attrs->reset();
