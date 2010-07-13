@@ -73,40 +73,58 @@ class ATalCompiler {
 	public function getSelectors() {
 		return $this->selectors;
 	}
+	public function loadXMLTemplate($tpl, $tipo, $query) {
+		$xml = new ATal_XMLDom( );
+		$root = $xml->addChildNS( self::NS, "atal-content" );
 
+		$xmlString = file_get_contents( $tpl );
+
+		$xmlString = str_replace( array_keys( self::$htmlEntities ), self::$htmlEntities, $xmlString );
+		$tplDom = new ATal_XMLDom();
+		$tplDom->loadXML( $xmlString );
+		try{
+			if($tipo){
+				$selector = $this->getSelector($tipo,$tplDom);
+				$res = $selector->select($query);
+				foreach ( $res as $node ){
+					$root->appendChild( $xml->importNode( $node, 1 ) );
+				}
+			}else{
+				$root->appendChild( $xml->importNode( $tplDom->documentElement, 1 ) );
+			}
+		}catch(Exception $e){
+			die($e);
+		}
+		foreach ( $xml->query( "//t:t[not(@t:omit)]", array("t" => self::NS ) ) as $node ){
+			$node->setAttributeNS( ATal::NS, "omit", 'true' );
+		}
+		foreach ( $xml->query( "//*" ) as $node ){
+			$node->setAttributeNS( ATal::NS, "id", uniqid() );
+		}
+		return array($xml, $tplDom);
+	}
+	public function parseUriParts($tplFile) {
+		list($tpl, $query)=explode('#',$tplFile,2);
+		$mch=array();
+		$tipo = null;
+		$query = null;
+		if(strlen($query) && preg_match("/^([a-z]+)\\s*:(.+)$/i",$query,$mch)){
+			$tipo  = $mch[1];
+			$query = $mch[2];
+		}elseif(strlen($query)){
+			$tipo  = "id";
+		}
+		return array(trim($tpl), $tipo, $tipo?$query:null);
+	}
 	public function compile($tpl, $tipo, $query) {
 		$this->template = $tpl;
 		$fileName = $this->tal->getCompileDir() . DIRECTORY_SEPARATOR . basename( $tpl ) . "_" . md5( strval($this->tal->xmlDeclaration).strval($this->tal->dtdDeclaration). $tipo . $query . realpath( $tpl ) ) . ".php";
 
 		if($this->tal->debug || ! is_file( $fileName ) || filemtime( $fileName ) < filemtime( $tpl )){
 			$this->attrs->reset();
-			$xml = new ATal_XMLDom( );
-			$root = $xml->addChildNS( self::NS, "atal-content" );
 
-			$xmlString = file_get_contents( $tpl );
+			list($xml,$tplDom) = $this->loadXMLTemplate($tpl,$tipo,$query );
 
-			$xmlString = str_replace( array_keys( self::$htmlEntities ), self::$htmlEntities, $xmlString );
-
-			$tplDom = ATal_XMLDom::loadXMLString( $xmlString );
-			try{
-				if($tipo){
-					$selector = $this->getSelector($tipo,$tplDom);
-					$res = $selector->select($query);
-					foreach ( $res as $node ){
-						$root->appendChild( $xml->importNode( $node, 1 ) );
-					}
-				}else{
-					$root->appendChild( $xml->importNode( $tplDom->documentElement, 1 ) );
-				}
-			}catch(\Exception $e){
-				die($e);
-			}
-			foreach ( $xml->query( "//t:t[not(@t:omit)]", array("t" => self::NS ) ) as $node ){
-				$node->setAttributeNS( ATal::NS, "omit", 'true' );
-			}
-			foreach ( $xml->query( "//*" ) as $node ){
-				$node->setAttributeNS( ATal::NS, "id", uniqid() );
-			}
 			$this->applyTemplats( $xml->documentElement );
 
 			$this->addPreWriteFilter( array($this, 'removeTIDAttrs' ) );
@@ -135,7 +153,6 @@ class ATalCompiler {
 			$cnt = $this->applyFilters( $cnt );
 			// fine bug
 
-
 			file_put_contents( $fileName, $cnt );
 			chmod( $fileName, 0666 );
 		}
@@ -150,7 +167,7 @@ class ATalCompiler {
 		return str_replace( "<?xml ", "<?php print( \"<?xml \" ) ?>", $str );
 	}
 	public static function removeXMLNS($str) {
-		$str = preg_replace( "/xmlns:([a-zA-Z][a-zA-Z0-9_\-]*)=" . preg_quote( '"' . self::NS . '"', "/" ) . "/", "", $str );
+		$str = preg_replace( "/xmlns:([a-zA-Z][a-zA-Z0-9_\\-]*)=" . preg_quote( '"' . self::NS . '"', "/" ) . "/", "", $str );
 		return str_replace( "xmlns=\"" . self::NS . "\"", "", $str );
 	}
 
