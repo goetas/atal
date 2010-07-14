@@ -104,14 +104,9 @@ class ATal {
 		include $__file;
 	}
 	public function output($tplFile){
-		list($tpl, $query)=explode('#',$tplFile,2);
-		$mch=array();
-		if(strlen($query) && preg_match("/^([a-z]+)\s*:(.+)$/i",$query,$mch)){
-			$tipo  = $mch[1];
-			$query = $mch[2];
-		}elseif(strlen($query)){
-			$tipo  = "id";
-		}
+
+		list($tpl, $tipo,$query)=$this->compiler->parseUriParts($tplFile);
+
 		if(!is_file($tpl)){
 			throw new ATalException("non trovo il file '$tpl'");
 		}
