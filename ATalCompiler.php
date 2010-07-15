@@ -38,11 +38,20 @@ class ATalCompiler {
 	 * @var string
 	 */
 	protected $template;
+	/**
+	 * Espressione regolare per trovare le variabili racchiuse tra parentresi graffe
+	 * @var string
+	 */
+	const VAR_REGEX = '/\\{([\'a-z\$\\\\].*?)\\}/';
+
+	public $currRegex;
+
 	function __construct(ATal $tal) {
 		$this->tal = $tal;
 		$this->attrs = new ATalPluginLoader( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR . 'attrs' . DIRECTORY_SEPARATOR . 'compilable' );
 		$this->modifierManager = $this->tal->getModiferManager();
 		$this->runtimeAttrManager = $this->tal->getRuntimeAttrManager();
+		$this->currRegex = self::VAR_REGEX;
 	}
 	function __clone() {
 		$this->attrs = new ATalPluginLoader( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR . 'attrs' . DIRECTORY_SEPARATOR . 'compilable' );
@@ -120,7 +129,7 @@ class ATalCompiler {
 		$this->template = $tpl;
 		$fileName = $this->tal->getCompileDir() . DIRECTORY_SEPARATOR . basename( $tpl ) . "_" . md5( strval($this->tal->xmlDeclaration).strval($this->tal->dtdDeclaration). $tipo . $query . realpath( $tpl ) ) . ".php";
 
-		if($this->tal->debug || ! is_file( $fileName ) || filemtime( $fileName ) < filemtime( $tpl )){
+		if(1 || $this->tal->debug || ! is_file( $fileName ) || filemtime( $fileName ) < filemtime( $tpl )){
 			$this->attrs->reset();
 
 			list($xml,$tplDom) = $this->loadXMLTemplate($tpl,$tipo,$query );
@@ -182,14 +191,16 @@ class ATalCompiler {
 			$childNodes [] = $child;
 		}
 		$stopNode=0;
+		$attPluginsUsed = array();
 		foreach ( $attributes as $attr ){
 			if($attr->namespaceURI == self::NS && $attr->localName == 'id'){
 
-			}elseif($attr->namespaceURI == self::NS && isset( $this->attrs [$attr->localName] )){
+			}elseif($attr->namespaceURI == self::NS && isset( $this->attrs [$attr->localName] )){ // compiled
 
 				$attPlugin = $this->attrs->newInstance( $attr->localName, $this, $node->ownerDocument );
 
 				if(! in_array( $attr->localName, $skip ) && $attr->ownerElement === $node){
+					$attPluginsUsed[] = array($attPlugin, $node, $attr->value );
 					$continueRule = $attPlugin->start( $node, $attr->value );
 					try{
 						$node->removeAttributeNode( $attr );
@@ -205,7 +216,7 @@ class ATalCompiler {
 					}
 				}
 
-			}elseif($attr->namespaceURI == self::NS){
+			}elseif($attr->namespaceURI == self::NS){ // runtime
 				$this->runtimeAttrManager->setName( $attr->name );
 
 				$content = '';
@@ -227,7 +238,7 @@ class ATalCompiler {
 				$node->appendChild( $pi );
 				$node->removeAttributeNode( $attr );
 				$stopNode = 1;
-			}else{
+			}else{ // applica le variabili sugli attrubuti
 				$this->applyAttributeVars( $attr );
 			}
 		}
@@ -235,20 +246,21 @@ class ATalCompiler {
 			foreach ( $childNodes as $child ){
 				if($child instanceof ATal_XMLDomElement){
 					$this->applyTemplats( $child );
-				}elseif($child instanceof DOMText || $child instanceof DOMCDATASection){
-					$this->applyTextVars( $child );
+				}elseif($child instanceof DOMText){
+					$this->applyTextVars( $child ); // applica le variabili sul testo
+				}
+			}
+			foreach ($attPluginsUsed as $data) {
+				if($data[1]->ownerDocument!=null){
+					$data[0]->end($data[1],$data[2]);
 				}
 			}
 		}
 	}
-	/**
-	 * Espressione regolare per trovare le variabili racchiuse tra parentresi graffe
-	 * @var string
-	 */
-	const VAR_REGEX = '/\\{([\'a-z\$\\\\][^\\}]*)}/';
+
 	public function applyTextVars($nodo) {
 		$mch = array();
-		if($nodo instanceof DOMText && preg_match_all(self::VAR_REGEX, $nodo->data, $mch )){
+		if($nodo instanceof DOMText && preg_match_all($this->currRegex, $nodo->data, $mch )){
 			$cdata = ($nodo instanceof DOMCdataSection);
 
 			if($cdata){
@@ -288,7 +300,7 @@ class ATalCompiler {
 	}
 	public function applyAttributeVars($attr) {
 		$mch = array();
-		if(preg_match_all(self::VAR_REGEX, $attr->value, $mch )){
+		if(preg_match_all($this->currRegex, $attr->value, $mch )){
 			$code = '';
 			$nodo = $attr->ownerElement;
 			$val = $attr->value;

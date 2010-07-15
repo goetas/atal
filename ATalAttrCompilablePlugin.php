@@ -26,7 +26,8 @@ abstract class ATalAttrCompilablePlugin extends ATalPlugin{
 	}
 	protected function init(){
 	}
+	public function end(ATal_XMLDomElement $node, $attValue) {
+
+	}
 
 }
-
-?>
