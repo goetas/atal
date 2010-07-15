@@ -129,7 +129,7 @@ class ATalCompiler {
 		$this->template = $tpl;
 		$fileName = $this->tal->getCompileDir() . DIRECTORY_SEPARATOR . basename( $tpl ) . "_" . md5( strval($this->tal->xmlDeclaration).strval($this->tal->dtdDeclaration). $tipo . $query . realpath( $tpl ) ) . ".php";
 
-		if(1 || $this->tal->debug || ! is_file( $fileName ) || filemtime( $fileName ) < filemtime( $tpl )){
+		if($this->tal->debug || ! is_file( $fileName ) || filemtime( $fileName ) < filemtime( $tpl )){
 			$this->attrs->reset();
 
 			list($xml,$tplDom) = $this->loadXMLTemplate($tpl,$tipo,$query );
