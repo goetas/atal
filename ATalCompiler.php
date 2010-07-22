@@ -116,13 +116,14 @@ class ATalCompiler {
 		list($tpl, $query)=explode('#',$tplFile,2);
 		$mch=array();
 		$tipo = null;
-		$query = null;
+
 		if(strlen($query) && preg_match("/^([a-z]+)\\s*:(.+)$/i",$query,$mch)){
 			$tipo  = $mch[1];
 			$query = $mch[2];
 		}elseif(strlen($query)){
 			$tipo  = "id";
 		}
+
 		return array(trim($tpl), $tipo, $tipo?$query:null);
 	}
 	public function compile($tpl, $tipo, $query) {
