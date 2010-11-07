@@ -9,22 +9,17 @@ class ATalXHTML extends ATal {
 		parent::setup();
 		$_this = $this;
 		$this->addCompilerSetup(function(Compiler $compiler)use($_this){
-			$compiler->getPostLoadFilters()->addFilter(array($_this,'replaceHtmlEntities'));
+			$compiler->getPostLoadFilters()->addFilter(array($_this,'_replaceHtmlEntities'));
+			
+			$compiler->getPostFilters()->addFilter(array($_this,'_replaceShortTags'));
 		});
 		
 	}
-	
-	public function replaceHtmlEntities($str) {
+	function _replaceShortTags($str) {
+		$tags = "textarea|div|span|p|h1|h2|h3|h4|h5|h6|label|fieldset|leggend|strong|em|i|b|style|small|cite|script";
+		return preg_replace( "#<($tags)([^\\>]*)/>#i", "<\\1\\2></\\1>", $str );
+	}
+	public function _replaceHtmlEntities($str) {
 		return str_replace (array_keys(static::$htmlEntities),array_values(static::$htmlEntities), $str );
 	}
-	
-
-	public static function removeXMLNS($str) {
-		$str = preg_replace ( "/xmlns:([a-zA-Z][a-zA-Z0-9_\\-]*)=" . preg_quote ( '"' . self::NS . '"', "/" ) . "/", "", $str );
-		return str_replace ( "xmlns=\"" . self::NS . "\"", "", $str );
-	}
-	
-
-
-	
 }

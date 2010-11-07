@@ -27,8 +27,7 @@ class ATal {
 	
 		
 	public $xmlDeclaration = false;
-	public $dtdDeclaration = true;
-	
+		
 	public $debug = 0;
 	
 	protected $scope = array ();
@@ -59,20 +58,38 @@ class ATal {
 			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
 		}
 	}
+	
 	protected function setupCompiler(Compiler $compiler) {
+
+		$compiler->getPreXmlFilters()->addFilter(array($this,'_addTIDAttrs'));
+		$compiler->getPreXmlFilters()->addFilter(array($this,'_handleT'));
 		
 		$compiler->getPostXmlFilters()->addFilter(array($this,'_removeTIDAttrs'));
+		
 		$compiler->getPostFilters()->addFilter(array($this,'_removeXmlns'));
-		if(ini_get("short_open_tag")){
-			$compiler->getPostFilters()->addFilter(array($this,'_replaceShortTags'));
+		if(1|| ini_get("short_open_tag")){
+			$compiler->getPostFilters()->addFilter(array($this,'_replaceShortPI'));
 		}
+		
 		$compiler->getAttributes()->addDefaultPlugin($this->baseRuntimeAttribute);
 		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultCompilableAttributes') );
 		
 		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') );
 		foreach ($this->compilerSetups as $callback) {
 			call_user_func($callback,$compiler,$this);
+		}	
+	}
+	public function _handleT(xml\XMLDom $xml) {
+		foreach ( $xml->query ( "//t:t[not(@t:omit)]", array ("t" => self::NS ) ) as $node ) {
+			$node->setAttributeNS ( self::NS, "omit", 'true' );
 		}
+		return $xml;
+	}
+	public function _addTIDAttrs(xml\XMLDom $xml) {
+		foreach ( $xml->query ( "//*" ) as $node ) {
+			$node->setAttributeNS ( self::NS, "id", uniqid () );
+		}
+		return $xml;
 	}
 	public function _removeTIDAttrs(xml\XMLDom $xml) {
 		foreach ( $xml->query ( "//*[@t:id]/@t:id", array ("t" => self::NS ) ) as $tt ) {
@@ -83,7 +100,7 @@ class ATal {
 	public function _removeXmlns($str) {
 		return preg_replace('#<(.*) xmlns:[a-zA-Z0-9]+=("|\')'.self::NS.'("|\')(.*)>#m',"<\\1\\4>",$str);
 	}
-	public function _replaceShortTags($str) {
+	public function _replaceShortPI($str) {
 		return preg_replace_callback( "#\\<\\?([a-z]+) #", function($mch){
 			if($mch[1]=="php"){
 				return "<?$mch[1] ";
@@ -92,6 +109,7 @@ class ATal {
 			}
 		}, $str );
 	}
+	
 	/**
 	 * @return loaders\Modifiers
 	 */
@@ -132,7 +150,7 @@ class ATal {
 		}
 	}	
 	function _defaultSelectors($attrName) {
-		$cname = "Modifier_".preg_replace("/[^a-z0-9_]/i","_",$attrName); 
+		$cname = "Selector_".preg_replace("/[^a-z0-9_]/i","_",$attrName); 
 		$fullCname = __NAMESPACE__."\\plugins\\selectors\\$cname";
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
@@ -177,7 +195,7 @@ class ATal {
 		return ob_get_clean ();
 	}
 	protected function getCacheName($tpl) {
-		return $this->getCompileDir () . DIRECTORY_SEPARATOR . basename ( $tpl ) . "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . strval ( $this->dtdDeclaration ) . getcwd() ) . ".php";
+		return $this->getCompileDir () . DIRECTORY_SEPARATOR . basename ( $tpl ) . "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . getcwd() ) . ".php";
 	}
 	public function getCompileDir() {
 		if ($this->compileDir === null) {

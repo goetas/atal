@@ -151,50 +151,51 @@ class Compiler extends BaseClass{
 		$this->currRegex = $currRegex;
 	}
 	protected function toDom($tpl, $tipo, $query) {
-		$xml = new xml\XMLDom ();
-		$root = $xml->addChildNS ( self::NS, "atal-content" );
 		
 		$xmlString = file_get_contents ( $tpl );
 		$xmlString = $this->getPostLoadFilters()->applyFilters($xmlString);
-		
-		
+
 		$tplDom = new xml\XMLDom ();
 		$tplDom->loadXML ( $xmlString );
-	
+		
+		$nodes = array();
+		$dtd = null;
 		try {
 			if ($tipo) {
 				$selector = $this->getSelectors()->selector($tipo);
-				
 				$selector->setDom($tplDom);
 							
 				$res = $selector->select ( $query );
 				foreach ( $res as $node ) {
-					$root->appendChild ( $xml->importNode ( $node, 1 ) );
+					$nodes[]=$node ;
 				}
 			} else {
-				$root->appendChild ( $xml->importNode ( $tplDom->documentElement, 1 ) );
+				$dtd = $tplDom->doctype;
+				$nodes[] = $tplDom->documentElement;
 			}
 		} catch ( \Exception $e ) {
 			throw $e;
 		}
-		foreach ( $xml->query ( "//t:t[not(@t:omit)]", array ("t" => self::NS ) ) as $node ) {
-			$node->setAttributeNS ( ATal::NS, "omit", 'true' );
-		}
-		foreach ( $xml->query ( "//*" ) as $node ) {
-			$node->setAttributeNS ( ATal::NS, "id", uniqid () );
-		}
 		
-		$xml = $this->getPreXmlFilters()->applyFilters($xml);
-		
-		return $xml;
+		if(!$dtd){
+			echo "xxx";
+			$tplDom = new xml\XMLDom ();
+		}
+
+		$root = $tplDom->addChildNS ( self::NS, "atal-content" );	
+			
+		foreach ( $nodes as $node ) {
+			$root->appendChild ($tplDom->importNode ( $node, true));
+		}	
+		$tplDom = $this->getPreXmlFilters()->applyFilters($tplDom);		
+		return $tplDom;
 	}
 	protected function serializeXml(xml\XMLDom $xml) {
-				
 		$cnt = array();
-		if ($this->tal->xmlDeclaration || 1) {
+		if ($this->tal->xmlDeclaration) {
 			$cnt []= '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 		}
-		if ($xml->doctype && $this->tal->dtdDeclaration) {
+		if ($xml->doctype) {
 			$cnt []= $xml->saveXML ( $xml->doctype ) . "\n";
 		}
 		// mettendo queste 2 query xpath insieme il php genera i nodi in ordine sbagliato
@@ -222,7 +223,6 @@ class Compiler extends BaseClass{
 		$cnt = $this->serializeXml ( $xml );
 		
 		$cnt = $this->getPostFilters()->applyFilters($cnt);
-		
 		file_put_contents ( $destination, $cnt );
 		
 		chmod ( $destination, 0666 );

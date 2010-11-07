@@ -14,7 +14,7 @@ class CompilableAttribute_include_replace extends CompilableAttribute{
 		" chdir(".var_export(dirname($this->compiler->getTemplate()),1)."); ".
 
 		" \$__ntal->addScope(get_defined_vars());".
-		" \$__ntal->xmlDeclaration = false; \$__ntal->dtdDeclaration = false;".
+		" \$__ntal->xmlDeclaration = false;".
 
 		" echo \$__ntal->get(\"$att->value\"); unset(\$__ntal);".
 		" chdir(\$__tal_odir); \n".
