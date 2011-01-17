@@ -15,15 +15,16 @@ class ATal {
 	 * @var loaders\Modifiers
 	 */
 	protected $modifiers;
-	/**
-	 * @var loaders\RuntimeAttributes
-	 */
-	protected $runtimeAttributes;
-	
+
 	/**
 	 * @var BaseRuntimeAttribute
 	 */
 	protected $baseRuntimeAttribute;
+	
+	/**
+	 * @var Servies
+	 */
+	protected $services;
 	
 		
 	public $xmlDeclaration = false;
@@ -36,16 +37,18 @@ class ATal {
 	
 	public function __construct($compileDir = null, $defaultModifier='raw') {
 		
-		$this->addScope ( array ('now' => $_SERVER ['REQUEST_TIME'] ) );
+		$this->addScope ( );
 		if ($compileDir !== null) {
 			$this->setCompileDir ( $compileDir );
 		}
 		
-		$this->modifiers = new loaders\Modifiers ( $this ,$defaultModifier); //ok!
-		$this->runtimeAttributes = new loaders\RuntimeAttributes ( $this ); //ok!
-		$this->baseRuntimeAttribute = new BaseRuntimeAttribute( $this );
-		
+		$this->modifiers = new loaders\Modifiers ( $this ,$defaultModifier); 
+		$this->services = new loaders\Services ( $this );
+	
 		$this->setup();
+	}
+	function getServices(){
+		return $this->services;
 	}
 	protected function setup() {
 		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') );
@@ -67,12 +70,10 @@ class ATal {
 		$compiler->getPostXmlFilters()->addFilter(array($this,'_removeTIDAttrs'));
 		
 		$compiler->getPostFilters()->addFilter(array($this,'_removeXmlns'));
-		if(1|| ini_get("short_open_tag")){
-			$compiler->getPostFilters()->addFilter(array($this,'_replaceShortPI'));
-		}
+	
+		$compiler->getPostFilters()->addFilter(array($this,'_replaceShortPI'));
 		
-		$compiler->getAttributes()->addDefaultPlugin($this->baseRuntimeAttribute);
-		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultCompilableAttributes') );
+		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultAttributes') );
 		
 		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') );
 		foreach ($this->compilerSetups as $callback) {
@@ -116,26 +117,20 @@ class ATal {
 	public function getModifiers() {
 		return $this->modifiers;
 	}
-	/**
-	 * @return loaders\RuntimeAttributes
-	 */	
-	public function getRuntimeAttributes() {
-		return $this->runtimeAttributes;
-	}
 	function __clone() {
 		$this->clear ();
 	}	
 	protected function runCompiled($__file) {
 		extract ( $this->getData () );
 		$__tal = $this;
+		$__tal_modifiers = $this->getModifiers();
 		include $__file;
 	}
 	
-	function _defaultCompilableAttributes($attrName) {
-		$cname = "CompilableAttribute_".preg_replace("/[^a-z0-9_]/i","_",$attrName); 
-		$fullCname = __NAMESPACE__."\\plugins\\attributes\\compilable\\$cname";
+	function _defaultAttributes($attrName) {
+		$cname = "Attribute_".preg_replace("/[^a-z0-9_]/i","_",$attrName); 
+		$fullCname = __NAMESPACE__."\\plugins\\attributes\\$cname";
 		if(class_exists($fullCname)){
-		
 			return new ReflectionClass($fullCname);
 		}
 	}

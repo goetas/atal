@@ -13,6 +13,9 @@ class Modifiers extends \goetas\pluginsys\Loader {
 		$this->tal = $tal;
 		$this->defaultModifier = $defaultModifier;
 		parent::__construct();
+		$this->addInitializer( function($modifier)use($tal){
+			$modifier->setATal($tal);
+		});
 	}
 	/**
 	 * 
@@ -23,10 +26,7 @@ class Modifiers extends \goetas\pluginsys\Loader {
 		if(!$modifier){
 			$modifier = $this->defaultModifier;
 		}
-
-		$mod = $this->getPlugin($modifier);
-		$mod->setATal($this->tal);
-		return $mod;
+		return $this->getPlugin($modifier,true);
 	}
 	
 

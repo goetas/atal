@@ -23,7 +23,7 @@ class Compiler extends BaseClass{
 	protected $currRegex;
 	/**
 	 * 
-	 * @var loaders\CompilableAttributes
+	 * @var loaders\Attributes
 	 */	
 	protected $attributes;
 	/**
@@ -63,7 +63,7 @@ class Compiler extends BaseClass{
 		
 		$this->currRegex = '/\\{([\'a-z\$\\\\].*?)\\}/';
 		
-		$this->attributes = new loaders\CompilableAttributes ($this->tal,$this);
+		$this->attributes = new loaders\Attributes ($this->tal,$this);
 		$this->selectors = new loaders\Selectors ($this->tal,$this);
 				
 		$this->preXmlFilters = new filters\XmlFilter ($this);
@@ -254,11 +254,11 @@ class Compiler extends BaseClass{
 							$node->removeAttributeNode ( $attr );
 						} catch ( DOMException $e ) {					
 						}
-						if ($continueRule & CompilableAttribute::STOP_NODE && $continueRule & CompilableAttribute::STOP_ATTRIBUTE) {
+						if ($continueRule & Attribute::STOP_NODE && $continueRule & Attribute::STOP_ATTRIBUTE) {
 							return;
-						} elseif ($continueRule & CompilableAttribute::STOP_NODE) {
+						} elseif ($continueRule & Attribute::STOP_NODE) {
 							$stopNode = 1;
-						} elseif ($continueRule & CompilableAttribute::STOP_ATTRIBUTE) {
+						} elseif ($continueRule & Attribute::STOP_ATTRIBUTE) {
 							break;
 						}
 					}
@@ -374,12 +374,12 @@ class Compiler extends BaseClass{
 						$modParams[] = $this->parsedExpression ( $paramStr, true );
 					}
 				}
-				$var = "\$__tal->getModifiers()->modifier('$modName')->modify($var, " . var_export($modParams,1)." )";
+				$var = "\$__tal_modifiers->modifier('$modName')->modify($var, " . var_export($modParams,1)." )";
 			}elseif ( $part==='' || preg_match ( '#(^[a-z][a-z0-9_\\-]*$)#i', $part )) { // modificatore senza parametri o di default
-				$var = "\$__tal->getModifiers()->modifier('$part')->modify($var , array() )";		
+				$var = "\$__tal_modifiers->modifier('$part')->modify($var , array() )";		
 			} else{
 				throw new Exception ( "Errore di sintassi vicino a '$part'" );
-			}
+			}			
 		}
 		return $var;
 	}
@@ -424,11 +424,11 @@ class Compiler extends BaseClass{
 		}
 		return $parts;
 	}
-	public static function implodeKeyed(array $parts) {
-		$r = '';
+	public function dumpKeyed(array $parts) {
+		$r = ' array(';
 		foreach ( $parts as $key => $val ) {
-			$r .= "'$key'=>" . $val . ",\n";
+			$r .= "'$key'=>" . $val . ", ";
 		}
-		return $r;
+		return $r." ) " ;
 	}
 }

@@ -2,7 +2,8 @@
 namespace goetas\atal\filters;
 use InvalidArgumentException;
 use goetas\atal\Compiler;
-class Filter {
+use goetas\atal\BaseClass;
+class Filter extends BaseClass {
 	/**
 	 * @var $compiler Compiler
 	 */
