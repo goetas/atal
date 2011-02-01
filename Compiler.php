@@ -178,7 +178,6 @@ class Compiler extends BaseClass{
 		}
 		
 		if(!$dtd){
-			echo "xxx";
 			$tplDom = new xml\XMLDom ();
 		}
 
@@ -374,7 +373,7 @@ class Compiler extends BaseClass{
 						$modParams[] = $this->parsedExpression ( $paramStr, true );
 					}
 				}
-				$var = "\$__tal_modifiers->modifier('$modName')->modify($var, " . var_export($modParams,1)." )";
+				$var = "\$__tal_modifiers->modifier('$modName')->modify($var, " . $this->dumpKeyed($modParams)." )";
 			}elseif ( $part==='' || preg_match ( '#(^[a-z][a-z0-9_\\-]*$)#i', $part )) { // modificatore senza parametri o di default
 				$var = "\$__tal_modifiers->modifier('$part')->modify($var , array() )";		
 			} else{

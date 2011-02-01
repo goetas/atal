@@ -12,7 +12,7 @@ class ATal {
 	protected $compileDir;
 	
 	/**
-	 * @var loaders\Modifiers
+	 * @var goetas\atal\loaders\Modifiers
 	 */
 	protected $modifiers;
 
@@ -22,7 +22,7 @@ class ATal {
 	protected $baseRuntimeAttribute;
 	
 	/**
-	 * @var Servies
+	 * @var goetas\atal\loaders\Services
 	 */
 	protected $services;
 	
@@ -47,6 +47,10 @@ class ATal {
 	
 		$this->setup();
 	}
+	/**
+	 * 
+	 * @return \goetas\atal\loaders\Modifiers 
+	 */
 	function getServices(){
 		return $this->services;
 	}
@@ -110,9 +114,9 @@ class ATal {
 			}
 		}, $str );
 	}
-	
 	/**
-	 * @return loaders\Modifiers
+	 * 
+	 * @return \goetas\atal\loaders\Modifiers 
 	 */
 	public function getModifiers() {
 		return $this->modifiers;
@@ -199,6 +203,7 @@ class ATal {
 		return $this->compileDir;
 	}
 	public function setCompileDir($dir) {
+		
 		$this->compileDir = rtrim ( $dir, '/\\' );
 		if (is_writable ( $this->compileDir ) === false) {
 			throw new Exception ( 'The compile directory must be writable, chmod "' . $this->compileDir . '" to make it writable' );
