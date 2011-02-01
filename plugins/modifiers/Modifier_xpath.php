@@ -1,6 +1,7 @@
 <?php
 namespace goetas\atal\plugins\modifiers;
 use goetas\atal\Modifier;
+use DOMException;
 class Modifier_xpath extends Modifier{
 	function modify($str, array $params=array()){
 		return self::xpathValue($str, $params);
@@ -8,8 +9,8 @@ class Modifier_xpath extends Modifier{
 	public static function xpathValue($value, array $params){
 		try {
 			$value = "<atal_xpath:div xmlns:atal_xpath=\"Modifier_xpath\">{$value}</atal_xpath:div>";
-			$xml = XMLDom::loadXMLString($value);
-			$xpath = new XPath($xml);
+			$xml = \goetas\xml\XMLDom::loadXMLString($value);
+			$xpath = new \goetas\xml\XPath($xml);
 			foreach ($params as $k => $v){
 				if ($k !== intval($k)){
 					$xpath->registerNamespace($k, $v);

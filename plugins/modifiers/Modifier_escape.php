@@ -2,6 +2,7 @@
 namespace goetas\atal;
 namespace goetas\atal\plugins\modifiers;
 use goetas\atal\Modifier;
+use Exception;
 class Modifier_escape extends Modifier {
 	function modify($str, array $params=array()){
 		return self::escapeValue($str, isset($params[0])?$params[0]:'xml');

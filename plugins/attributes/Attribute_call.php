@@ -1,6 +1,7 @@
 <?php
 namespace goetas\atal\plugins\attributes;
 use goetas\atal\xml;
+use Exception;
 use goetas\atal\Attribute;
 class Attribute_call extends Attribute{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){

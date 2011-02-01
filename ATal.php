@@ -3,6 +3,8 @@ namespace goetas\atal;
 use DOMException;
 use InvalidArgumentException;
 use ReflectionClass;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 class ATal {
 	const NS = "ATal";
 	/**

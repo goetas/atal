@@ -7,6 +7,7 @@
  */
 namespace goetas\atal\plugins\attributes;
 use goetas\atal\xml;
+use goetas\atal;
 use goetas\atal\Attribute;
 class Attribute_translate_var extends Attribute {
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
@@ -15,10 +16,10 @@ class Attribute_translate_var extends Attribute {
 			$first = $expr[0];
 			$last = $expr[strlen($expr)-1];
 			if(! (($first=="\""  &&  $last== "\"" ) || ( $first== "'"  &&  $last== "'" ))){
-				throw new Exception( "errore di sintassi vicino a '" . $expr . "'" );
+				throw new atal\Exception( "errore di sintassi vicino a '" . $expr . "'" );
 			}
 			if($varName[0]!='$'){
-				throw new Exception( "errore di sintassi vicino a '" . $varName . "'" );
+				throw new atal\Exception( "errore di sintassi vicino a '" . $varName . "'" );
 			}
 			$code .= "$varName = " . $expr . ";\n";
 		}

@@ -2,6 +2,7 @@
 namespace goetas\atal\plugins\attributes;
 use goetas\atal\xml;
 use goetas\atal\Attribute;
+use Exception;
 class Attribute_attr_append extends Attribute_attr {
 
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {

@@ -1,7 +1,9 @@
 <?php
 namespace goetas\atal\plugins\attributes;
 use goetas\atal\xml;
+use goetas\atal\ATal;
 use goetas\atal\Attribute;
+
 class Attribute_no_parse_inline extends Attribute {
 
 	public function init() {
@@ -9,9 +11,9 @@ class Attribute_no_parse_inline extends Attribute {
 	}
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
 		foreach ( $node->query( ".//text()|.//@*", array("t" => ATal::NS ) ) as $nodo ){
-			if($nodo instanceof DOMAttr){
+			if($nodo instanceof \DOMAttr){
 				$nodo->value = preg_replace($this->compiler->currRegex,"__atal_inline\\1}atal_inline__",$nodo->value);
-			}elseif ($nodo instanceof DOMText){
+			}elseif ($nodo instanceof \DOMText){
 				$nodo->data = preg_replace($this->compiler->currRegex,"__atal_inline\\1}atal_inline__",$nodo->data);
 			}
 		}

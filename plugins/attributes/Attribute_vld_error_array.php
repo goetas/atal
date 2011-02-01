@@ -3,6 +3,7 @@ namespace goetas\atal\plugins\attributes;
 use goetas\atal\DynamicAttribute;
 use Traversable;
 use Exception;
+use goetas\xml;
 class Attribute_vld_error_array extends DynamicAttribute{
 	function run(array $params = array(), $content = '') {
 		if (! count ( $params )) {

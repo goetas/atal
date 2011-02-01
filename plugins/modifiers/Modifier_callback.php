@@ -1,6 +1,7 @@
 <?php
 namespace goetas\atal\plugins\modifiers;
 use goetas\atal\Modifier;
+use Exception;
 class Modifier_callback extends Modifier {
 	function modify($value, array $params = array()) {
 

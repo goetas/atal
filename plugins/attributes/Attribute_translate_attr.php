@@ -14,6 +14,8 @@ namespace goetas\atal\plugins\attributes;
 use goetas\atal\xml;
 use goetas\atal\Attribute;
 use goetas\atal\ATal;
+use goetas\atal\Exception;
+
 class Attribute_translate_attr extends Attribute {
 	protected $attrs = array();
 	protected $fatto = false; 
