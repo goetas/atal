@@ -47,7 +47,7 @@ class Attribute_translate extends Attribute {
 		if($options["nl2br"]){
 			$code .=" nl2br( ";
 		}	
-		$code .=" \\".__CLASS__."::checkHtml(\$__tal->getServices()->service('goetas\\\\atal\\\\plugins\\\\services\\\\ITranslate')->translate('" . addcslashes( $str , "\\'" ) . "', " . $this->compiler->dumpKeyed( $params ) . "  , $domain , " . var_export( $options,1 ) . " ))";
+		$code .=" \\".__CLASS__."::checkHtml(\$__tal->getServices()->service('goetas\\\\atal\\\\plugins\\\\services\\\\translate\\\\ITranslate')->translate('" . addcslashes( $str , "\\'" ) . "', " . $this->compiler->dumpKeyed( $params ) . "  , $domain , " . var_export( $options,1 ) . " ))";
 
 		if($options["nl2br"]){
 			$code .=" ) ";

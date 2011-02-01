@@ -15,7 +15,7 @@ class Services extends \goetas\pluginsys\Loader {
 	/**
 	 * 
 	 * @param string $service
-	 * @return IModifier
+	 * @return IService
 	 */
 	public function service($service) {
 		$mod = $this->getPlugin($service);

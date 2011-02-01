@@ -55,7 +55,7 @@ class ATal {
 		return $this->services;
 	}
 	protected function setup() {
-		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') );
+		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') , __NAMESPACE__.'\IModifier');
 	}
 	protected $compilerSetups = array();
 	public function addCompilerSetup($callback) {
@@ -77,9 +77,10 @@ class ATal {
 	
 		$compiler->getPostFilters()->addFilter(array($this,'_replaceShortPI'));
 		
-		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultAttributes') );
+		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultAttributes'), __NAMESPACE__.'\IAttribute' );
 		
-		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') );
+		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') , __NAMESPACE__.'\ISelector');
+		
 		foreach ($this->compilerSetups as $callback) {
 			call_user_func($callback,$compiler,$this);
 		}	
