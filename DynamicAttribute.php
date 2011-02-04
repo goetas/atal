@@ -55,6 +55,8 @@ abstract class DynamicAttribute extends Attribute {
 		}
 	}
 	
-	abstract static function run(array $params, $content);
+	static function run(array $params, $content){
+		
+	}
 }
 ?>

@@ -11,9 +11,10 @@ class Attribute_attr_append extends Attribute_attr {
 		$varName = "\$__attr_" . $node->uniqueId();
 		$precode =  "if(!isset($varName)){ $varName=array(); }\n";
 		$code = '';
-		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";	
+		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
+		$attrsToRemove = array();	
 		foreach ( $expressions as $expression ){
-			list ( $condition, $attName, $attExpr ) = self::splitAttrExpression( $expression );
+			list ( $condition, $attName, $attExpr ) = $this->splitAttrExpression( $expression );
 			if($node->hasAttribute( $attName )){
 				$attVal = $node->getAttribute( $attName );
 
@@ -22,7 +23,7 @@ class Attribute_attr_append extends Attribute_attr {
 				}else{
 					$precode .= $varName . "['$attName']=(isset({$varName}['$attName']))?{$varName}['$attName']:'" . addcslashes( $node->getAttribute( $attName ), "'" ) . "';\n";
 				}
-				$this->attrs [] = array($node, $attName );
+				$attrsToRemove [] = array($node, $attName );
 			}
 
 			list ( $prefix, $name ) = explode( ":", $attName );
@@ -43,9 +44,13 @@ class Attribute_attr_append extends Attribute_attr {
 				
 		 }\n";
 		}
+		
+		foreach ( $attrsToRemove as $k => $attrData ){
+			@$attrData [0]->removeAttribute( $attrData [1] );
+		}
+		
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
 		$node->parentNode->insertBefore( $pi, $node );
 		$node->setAttribute( "atal-attr", "__atal-attr($varName)" );
 	}
-
 }
