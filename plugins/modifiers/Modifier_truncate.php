@@ -37,11 +37,13 @@ class Modifier_truncate extends Modifier {
 		$etc = isset($params [1])?$params [1]:'...';
 		$break_words = isset($params [2])?$params [2]:false;
 		$middle = isset($params [3])?$params [3]:false;
-		
+
+		return self::truncate($string, $length, $etc, $break_words, $middle);
+	}
+	static function truncate($string, $length=80, $etc='...', $break_words=false, $middle=false){
 		if($length == 0){ 
 			return '';
 		}
-		
 		if(strlen( $string ) > $length){
 			$length -= min( $length, strlen( $etc ) );
 			if(! $break_words && ! $middle){
