@@ -3,6 +3,7 @@ namespace goetas\atal\plugins\attributes;
 use goetas\atal\xml;
 use Exception;
 use goetas\atal\Attribute;
+use goetas\atal\Compiler;
 class Attribute_call extends Attribute{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
 		$pi = $this->dom->createProcessingInstruction("php",self::prepareCode($att, $this->compiler));
@@ -10,9 +11,9 @@ class Attribute_call extends Attribute{
 		$node->appendChild($pi);
 
 	}
-	public static  function prepareCode($att, $compiler){
+	public static function prepareCode(\DOMAttr $att, Compiler $compiler){
 
-		$expressions=$this->compiler->splitExpression($att->value,";");
+		$expressions = $compiler->splitExpression($att->value,";");
 
 		$functname = md5(array_shift($expressions).$compiler->getTemplate());
 
@@ -27,8 +28,9 @@ class Attribute_call extends Attribute{
 		}
 
 		$nome = md5($att->value.$compiler->getTemplate());
-		$fcode  = " if (!defined(' __atal_setf_template_{$nome}')) { "; // uso le costanti per oviare ad un bug di php in cui function_exists sbaglia
-		$fcode  .= "define(' __atal_setf_template_{$nome}', true);  ";
+
+		$fcode = " if (!defined(' __atal_setf_template_{$nome}')) { "; // uso le costanti per oviare ad un bug di php in cui function_exists sbaglia
+		$fcode .= "define(' __atal_setf_template_{$nome}', true);  ";
 		$fcode .= " function __atal_setf_template_{$nome} (\$__tal){ \n";
 		$fcode .= "   extract(\$__tal->getData());";
 		$fcode .= "   {$code};";

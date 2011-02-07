@@ -37,7 +37,7 @@ class ATal {
 	protected $data = array ();
 	
 	
-	public function __construct($compileDir = null, $defaultModifier='raw') {
+	public function __construct($compileDir = null, $defaultModifier='escape') {
 		
 		$this->addScope ( );
 		if ($compileDir !== null) {

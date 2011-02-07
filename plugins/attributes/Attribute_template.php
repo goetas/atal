@@ -16,7 +16,7 @@ class Attribute_template extends Attribute{
 		$node->parentNode->insertAfter($piEnd, $node);
 
 		if($node->hasAttributeNS(ATal::NS, 'call') && $node->getAttributeNS(ATal::NS,"call") == $att->value){
-			$pi = $this->dom->createProcessingInstruction("php",Attribute_call::prepareCode($att->value, $this->compiler));
+			$pi = $this->dom->createProcessingInstruction("php",Attribute_call::prepareCode($att, $this->compiler));
 			$node->parentNode->insertAfter($pi, $piEnd);
 			try {
 				$node->removeAttributeNS(ATal::NS,"call");
