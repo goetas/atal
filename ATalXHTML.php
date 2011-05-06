@@ -16,8 +16,13 @@ class ATalXHTML extends ATal {
 		
 	}
 	function _replaceShortTags($str) {
-		$tags = "textarea|div|span|p|h1|h2|h3|h4|h5|h6|label|fieldset|leggend|strong|em|style|small|cite|script";
-		return preg_replace( "#<($tags)([^\\>]*)/>#i", "<\\1\\2></\\1>", $str );
+		$cnnt = preg_replace_callback( "#<(textarea|div|span|p|h1|h2|h3|h4|h5|h6|label|fieldset|leggend|strong|small|cite|script|style|select|em|td|b)[\\s]*([^\\>]*)/>#i", function($mch){
+			if(strpos($mch[0], '<base ')!==false || strpos($mch[0], '<br')!==false || strpos($mch[0], '<param ')!==false){
+				return $mch[0];
+			}
+			return "<$mch[1] $mch[2]></$mch[1]>";
+		}, $str );
+		return $cnnt;
 	}
 	public function _replaceHtmlEntities($str) {
 		return str_replace (array_keys(static::$htmlEntities),array_values(static::$htmlEntities), $str );
