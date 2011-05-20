@@ -147,6 +147,7 @@ class ATal {
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
 		}
+		$attrName = str_replace("-", "_", $attrName);
 		if(is_callable($attrName)){ // funzione standard di php
 			return new BasePhpModifier($attrName);
 		}
