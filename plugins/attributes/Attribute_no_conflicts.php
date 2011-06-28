@@ -10,15 +10,15 @@ class Attribute_no_conflicts extends Attribute{
 		list($p1, $p2) = explode("|",$att->value);
 
 
-		array_push($this->oldRegex , $this->compiler->currRegex);
+		array_push($this->oldRegex , $this->compiler->getCurrRegex());
 
-		$this->compiler->currRegex = "/".preg_quote($p1, "/").'([\'a-z\$\\\\].*?)'.preg_quote($p2, "/")."/";
+		$this->compiler->setCurrRegex("/".preg_quote($p1, "/").'([\'a-z\$\\\\].*?)'.preg_quote($p2, "/")."/");
 
 
 
 	}
-	public function end(xml\XMLDomElement $node, $att) {
-		$this->compiler->currRegex = array_pop( $this->oldRegex ) ;
+	public function end(xml\XMLDomElement $node, \DOMAttr $att) {
+		$this->compiler->setCurrRegex(array_pop( $this->oldRegex ) );
 	}
 
 }

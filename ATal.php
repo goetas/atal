@@ -31,7 +31,7 @@ class ATal {
 		
 	public $xmlDeclaration = false;
 		
-	public $debug = 0;
+	public $debug = 1;
 	
 	protected $scope = array ();
 	protected $data = array ();
@@ -198,7 +198,7 @@ class ATal {
 		return ob_get_clean ();
 	}
 	protected function getCacheName($tpl) {
-		return $this->getCompileDir () . DIRECTORY_SEPARATOR . basename ( $tpl ) . "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . getcwd() ) . ".php";
+		return $this->getCompileDir () . DIRECTORY_SEPARATOR . preg_replace("/[^a-z0-9_\\-\\.]/i","_", basename($tpl) ) . "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . getcwd() ) . ".php";
 	}
 	public function getCompileDir() {
 		if ($this->compileDir === null) {

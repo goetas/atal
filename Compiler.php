@@ -44,6 +44,13 @@ class Compiler extends BaseClass{
 	protected $postXmlFilters;
 	/**
 	 * 
+	 * @var filters\DomFilter
+	 */	
+	protected $postApplyTemplatesFilters;
+	
+	
+	/**
+	 * 
 	 * @var filters\StringFilter
 	 */	
 	protected $preFilters;
@@ -68,6 +75,8 @@ class Compiler extends BaseClass{
 				
 		$this->preXmlFilters = new filters\XmlFilter ($this);
 		$this->postXmlFilters = new filters\XmlFilter ($this);
+		$this->postApplyTemplatesFilters = new filters\DomFilter ($this);
+		
 		
 		$this->postLoadFilters = new filters\StringFilter ($this);
 		
@@ -75,7 +84,7 @@ class Compiler extends BaseClass{
 		$this->postFilters = new filters\StringFilter ($this);
 		
 		$this->postFilters->addFilter(array($this,'_replaceAttributeVars'));
-		
+		$this->postFilters->addFilter( array(__CLASS__, "_replaceCdataVars" ) );
 	}
 	/**
 	 * @return ATal
@@ -85,6 +94,11 @@ class Compiler extends BaseClass{
 	}
 	public function _replaceAttributeVars($string) {
 		return preg_replace ( "/" . preg_quote ( "[#tal_attr#", "/" ) . "(" . preg_quote ( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote ( "#tal_attr#]", "/" ) . "/", "<?php print( \\1 ) ?>", $string );
+	}
+	public static function _replaceCdataVars($string) {
+		return preg_replace_callback( "/" . preg_quote( '[-[?php]', '/' ) . '(.*?)' . preg_quote( '[php?]-]', '/' ) . '/', function($mch){
+			return "<?php ". htmlspecialchars_decode($mch[1])  ." ?>";
+		}, $string );
 	}
 	/**
 	 * @return the $attributes
@@ -117,6 +131,12 @@ class Compiler extends BaseClass{
 	 */
 	public function getPostXmlFilters() {
 		return $this->postXmlFilters;
+	}
+	/**
+	 * @return the $postApplyTemplatesFilters
+	 */
+	public function getPostApplyTemplatesFilters() {
+		return $this->postApplyTemplatesFilters;
 	}
 
 	/**
@@ -217,11 +237,14 @@ class Compiler extends BaseClass{
 		
 		$this->applyTemplates ( $xml->documentElement );
 		
+		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
+		
 		$xml = $this->getPostXmlFilters()->applyFilters($xml);
 			
 		$cnt = $this->serializeXml ( $xml );
 		
 		$cnt = $this->getPostFilters()->applyFilters($cnt);
+		
 		file_put_contents ( $destination, $cnt );
 		
 		chmod ( $destination, 0666 );
@@ -229,43 +252,45 @@ class Compiler extends BaseClass{
 	}
 	public function applyTemplates(xml\XMLDomElement $node, $skip = array()) {
 		$attributes = array ();
+		$talAttributes = array ();
+		
 		$childNodes = array ();
 		
 		foreach ( $node->attributes as $attr ) {
-			$attributes [] = $attr;
+			$attributes[] = $attr;
 		}
 		foreach ( $node->childNodes as $child ) {
 			$childNodes [] = $child;
 		}
 		$stopNode = 0;
 		$attPluginsUsed = array ();
-		foreach ( $attributes as $attr ) {
-			if($attr->namespaceURI == self::NS){
-				if ($attr->localName == 'id') {
-					// no action
-				} else{ // compiled
-					$attPlugin = $this->attributes->attribute($attr->localName);
-					$attPlugin->setDom($node->ownerDocument);
-					if (! in_array ( $attr->localName, $skip ) && $attr->ownerElement === $node) {
-						$attPluginsUsed [] = array ($attPlugin, $node, $attr );
-						$continueRule = $attPlugin->start ( $node, $attr  );
-						try {
-							$node->removeAttributeNode ( $attr );
-						} catch ( DOMException $e ) {					
-						}
-						if ($continueRule & Attribute::STOP_NODE && $continueRule & Attribute::STOP_ATTRIBUTE) {
-							return;
-						} elseif ($continueRule & Attribute::STOP_NODE) {
-							$stopNode = 1;
-						} elseif ($continueRule & Attribute::STOP_ATTRIBUTE) {
-							break;
-						}
+		
+		foreach ( $attributes as $attr ) { 
+			if($attr->namespaceURI == self::NS){ // è un attributo tal
+				if ($attr->localName != 'id') {
+				$attPlugin = $this->attributes->attribute($attr->localName);
+				$attPlugin->setDom($node->ownerDocument);
+				if (! in_array ( $attr->localName, $skip ) && $attr->ownerElement === $node) {
+					$attPluginsUsed [] = array ($attPlugin, $node, $attr );
+					$continueRule = $attPlugin->start ( $node, $attr  );
+					try {
+						$node->removeAttributeNode ( $attr );
+					} catch ( DOMException $e ) {					
+					}
+					if ($continueRule & Attribute::STOP_NODE && $continueRule & Attribute::STOP_ATTRIBUTE) {
+						return;
+					} elseif ($continueRule & Attribute::STOP_NODE) {
+						$stopNode = 1;
+					} elseif ($continueRule & Attribute::STOP_ATTRIBUTE) {
+						break;
 					}
 				}
-			} else { // applica le variabili sugli attrubuti
+				}
+			} else {
 				$this->applyAttributeVars ( $attr );
 			}
 		}
+		
 		if (! $stopNode) {
 			foreach ( $childNodes as $child ) {
 				if ($child instanceof xml\XMLDomElement) {
@@ -282,7 +307,9 @@ class Compiler extends BaseClass{
 		}
 	}
 	
-	public function applyTextVars($nodo) {
+	
+
+	public function applyTextVars($nodo) {		
 		$mch = array ();
 		if ($nodo instanceof DOMText && preg_match_all ( $this->currRegex, $nodo->data, $mch )) {
 			$cdata = ($nodo instanceof DOMCdataSection);
@@ -297,11 +324,11 @@ class Compiler extends BaseClass{
 			$tdom = new xml\XMLDom ();
 			$frag = $tdom->createDocumentFragment ();
 			foreach ( $mch [0] as $k => $pattern ) {
-				$xml = str_replace ( $pattern, ($cdata ? "]]>" : "") . '<?php echo ' . ($cdata ? "'<![CDATA['." : "") . $this->parsedExpression ( $mch [1] [$k] ) . ($cdata ? ".']]>'" : "") . '; ?>' . ($cdata ? "<![CDATA[" : ""), $xml );
+				$xml = str_replace ( $pattern, '[-[?php] echo ' . $this->parsedExpression ( $mch [1] [$k] ) . '; [php?]-]', $xml );
 			}
 			
 			if (! $cdata) {
-				$xml = str_replace ( "&", "&amp;", $xml );
+				$xml = htmlspecialchars($xml, ENT_NOQUOTES, 'utf-8' );
 			}
 			$frag->appendXML ( $xml );
 			
@@ -322,11 +349,14 @@ class Compiler extends BaseClass{
 			$nodo->parentNode->removeChild ( $nodo );
 		}
 	}
-	public function applyAttributeVars($attr) {
+	public function applyAttributeVars(\DOMAttr $attr) {
 		$mch = array ();
 		if (preg_match_all ( $this->currRegex, $attr->value, $mch )) {
 			$code = '';
 			$nodo = $attr->ownerElement;
+			if(!$nodo->ownerDocument){
+				echo htmlentities($attr->value);
+			}
 			$val = $attr->value;
 			
 			foreach ( $mch [1] as $k => $mc ) {
@@ -335,7 +365,7 @@ class Compiler extends BaseClass{
 				$val = str_replace ( $mch [0] [$k], "[#tal_attr#" . $attName . "#tal_attr#]", $val );
 			}
 			$attr->value = htmlspecialchars ( $val, ENT_QUOTES, 'UTF-8' );
-			
+
 			$pi = $nodo->ownerDocument->createProcessingInstruction ( "php", $code );
 			$nodo->parentNode->insertBefore ( $pi, $nodo );
 		}

@@ -6,12 +6,22 @@ use goetas\atal\ATal;
 use Exception;
 class Attribute_attr extends Attribute {
 	protected $fatto = false; 
+	
+	protected $attrsToRemove = array();
+	
 	public function prependPI() {
 		if(!$this->fatto){
-			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "replaceAttrs" ) );
+			$this->compiler->getPostApplyTemplatesFilters()->addFilter( array($this, "_removeAttrs" ) );
+			
+			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "_replaceAttrs" ) );
 		}
 	}
-	public static function replaceAttrs($stream) {
+	public function _removeAttrs($xml) {
+		foreach ( $this->attrsToRemove as $k => $attrData ){
+			@$attrData [0]->removeAttribute( $attrData [1] );
+		}
+	}
+	public static function _replaceAttrs($stream) {
 		return preg_replace( "/" . preg_quote( 'atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php foreach (\$\\1 as \$__attName => &\$__attValue){" . " echo \$__attName.\"=\\\"\$__attValue\\\" \";" . " } \n unset(\$\\1, \$__attName,\$__attValue); ?>", $stream );
 	}
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
@@ -24,21 +34,20 @@ class Attribute_attr extends Attribute {
 		$precode =  "if(!isset($varName)){ $varName=array(); }\n";
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
-		$attrsToRemove = array();	
+		
+
 		foreach ( $expressions as $expression ){
 			list ( $condition, $attName, $attExpr ) = $this->splitAttrExpression( $expression );
 			if($node->hasAttribute( $attName )){
 				$attVal = $node->getAttribute( $attName );
 
 				if(preg_match( $regex, $attVal )){
-
 					$precode = $varName . "['$attName']='" . str_replace(array("___\\'.___","___.\\'___"),array("'.",".'"),addcslashes(  preg_replace( $regex, "___'.___\\1___.'___", $attVal ),"'" )) . "';\n";
-
 				}else{
 					$precode .= $varName . "['$attName']='" . addcslashes( $attVal, "'" ) . "';\n";
 				}
 
-				$attrsToRemove [] = array($node, $attName );
+				$this->attrsToRemove [] = array($node, $attName );
 			}
 
 			list ( $prefix, $name ) = explode( ":", $attName );
@@ -52,11 +61,7 @@ class Attribute_attr extends Attribute {
 			}
 			$code .= "if ($condition) { " . $varName . "['$attName']=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
 		}
-		
-		foreach ( $attrsToRemove as $k => $attrData ){
-			@$attrData [0]->removeAttribute( $attrData [1] );
-		}
-		
+				
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
 		if(!$node->parentNode instanceof \DOMElement ){
 			throw new Exception("Errore di compilazione del nodo $node->nodeName. ($node->nodeValue)");
