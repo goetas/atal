@@ -6,11 +6,6 @@ use goetas\atal\Attribute;
 class Attribute_extends extends Attribute{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
 
-		$dir = dirname($this->compiler->getTemplate());
-
-		$this->scanTemplates($dir, $node, $att);
-
-		return self::STOP_NODE | self::STOP_ATTRIBUTE;
 	}
 	protected function scanTemplates($dir , xml\XMLDomElement $node, $att, &$blocksNodes = array()){
 		$a =  array("t" => ATal::NS ) ;
