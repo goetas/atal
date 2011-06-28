@@ -31,7 +31,7 @@ class ATal {
 		
 	public $xmlDeclaration = false;
 		
-	public $debug = 1;
+	public $debug = 0;
 	
 	protected $scope = array ();
 	protected $data = array ();
