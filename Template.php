@@ -10,6 +10,9 @@ class Template {
 		$this->modifiers = $tal->getModifiers();
 		$this->addScope ( );
 	}
+	public function getTal() {
+		return $this->tal;
+	}
 	/**
 	 * Ritorna lo stack corrente
 	 * @return array

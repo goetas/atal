@@ -68,8 +68,8 @@ class ATal {
 		spl_autoload_register (array($this, 'templateLoader'));
 	}
 	public function templateLoader($class){
-		if(isset($this->loadMap[$class])){
-			require $this->loadMap[$class];
+		if(preg_match("/^ATal_[a-f0-9]{32}/", $class)){
+			require $this->getCompileDir()."/". $class.".php";
 		}
 	}
 	/**
@@ -245,8 +245,18 @@ class ATal {
 	 * Esegue un template
 	 * @param string $__file nome dei file da eseguire
 	 */
-	protected function runCompiled($file) {
-		$className = $this->getClassFromPath($file);
+	protected function runCompiled($tpl, $tipo, $query ) {
+		$className = $this->getClassFromParts($tpl, $tipo, $query);
+		if(!class_exists($className)){
+			//die( "Non trovo la classe $className per compilare il file '$file' " );
+			try {
+				throw new Exception ( "Non trovo la classe $className per compilare il file '$tpl, $tipo, $query' " );	
+			} catch (Exception $e) {
+				die($e);
+			}
+			
+			
+		}
 		$ist = new $className($this);
 		$ist->addScope($this->getData ());
 		$ist->display();
@@ -258,7 +268,9 @@ class ATal {
 	public function output($templatePath) {
 		try {
 			list ($tpl, $tipo, $query) = $this->parseUriParts($templatePath); 
-			$compiledFile = $this->getCacheName($templatePath);
+			
+			$compiledFile = $this->getCacheName($tpl, $tipo, $query);
+			
 			if(!is_file($tpl)){
 				throw new Exception ( "Non trovo il file '$tpl' per poter iniziare la compilazione" );
 			}elseif( $this->isChanged($compiledFile, $tpl)) {
@@ -266,15 +278,12 @@ class ATal {
 				$this->setupCompiler($compiler);
 				$compiler->compile ( $tpl, $tipo, $query ,$compiledFile);
 			}
-			$this->loadMap[$this->getClassFromPath($compiledFile)]=$compiledFile;
-			$this->runCompiled ( $compiledFile );
+			$this->runCompiled (  $tpl, $tipo, $query ,$compiledFile );
 		} catch ( DOMException $e ) {
 			throw new Exception ( "Errore durante la compilazione del file '$templatePath' (" . $e->getMessage () . ")" , $e->getCode(), $e);
 		}
 	}
-	public function getClassFromPath($path) {
-		return "ATal_".md5($path);
-	}
+	
 	/**
 	 * Esegui il template e ritorna il relativo output
 	 * @param string $templatePath
@@ -297,8 +306,13 @@ class ATal {
 	 * Ritorna il path del file da usare come cache per il template $tpl
 	 * @param string $tpl
 	 */
-	public function getCacheName($tpl) {
-		return $this->getCompileDir () . DIRECTORY_SEPARATOR . basename ( $tpl ) . "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . realpath($tpl) ) . ".php";
+	public function getCacheName($tpl, $tipo, $q) {
+		return $this->getCompileDir () . DIRECTORY_SEPARATOR . $this->getClassFromParts($tpl, $tipo, $q).".php";
+		
+		return $this->getCompileDir () . DIRECTORY_SEPARATOR . preg_replace("/[^a-z0-9_\\-\\.]/i", "_", basename ( $tpl ) ). "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . realpath($tpl) ) . ".php";
+	}
+	public function getClassFromParts($tpl, $tipo, $q) {
+		return "ATal_".md5("$tpl, $tipo, $q");
 	}
 	/**
 	 * Ritorna la cartella per la cache dei templates

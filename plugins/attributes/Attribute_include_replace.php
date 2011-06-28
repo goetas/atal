@@ -9,7 +9,7 @@ class Attribute_include_replace extends Attribute{
 		}
 		$pi = $this->dom->createProcessingInstruction("php",
 		" try{
-		 \$__ntal = clone(\$__tal); ".
+		 \$__ntal = clone(\$this->getTal()); ".
 		" \$__tal_odir = getcwd();".
 		" chdir(".var_export(dirname($this->compiler->getTemplate()),1)."); ".
 

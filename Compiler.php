@@ -87,7 +87,6 @@ class Compiler extends BaseClass{
 		$this->postFilters = new filters\StringFilter ($this);
 		
 		$this->postFilters->addFilter(array($this,'_replaceAttributeVars'));
-		$this->postFilters->addFilter( array(__CLASS__, "_replaceCdataVars" ) );
 		$this->postFilters->addFilter(array($this,'_replaceTextVars'));
 		
 	}
@@ -104,11 +103,6 @@ class Compiler extends BaseClass{
 	 */
 	public function _replaceAttributeVars($string) {
 		return preg_replace ( "/" . preg_quote ( "[#tal_attr#", "/" ) . "(" . preg_quote ( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote ( "#tal_attr#]", "/" ) . "/", "<?php print( \\1 ) ?>", $string );
-	}
-	public static function _replaceCdataVars($string) {
-		return preg_replace_callback( "/" . preg_quote( '[-[?php]', '/' ) . '(.*?)' . preg_quote( '[php?]-]', '/' ) . '/', function($mch){
-			return "<?php ". htmlspecialchars_decode($mch[1])  ." ?>";
-		}, $string );
 	}
 	/**
 	 * @return \goetas\atal\loaders\Attributes
@@ -250,7 +244,7 @@ class Compiler extends BaseClass{
 	 * Ritorna una stringa del DOM presente in $xml
 	 * @param $xml
 	 */
-	protected function serializeXml($templateName, $baseTemplate, xml\XMLDom $xml) {
+	protected function serializeXml($tpl, $tipo, $query, $templateName, $baseTemplate, xml\XMLDom $xml) {
 		
 		foreach ( $xml->query ( "//processing-instruction()" ) as $node ) {
 			if($node->parentNode && $node->parentNode->namespaceURI!=self::NS){
@@ -265,9 +259,10 @@ class Compiler extends BaseClass{
 		
 		$cnt = array();
 		
-		$className = $this->tal->getClassFromPath($templateName);
+		$className = $this->tal->getClassFromParts($tpl, $tipo, $query);
 		
 		$cnt[] = "<?php\n";
+		$cnt[] = "//$templateName -- $baseTemplate\n";
 		
 		if($baseTemplate){
 			$cnt[] = "require_once '".addcslashes($baseTemplate, "\\")."'; \n";
@@ -310,7 +305,6 @@ class Compiler extends BaseClass{
 			if(substr($tcnt, 0, 5)=='<?php' && substr($tcnt, -2)=='?>'){
 				$cnt []= substr($tcnt, 5, -2);
 			}else{
-				//die();
 				throw new \Exception("errore atal block");
 			}
 			
@@ -371,8 +365,8 @@ class Compiler extends BaseClass{
 		
 		$xml = $this->getPostXmlFilters()->applyFilters($xml);
 	
-		$cnt = $this->serializeXml ( $destination, $destination2, $xml );
-		echo "\n--cnt---$tpl----\n".$cnt."\n";
+		$cnt = $this->serializeXml ( $tpl, $tipo, $query, $destination, $destination2, $xml );
+		//echo "\n--cnt---$tpl----\n".$cnt."\n";
 		$cnt = $this->getPostFilters()->applyFilters($cnt);
 		//if($destination2) die($cnt);
 		if(file_put_contents ( $destination.".tmp", $cnt )){
@@ -474,12 +468,15 @@ class Compiler extends BaseClass{
 			}
 		}
 	}
+	public static function _replaceTextVars($string) {
+		return str_replace(array("<![CDATA[{{__NOCDATA__", "__NOCDATA__}}]]>"), "", $string);
+	}
 	/**
 	 * Applica {@method parsedExpression} ad un nodo DOM di tipo testo (e cdata)
 	 * @param $attr
 	 * @return void
 	 */
-	public function _applyTextVars(DOMText $nodo) {
+	public function applyTextVars(DOMText $nodo) {
 		$mch = array ();
 		if (preg_match_all ( $this->currRegex, $nodo->data, $mch )) {
 			$xml = $nodo->data;
@@ -487,59 +484,15 @@ class Compiler extends BaseClass{
 				$xml = str_replace ( $pattern, '<?php print( '. $this->parsedExpression ( $mch [1] [$k] ) . '); ?>' , $xml );
 			}
 			if(!($nodo instanceof DOMCdataSection)){
-				$xml = "{{NOCDATA $xml NOCDATA}}";
+				$xml = "{{__NOCDATA__{$xml}__NOCDATA__}}";
 			}
 			$newEl = $nodo->ownerDocument->createCDATASection($xml);
 			
 			if ($nodo->parentNode instanceof DOMNode) {
-				$nodo->parentNode->insertBefore ( $newEl , $nodo );
+				$nodo->parentNode->replaceChild( $newEl , $nodo );
 			} else {
 				throw new Exception ( $nodo->nodeName . ' non ha un padre. ' );
 			}
-			$nodo->parentNode->removeChild ( $nodo );
-		}
-	}
-	
-	
-	
-	public function applyTextVars($nodo) {		
-		$mch = array ();
-		if ($nodo instanceof DOMText && preg_match_all ( $this->currRegex, $nodo->data, $mch )) {
-			$cdata = ($nodo instanceof DOMCdataSection);
-			
-			if ($cdata) {
-				$xml = '<![CDATA[' . $nodo->data . ']]>';
-			
-			} else {
-				$xml = $nodo->data;
-			}
-			
-			$tdom = new xml\XMLDom ();
-			$frag = $tdom->createDocumentFragment ();
-			foreach ( $mch [0] as $k => $pattern ) {
-				$xml = str_replace ( $pattern, '[-[?php] echo ' . $this->parsedExpression ( $mch [1] [$k] ) . '; [php?]-]', $xml );
-			}
-			
-			if (! $cdata) {
-				$xml = htmlspecialchars($xml, ENT_NOQUOTES, 'utf-8' );
-			}
-			$frag->appendXML ( $xml );
-			
-			$tdom->appendChild ( $frag );
-			
-			foreach ( $tdom->childNodes as $k => $el ) {
-				$nel [$k] = $nodo->ownerDocument->importNode ( $el, true );
-				if ($nodo->parentNode instanceof DOMNode) {
-					$nodo->parentNode->insertBefore ( $nel [$k], $nodo );
-				} else {
-					throw new Exception ( $nodo->nodeName . ' non ha un padre. ' . $nodo->nodeValue );
-				}
-				
-				if ($nel [$k] instanceof xml\XMLDomElement) {
-					$this->applyTemplates ( $nel [$k] );
-				}
-			}
-			$nodo->parentNode->removeChild ( $nodo );
 		}
 	}
 	public function applyAttributeVars(\DOMAttr $attr) {
