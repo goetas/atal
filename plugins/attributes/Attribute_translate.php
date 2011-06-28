@@ -31,7 +31,7 @@ class Attribute_translate extends Attribute {
 				}
 				$options[substr($k,1)]=$v;
 			}else{
-				$params [$k] = $this->compiler->parsedExpression( $v );
+				$params [$k] = $this->compiler->parsedExpression( $v , true);
 			}
 		}
 		foreach ( $node->query( ".//*[@t:id]/@t:id", array("t" => ATal::NS ) ) as $tt ){

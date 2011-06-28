@@ -7,7 +7,7 @@ abstract class Attribute extends Plugin implements IAttribute{
 	 */
 	protected $dom;
 	/**
-	 * @var Compiler
+	 * @var \goetas\atal\Compiler
 	 */
 	protected $compiler;
 	/**

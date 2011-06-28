@@ -446,6 +446,7 @@ class Compiler extends BaseClass{
 				$next = $i + $splitrer_len;
 			}
 		}
+		
 		if ($pcount != 0) {
 			throw new Exception ( "Perentesi non bilanciate nell'espressione '".implode("",$str)."'" );
 		}elseif ($inApex !== false) {

@@ -1,5 +1,4 @@
 <?php
-namespace goetas\atal;
 namespace goetas\atal\plugins\modifiers;
 use goetas\atal\Modifier;
 class Modifier_default extends Modifier{

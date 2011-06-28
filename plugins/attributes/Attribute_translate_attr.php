@@ -88,7 +88,7 @@ class Attribute_translate_attr extends Attribute {
 				}
 			}
 
-			$code .= $varName . "['$attName']=htmlspecialchars(\$__tal->getServices()->service('goetas\\\\atal\\\\plugins\\\\services\\\\translate\\\\ITranslate')->translate('" . addcslashes( $node->getAttribute( $attName ), "'\\" ) . "',array(" . $this->compiler->dumpKeyed( $params ) . "), $domain ),ENT_QUOTES,'UTF-8');\n";
+			$code .= $varName . "['$attName']=htmlspecialchars(\$__tal->getServices()->service('goetas\\\\atal\\\\plugins\\\\services\\\\translate\\\\ITranslate')->translate('" . addcslashes( $node->getAttribute( $attName ), "'\\" ) . "',array(" . $this->compiler->dumpKeyed( $params ) . "), $domain ),ENT_NOQUOTES,'UTF-8');\n";
 			$this->attrs [] = array($node, $attName );
 		}
 		$pi = $this->dom->createProcessingInstruction( "php", $code );
