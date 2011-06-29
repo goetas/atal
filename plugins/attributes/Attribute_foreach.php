@@ -38,16 +38,16 @@ class Attribute_foreach extends Attribute {
 		
 		if ($loopName) {
 			$code .= "\t\$__foreach[$loopName]=new \\" . __NAMESPACE__ . "\\Attribute_foreach_helper_loop(); \n";
-			$code .= "\t\$__foreach_loop = \$__foreach[$loopName];\n";
-			$code .= "\t\$__foreach_loop->total=(($itname instanceof Countable) || is_array($itname))?count($itname):NULL;\n";
+			$code .= "\t\$__foreach_{$name} = \$__foreach[$loopName];\n";
+			$code .= "\t\$__foreach_{$name}->total=(($itname instanceof Countable) || is_array($itname))?count($itname):NULL;\n";
 		} else {
-			$code .= "\t\$__foreach_loop = null;";
+			$code .= "\t\$__foreach_loop{$name} = null;";
 		}
 		
 		$code .= " foreach ( $itname as $mch[1]) { \n";
 		
 		if ($loopName) {
-			$code .= "\t++\$__foreach_loop->index;\n";
+			$code .= "\t\$__foreach_{$name}->index++;\n";
 		}
 		
 		$pi = $this->dom->createProcessingInstruction ( "php", $code );
