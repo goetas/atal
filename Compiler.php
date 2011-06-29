@@ -276,7 +276,7 @@ class Compiler extends BaseClass{
 		$cnt[] = "class $className extends $baseClasName{\n";
 		if(!$baseTemplate){
 			$cnt[] = "function display(){\n";
-			$cnt[] = "extract(\$this->getData());?> ";
+			$cnt[] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?> ";
 			
 			if ($this->tal->xmlDeclaration) {
 				$cnt []= '<?xml version="1.0" encoding="utf-8"?>' . "\n";
