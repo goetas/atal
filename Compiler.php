@@ -194,7 +194,7 @@ class Compiler extends BaseClass{
 		$xmlString = $this->getPostLoadFilters()->applyFilters($xmlString);
 
 		$tplDom = new xml\XMLDom ();
-		$tplDom->loadXML ( $xmlString );
+		$tplDom->loadXMLStrict( $xmlString );
 		
 		$nodes = array();
 		$dtd = null;
