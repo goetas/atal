@@ -233,8 +233,14 @@ class Compiler extends BaseClass{
 		
 		if($res->length){
 			$cw = getcwd();
-			chdir(dirname($this->template));
+
+			if(!chdir(dirname($this->template))){
+				throw  new Exception("Non posso spostarmi nella cartella ".dirname($this->template));	
+			}
 			$rp = realpath($res->item(0)->value);
+			if(!$rp){
+				throw  new Exception("Non trovo il file ".$res->item(0)->value." ($cw)");	
+			}
 			chdir($cw);
 			return $rp;
 		}
@@ -244,7 +250,7 @@ class Compiler extends BaseClass{
 	 * Ritorna una stringa del DOM presente in $xml
 	 * @param $xml
 	 */
-	protected function serializeXml($tpl, $tipo, $query, $templateName, $baseTemplate, xml\XMLDom $xml) {
+	protected function serializeXml($tpl, $tipo, $query, $templateName, $parentParts, xml\XMLDom $xml) {
 		
 		foreach ( $xml->query ( "//processing-instruction()" ) as $node ) {
 			if($node->parentNode && $node->parentNode->namespaceURI!=self::NS){
@@ -259,22 +265,22 @@ class Compiler extends BaseClass{
 		
 		$cnt = array();
 		
+		
 		$className = $this->tal->getClassFromParts($tpl, $tipo, $query);
 		
-		$cnt[] = "<?php\n";
-		$cnt[] = "//$templateName -- $baseTemplate\n";
 		
-		if($baseTemplate){
-			$cnt[] = "require_once '".addcslashes($baseTemplate, "\\")."'; \n";
-			$baseClasName = $this->tal->getClassFromPath($baseTemplate);
+		$cnt[] = "<?php\n";
+		$cnt[] = "//$templateName\n";
+		
+		if($parentParts){
+			$cnt[] = "require_once(\$this->compile('".addcslashes($parentParts[0], "\\")."'));\n";
+			$baseClasName = $this->tal->getClassFromParts($parentParts[0], $tipo, $query);;
 		}else{
 			$baseClasName = '\\goetas\\atal\\Template';	
 		}
-
-		
 		
 		$cnt[] = "class $className extends $baseClasName{\n";
-		if(!$baseTemplate){
+		if(!$parentParts){
 			$cnt[] = "function display(){\n";
 			$cnt[] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?> ";
 			
@@ -339,10 +345,10 @@ class Compiler extends BaseClass{
 				$cw = getcwd();
 				chdir(dirname($this->template));
 							
-				list ($tpl2, $tipo2, $query2) = $this->tal->parseUriParts($baseTemplate); 
+				list ($tpl2, $tipo2, $query2) = $parentParts = $this->tal->parseUriParts($baseTemplate); 
 				
-				$destination2 = $this->tal->getCacheName($baseTemplate);
-				
+				$destination2 = $this->tal->getCacheName($tpl2, $tipo2, $query2);
+								
 				$this->compile($tpl2, $tipo2, $query2, $destination2);
 				
 				chdir($cw);
@@ -365,7 +371,7 @@ class Compiler extends BaseClass{
 		
 		$xml = $this->getPostXmlFilters()->applyFilters($xml);
 	
-		$cnt = $this->serializeXml ( $tpl, $tipo, $query, $destination, $destination2, $xml );
+		$cnt = $this->serializeXml ( $tpl, $tipo, $query, $destination, $parentParts, $xml );
 		//echo "\n--cnt---$tpl----\n".$cnt."\n";
 		$cnt = $this->getPostFilters()->applyFilters($cnt);
 		//if($destination2) die($cnt);

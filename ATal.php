@@ -261,6 +261,18 @@ class ATal {
 		$ist->addScope($this->getData ());
 		$ist->display();
 	}
+	protected function compile($tpl, $tipo=null, $query=null) {
+		$compiledFile = $this->getCacheName($tpl, $tipo, $query);
+		
+		if(!is_file($tpl)){
+			throw new Exception ( "Non trovo il file '$tpl' per poter iniziare la compilazione" );
+		}elseif( $this->isChanged($compiledFile, $tpl)) {
+			$compiler = new Compiler ( $this );
+			$this->setupCompiler($compiler);
+			$compiler->compile ( $tpl, $tipo, $query ,$compiledFile);
+		}
+		return $compiledFile;
+	}
 	/**
 	 * Esegui il template e mostra il relativo output
 	 * @param string $templatePath
@@ -269,16 +281,10 @@ class ATal {
 		try {
 			list ($tpl, $tipo, $query) = $this->parseUriParts($templatePath); 
 			
-			$compiledFile = $this->getCacheName($tpl, $tipo, $query);
+			$compiledFile = $this->compile($tpl, $tipo, $query);
 			
-			if(!is_file($tpl)){
-				throw new Exception ( "Non trovo il file '$tpl' per poter iniziare la compilazione" );
-			}elseif( $this->isChanged($compiledFile, $tpl)) {
-				$compiler = new Compiler ( $this );
-				$this->setupCompiler($compiler);
-				$compiler->compile ( $tpl, $tipo, $query ,$compiledFile);
-			}
 			$this->runCompiled (  $tpl, $tipo, $query ,$compiledFile );
+			
 		} catch ( DOMException $e ) {
 			throw new Exception ( "Errore durante la compilazione del file '$templatePath' (" . $e->getMessage () . ")" , $e->getCode(), $e);
 		}
@@ -311,7 +317,7 @@ class ATal {
 		
 		return $this->getCompileDir () . DIRECTORY_SEPARATOR . preg_replace("/[^a-z0-9_\\-\\.]/i", "_", basename ( $tpl ) ). "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . realpath($tpl) ) . ".php";
 	}
-	public function getClassFromParts($tpl, $tipo, $q) {
+	public function getClassFromParts($tpl, $tipo='', $q='') {
 		return "ATal_".md5("$tpl, $tipo, $q");
 	}
 	/**
