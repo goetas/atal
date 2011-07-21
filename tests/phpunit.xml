@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit strict="true" verbose="true">
+	<testsuites>
+		<testsuite name="ATal 2.0 tests">
+			<directory>suite</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>
+
