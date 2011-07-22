@@ -12,12 +12,12 @@
 		<mkdir dir="${path.results}/api" />
         <exec 
 			passthru="true"
-			command="phpuml 
-						&quot;${path.lib}&quot; 
+			command='phpuml 
+						"${path.lib}" 
 						-f htmlnew 
 						-n ATal 
 						--no-deployment-view 
-						-o &quot;${path.results}/api&quot;" 
+						-o "${path.results}/api"' 
 			/>
     </target>
 	
@@ -26,10 +26,10 @@
 		<mkdir dir="${path.results}/code-browser" />
 		<mkdir dir="${path.results}/logs" />
         <exec
-            command="phpcb 
-						--source &quot;${path.lib}&quot; 
-						--output &quot;${path.results}/code-browser/&quot; 
-						--log &quot;${path.logs}&quot;"
+            command='phpcb 
+						--source "${path.lib}" 
+						--output "${path.results}/code-browser/" 
+						--log "${path.logs}"'
             passthru="true"
             checkreturn="false" />
     </target>
