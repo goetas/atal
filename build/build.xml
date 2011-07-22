@@ -1,107 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="atal 2.0" default="build" basedir=".">
+<project name="PHP-CryptLib" default="build-lite" basedir="../">
+    <property file="build/build.properties" />
 	
-	<property name="svn.baseurl" value="http://svn.mercuriosistemi.com/goetas/" />
-		
-	<property name="svn.atal" value="${svn.baseurl}/atal/branches/2.0/" />
-	<property name="svn.xmldom" value="${svn.baseurl}/xmldom/branches/2.0/src/" />
-	<property name="svn.pluginsys" value="${svn.baseurl}/pluginsys/trunk/src/" />
-		
-	<property name="svn.username" value=""/>
-	<property name="svn.password" value="" />
-	
-	<property name="app" value="deploy/code" />
-		
-	<property name="source" value="${app}/src" />
-	<property name="testdir" value="${app}/tests" />
-		
-	
-	<target name="checkout" depends="clean">
-		<exec executable="svn" failonerror="true">
-			<arg line="export --non-interactive --username=${svn.username} --password=${svn.password} --non-interactive ${svn.atal}  ${app}"/>
-		</exec>
-		<exec executable="svn" failonerror="true">
-			<arg line="export --non-interactive --username=${svn.username} --password=${svn.password} --non-interactive ${svn.xmldom}  ${app}/xmldom"/>
-		</exec>
-		<exec executable="svn" failonerror="true">
-			<arg line="export --non-interactive --username=${svn.username} --password=${svn.password} --non-interactive ${svn.pluginsys}  ${app}/pluginsys"/>
-		</exec>
+	<import file="${path.build}/phing/document.xml" />
+	<import file="${path.build}/phing/package.xml" />
+	<import file="${path.build}/phing/quality.xml" />
+	<import file="${path.build}/phing/test.xml" />
+
+    <target name="clean">
+        <delete dir="${path.results}" />
+		<mkdir dir="${path.results}" />
+        <mkdir dir="${path.results}/logs" />
+    </target>
+
+    <target name="build">
+		<phingcall target="clean" />
+		<phingcall target="test" />
+		<phingcall target="quality" />
+		<phingcall target="document" />
+		<phingcall target="package" />
 	</target>
 
-	<target name="clean">
-		<delete dir="deploy/api" />
-		<delete dir="deploy/logs" />
-		<delete dir="deploy/code" />
-		<delete dir="deploy/cache" />
-		
-		<mkdir dir="deploy/api" />
-		<mkdir dir="deploy/logs" />
-		<mkdir dir="deploy/cache" />
-		<!-- <mkdir dir="deploy/code" />  la crea l'svn  -->
+    <target name="build-lite">
+		<phingcall target="clean" />
+		<phingcall target="test-lite" />
+		<phingcall target="quality-lite" />
 	</target>
-	 	
-	<target name="tests">
-		<exec executable="phpunit" failonerror="true">
-
-			<arg value="--configuration" />
-			<arg path="${testdir}/phpunit.xml" />
-
-			<arg value="--log-junit" />
-			<arg path="deploy/logs/junit.xml" />
-			
-			<arg value="--bootstrap" />
-			<arg path="${testdir}/bootstrap.php" />
-
-		</exec>
-	</target>
-	<target name="localtest">
-		<exec executable="phpunit" failonerror="true">
-
-			<arg value="--configuration" />
-			<arg path="../tests/phpunit.xml" />
-			
-			<arg value="--bootstrap" />
-			<arg path="../tests/bootstrap2.php" />
-
-		</exec>
-	</target>
-	<target name="checkstyle">
-	  <exec executable="phpcs" output="deploy/logs/checkstyle.log">
-	   <arg value="--report=checkstyle" />
-	   <arg value="--report-file=deploy/logs/checkstyle.xml" />
-	   <arg value="--standard=coding/standard.xml" />
-	   <arg path="${source}" />
-	  </exec>
-	 </target>
-	
-	<target name="api">
-		<exec executable="phpuml" failonerror="true">
-			
-			<arg value="-f" />
-			<arg value="html" />
-			
-			<arg value="-o" />
-			<arg path="deploy/api" />
-			
-			<arg value="--no-deployment-view" />
-			<arg value="--no-component-view" />
-			<arg value="--no-dollar" />
-			<arg value="--no-docblocks" />
-			
-			<arg value="-n" />
-			<arg value="${ant.project.name}" />
-			
-			<arg value="-i" />
-			<arg value=".svn" />
-				
-			
-			<arg path="${source}/" />
-			
-		</exec>
-	</target>
-	
-	
-	
-	<target name="build" depends="checkout,api,checkstyle,tests" />
 
 </project>
