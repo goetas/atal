@@ -40,11 +40,7 @@
 
     <target name="loc">
 		<mkdir dir="${path.results}/logs" />
-        <exec
-            command="phploc
-						--log-csv &quot;${path.logs}/phploc.csv&quot;
-						&quot;${path.lib}&quot;"
-	        />
+        <exec command='phploc --log-csv "${path.logs}/phploc.csv" "${path.lib}"'/>
     </target>
 
     <target name="pmd">
