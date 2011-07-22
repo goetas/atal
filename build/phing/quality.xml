@@ -19,13 +19,13 @@
 	<target name="cs">
 		<mkdir dir="${path.results}/logs" />
         <exec
-            command="phpcs
+            command='phpcs
 						--report=summary
-						--report-checkstyle=&quot;${path.logs}/checkstyle.xml&quot;
-						--standard=&quot;${path.build}/phpcs/ruleset.xml&quot;
-						&quot;${path.lib}/CryptLib&quot;"
+						--report-checkstyle="${path.logs}/checkstyle.xml"
+						--standard="${path.build}/phpcs/ruleset.xml"
+						"${path.lib}"'
             passthru="true"
-            checkreturn="true" />
+            checkreturn="false" />
     </target>
 
     <target name="cpd">
@@ -43,14 +43,14 @@
         <exec
             command="phploc
 						--log-csv &quot;${path.logs}/phploc.csv&quot;
-						&quot;${path.lib}/CryptLib&quot;"
+						&quot;${path.lib}&quot;"
 	        />
     </target>
 
     <target name="pmd">
 		<mkdir dir="${path.results}/logs" />
         <phpmd rulesets="${path.build}/phpmd/ruleset.xml">
-            <fileset dir="${path.lib}/CryptLib">
+            <fileset dir="${path.lib}/">
                 <include name="**/*.php" />
             </fileset>
             <formatter type="xml" outfile="${path.logs}/pmd.xml" />

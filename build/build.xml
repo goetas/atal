@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PHP-CryptLib" default="build-lite" basedir="../">
+<project name="ATal 2.0" default="build-lite" basedir="../">
     <property file="build/build.properties" />
+	<property name="repo.goetas" value="http://svn.mercuriosistemi.com/goetas/" />
 	
 	<import file="${path.build}/phing/document.xml" />
 	<import file="${path.build}/phing/package.xml" />
@@ -8,13 +9,42 @@
 	<import file="${path.build}/phing/test.xml" />
 
     <target name="clean">
-        <delete dir="${path.results}" />
-		<mkdir dir="${path.results}" />
+    	<phingcall target="clean-lite" />
+    	<delete dir="${path.vendors}" />
+    	<mkdir dir="${path.vendors}" />
+    </target>
+	
+	 <target name="clean-lite">
+	    <delete dir="${path.results}" />
+	 	<delete dir="${path.cache}" />
+		
+	 	<mkdir dir="${path.results}"  />
+	 	<mkdir dir="${path.cache}" />
+	 	
         <mkdir dir="${path.results}/logs" />
     </target>
 
+	<target name="libs">
+		<svnexport
+		       svnpath="svn"
+		       username="Anonymous"
+		       password="Anonymous"
+		       nocache="true"
+		       repositoryurl="${repo.goetas}/pluginsys/trunk/"
+		       todir="${path.vendors}/pluginsys/"/>
+		<svnexport
+		       svnpath="svn"
+		       username="Anonymous"
+		       password=""
+		       nocache="true"
+		       repositoryurl="${repo.goetas}/xmldom/branches/2.0/"
+		       todir="${path.vendors}/xmldom"/>
+    </target>
+
     <target name="build">
+    	
 		<phingcall target="clean" />
+    	<phingcall target="libs" />
 		<phingcall target="test" />
 		<phingcall target="quality" />
 		<phingcall target="document" />
@@ -22,7 +52,7 @@
 	</target>
 
     <target name="build-lite">
-		<phingcall target="clean" />
+		<phingcall target="clean-lite" />
 		<phingcall target="test-lite" />
 		<phingcall target="quality-lite" />
 	</target>

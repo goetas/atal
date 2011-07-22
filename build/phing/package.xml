@@ -14,8 +14,9 @@
             dir="${project.basedir}"
             />
 		<phingcall target="copyFilesToResultsLib" />
-		<phingcall target="packagePear" />
+		
         <phingcall target="packageFiles" />
+        <phingcall target="packagePear" />
 		<phingcall target="packagePhar" />
     </target>
 
