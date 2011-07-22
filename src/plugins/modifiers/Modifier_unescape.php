@@ -12,10 +12,10 @@ class Modifier_unescape extends Modifier{
 			case 'htmlall':
 				return html_entity_decode((string) $value, ENT_QUOTES, 'UTF-8');
 			case 'url':
-				return rawurldecode((string) $value);	
+				return rawurldecode((string) $value);
 			default:
 				throw new \Exception('unEscape\'s format argument must be one of : html, htmlall, url. "'.$format.'" given.');
-	
+
 		}
 	}
 

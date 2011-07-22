@@ -15,26 +15,26 @@ class Attributes extends \goetas\pluginsys\Loader {
 	 * @var ATal
 	 */
 	protected $tal;
-	
+
 	public function __construct(ATal $tal, Compiler $compiler) {
 		$this->compiler = $compiler;
 		$this->tal = $tal;
 		parent::__construct();
 	}
 	/**
-	 * 
+	 *
 	 * @param string $attname
 	 * @param xml\XMLDom $dom
 	 * @return IAttribute
 	 */
 	public function attribute($attname) {
 		$attPlugin = $this->getPlugin($attname,true);
-				
+
 		$attPlugin->setATal($this->tal);
 		$attPlugin->setCompiler($this->compiler);
-				
+
 		return $attPlugin;
 	}
-	
+
 
 }

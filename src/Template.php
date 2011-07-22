@@ -68,7 +68,7 @@ class Template {
 	public function &__get($varName) {
 		return $this->data [$varName];
 	}
-	
+
 	/**
 	 * assigns values to template variables by reference
 	 * @param string $tpl_var the template variable name

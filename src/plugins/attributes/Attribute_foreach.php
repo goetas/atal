@@ -14,7 +14,7 @@ class Attribute_foreach extends Attribute {
 		if (! $this->fatto) {
 			$str = "\nrequire_once( '" . addslashes ( __FILE__ ) . "');\n";
 			$str .= "if(!(\$__foreach instanceof \\" . __NAMESPACE__ . "\\Attribute_foreach_helper)) {\n\t\$__foreach = new \\" . __NAMESPACE__ . "\\Attribute_foreach_helper();\n}";
-			
+
 			$pi = $this->dom->createProcessingInstruction ( "php", $str );
 			$this->dom->insertBefore ( $pi, $this->dom->documentElement );
 			$this->fatto = true;
@@ -22,20 +22,20 @@ class Attribute_foreach extends Attribute {
 	}
 	function start(xml\XMLDomElement $node, DOMAttr $att) {
 		$this->prependPI ();
-		
+
 		$name = uniqid ( 'l' );
 		$loopName = null;
 		if (preg_match ( "/^([a-zA-Z_0-9]+)\\s*:\\s*([^:]+)/", $att->value, $mch )) {
 			$loopName = "'" . $mch [1] . "'";
 			$att->value = trim ( $mch [2] );
 		}
-		
+
 		$mch = $this->compiler->splitExpression ( $att->value, " as " );
 		$itname = "\$__tal_" . $name;
-		
+
 		$code .= " $itname = " . ($mch [0] [0] == "$" && $mch [0] [strlen ( $mch [0] ) - 1] != ")" ? "&" . $mch [0] : $mch [0]) . "; \n ";
 		$code .= " if ( is_array($itname) || ( $itname instanceof Traversable ) ) {\n";
-		
+
 		if ($loopName) {
 			$code .= "\t\$__foreach[$loopName]=new \\" . __NAMESPACE__ . "\\Attribute_foreach_helper_loop(); \n";
 			$code .= "\t\$__foreach_{$name} = \$__foreach[$loopName];\n";
@@ -43,31 +43,31 @@ class Attribute_foreach extends Attribute {
 		} else {
 			$code .= "\t\$__foreach_loop{$name} = null;";
 		}
-		
+
 		$code .= " foreach ( $itname as $mch[1]) { \n";
-		
+
 		if ($loopName) {
 			$code .= "\t\$__foreach_{$name}->index++;\n";
 		}
-		
+
 		$pi = $this->dom->createProcessingInstruction ( "php", $code );
 		$node->parentNode->insertBefore ( $pi, $node );
-		
+
 		$codeEnd = " } //endforeach \n } //endif\n unset($itname";
 		if ($loopName) {
 			$codeEnd .= ",\$__foreach[$loopName]";
 		}
 		$codeEnd .= " )";
-		
+
 		$pi = $this->dom->createProcessingInstruction ( "php", $codeEnd );
 		$node->parentNode->insertAfter ( $pi, $node );
-	
+
 	}
 
 }
 class Attribute_foreach_helper implements ArrayAccess, Countable, IteratorAggregate {
 	protected $data = array ();
-	
+
 	public function count() {
 		return count ( $this->data );
 	}

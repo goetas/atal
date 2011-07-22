@@ -38,7 +38,7 @@ class Modifier_escape extends Modifier {
 				return str_replace(array('@', '.'), array('&#160;(AT)&#160;', '&#160;(DOT)&#160;'), (string) $value);
 			default:
 				throw new Exception('Escape\'s format argument must be one of : xml, htmlall, url, urlpathinfo, hex, hexentity, javascript or mail, "'.$format.'" given.');
-	
+
 		}
 	}
 

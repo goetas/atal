@@ -7,7 +7,7 @@ use goetas\atal\Compiler;
 class Attribute_block_call extends Attribute{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
 		$pi = $this->dom->createProcessingInstruction("php",self::prepareCode($att, $this->compiler));
-		$node->parentNode->replaceChild($pi, $node);		
+		$node->parentNode->replaceChild($pi, $node);
 		return self::STOP_NODE | self::STOP_ATTRIBUTE;
 	}
 	public static function prepareCode(\DOMAttr $att, Compiler $compiler){
@@ -26,7 +26,7 @@ class Attribute_block_call extends Attribute{
 			}
 		}
 
-		$fcode = "\$this->{$att->value}(); "; 
+		$fcode = "\$this->{$att->value}(); ";
 		return $fcode;
 	}
 

@@ -12,7 +12,7 @@ class Filter extends BaseClass {
 	function __construct(Compiler $compiler) {
 	}
 	/**
-	 * 
+	 *
 	 * @param $filter callback
 	 * @return void
 	 */

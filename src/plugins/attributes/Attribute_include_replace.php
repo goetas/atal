@@ -23,7 +23,7 @@ class Attribute_include_replace extends Attribute{
 		"echo htmlspecialchars(\$__tal_exception->getMessage(),ENT_QUOTES,'utf-8');".
 		"}\n".
 		"unset(\$__tal_odir);\n"
-		
+
 		);
 		$node->parentNode->replaceChild($pi, $node);
 		return self::STOP_NODE | self::STOP_ATTRIBUTE;

@@ -42,11 +42,11 @@ class Attribute_translate extends Attribute {
 
 		$str = str_replace($nsp,"", trim( $node->saveXML( false )) ) ;
 
-		
+
 		$code ="";
 		if($options["nl2br"]){
 			$code .=" nl2br( ";
-		}	
+		}
 		$code .=" \\".__CLASS__."::checkHtml(\$this->getTal()->getServices()->service('goetas\\\\atal\\\\plugins\\\\services\\\\translate\\\\ITranslate')->translate('" . addcslashes( $str , "\\'" ) . "', " . $this->compiler->dumpKeyed( $params ) . "  , $domain , " . var_export( $options,1 ) . " ))";
 
 		if($options["nl2br"]){

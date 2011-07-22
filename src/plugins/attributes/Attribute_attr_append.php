@@ -41,11 +41,11 @@ class Attribute_attr_append extends Attribute_attr {
 					" . $varName . "['$attName'].=" . $this->compiler->parsedExpression( $attExpr ) . ";
 				}else{
 					" . $varName . "['$attName']=" . $this->compiler->parsedExpression( $attExpr ) . ";
-				} 
-				
+				}
+
 		 }\n";
 		}
-		
+
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
 		$node->parentNode->insertBefore( $pi, $node );
 		$node->setAttribute( "atal-attr", "__atal-attr($varName)" );

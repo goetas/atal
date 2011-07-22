@@ -5,7 +5,7 @@ class Modifier_strip2br extends Modifier {
 	function modify($str, array $params=array()){
 
 		$str = preg_replace('~[\\n\\r]+~m', ' ', $str);
-	
+
 		$str = preg_replace('~\\n*<br\\s*/>\\n*~mi', "\n", $str);
 		/*
 		if($params[0]){
@@ -15,9 +15,9 @@ class Modifier_strip2br extends Modifier {
 		}
 		$str = strip_tags($str, $params[0]);
 		*/
-	
+
 		$str = strip_tags($str);
-	
+
 		$str = preg_replace('~^[\p{Z}\t]+|[\p{Z}\t]+$~miu', "", $str);
 		$str = trim($str);
 

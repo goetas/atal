@@ -3,7 +3,7 @@ namespace goetas\atal\filters;
 use InvalidArgumentException;
 class StringFilter extends Filter{
 	/**
-	 * 
+	 *
 	 * @param string $str
 	 * @return string
 	 */

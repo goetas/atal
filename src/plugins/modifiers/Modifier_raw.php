@@ -5,7 +5,7 @@ class Modifier_raw extends Modifier {
 	function modify($str, array $params=array()){
 		return $str;
 	}
-	
+
 
 }
 ?>

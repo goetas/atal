@@ -5,21 +5,21 @@ use Exception;
 use goetas\atal\xml;
 use goetas\atal\DynamicAttribute;
 use goetas\atal\ATal;
-class Attribute_vld_error extends DynamicAttribute {	
+class Attribute_vld_error extends DynamicAttribute {
 	protected function getOptions() {
 		return array('preserveContent'=>true);
 	}
 	static function run(array $params, $content) {
-		
+
 		if (! count ( $params )) {
 			throw new Exception ( "AttrRuntimePlugin_vld_error: specificare almeno un parametro" );
 		}
-		
+
 		$errorData = $params ["error"] ? $params ["error"] : $params [0];
-		
+
 		$dom = new xml\XMLDom ();
 		$root = $dom->addChildNS ( "Validation", "validation" );
-		
+
 		if (isset ( $params ["index"] )) {
 			$root->setAttr ( "index", $params ["index"] );
 		} else {
@@ -37,7 +37,7 @@ class Attribute_vld_error extends DynamicAttribute {
 				$root->addChildNS ( "Validation", "message" )->setAttr ( "for", $key )->setAttr ( "value", $val );
 			}
 		}
-		
+
 		return $dom->saveXML ( $root );
 	}
 }

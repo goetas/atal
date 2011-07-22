@@ -4,9 +4,9 @@
  * <?php
  * $atal->articleTitle='Two Sisters Reunite after Eighteen Years at Checkout Counter.';
 * ?>
-* 
+*
 * where template is:
-* 
+*
 * {$articleTitle}
 * {$articleTitle|truncate}
 * {$articleTitle|truncate:30}
@@ -15,9 +15,9 @@
 * {$articleTitle|truncate:30:"":true}
 * {$articleTitle|truncate:30:"...":true}
 * {$articleTitle|truncate:30:'..':true:true}
-* 
+*
 * This will output:
-* 
+*
 * Two Sisters Reunite after Eighteen Years at Checkout Counter.
 * Two Sisters Reunite after Eighteen Years at Checkout Counter.
 * Two Sisters Reunite after...
@@ -41,7 +41,7 @@ class Modifier_truncate extends Modifier {
 		return self::truncate($string, $length, $etc, $break_words, $middle);
 	}
 	static function truncate($string, $length=80, $etc='...', $break_words=false, $middle=false){
-		if($length == 0){ 
+		if($length == 0){
 			return '';
 		}
 		if(strlen( $string ) > $length){

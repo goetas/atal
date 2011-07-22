@@ -10,7 +10,7 @@ class Modifier_strip_tags extends Modifier{
 		if(!$params[0]){
 			$str = html_entity_decode ( $str ,ENT_COMPAT ,'UTF-8');
 		}
-	
+
 		return $str;
 	}
 }

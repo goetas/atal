@@ -8,10 +8,10 @@ class Attribute_if extends Attribute {
 		self::$cnt ++;
 		$piS = $this->dom->createProcessingInstruction( "php", "if( $att->value ) {  // if " . self::$cnt . " " );
 		$piE = $this->dom->createProcessingInstruction( "php", " } // if " . self::$cnt . " " );
-		
+
 		$node->parentNode->insertBefore( $piS, $node );
 		$node->parentNode->insertAfter( $piE, $node );
-	
+
 	}
 }
 ?>

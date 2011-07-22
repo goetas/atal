@@ -11,10 +11,10 @@ Interface IAttribute extends IPlugin{
 	 * @var int
 	 */
 	const STOP_ATTRIBUTE=2;
-		
+
 	function setCompiler(Compiler $compiler);
 	function setDom(xml\XMLDom $dom);
-	
+
 	function start(xml\XMLDomElement  $node, \DOMAttr $att);
 	function end(xml\XMLDomElement $node, \DOMAttr $att);
 

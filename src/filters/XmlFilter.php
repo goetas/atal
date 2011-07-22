@@ -4,7 +4,7 @@ use InvalidArgumentException;
 use goetas\atal\xml;
 class XmlFilter extends Filter{
 	/**
-	 * 
+	 *
 	 * @param $str xml\XMLDom
 	 * @return xml\XMLDom
 	 */

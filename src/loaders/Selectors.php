@@ -19,7 +19,7 @@ class Selectors extends \goetas\pluginsys\Loader {
 		parent::__construct();
 	}
 	/**
-	 * 
+	 *
 	 * @param string $modifier
 	 * @return ISelector
 	 */
@@ -29,6 +29,6 @@ class Selectors extends \goetas\pluginsys\Loader {
 		$sel->setCompiler($this->compiler);
 		return $sel;
 	}
-	
+
 
 }

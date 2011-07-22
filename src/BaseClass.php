@@ -7,5 +7,5 @@ class BaseClass {
 	public function &__get($varName) {
 		throw new \RuntimeException("Undefined property $varName");
 	}
-} 
+}
 ?>

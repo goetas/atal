@@ -13,7 +13,7 @@ class Services extends \goetas\pluginsys\Loader {
 		parent::__construct();
 	}
 	/**
-	 * 
+	 *
 	 * @param string $service
 	 * @return IService
 	 */
@@ -21,6 +21,6 @@ class Services extends \goetas\pluginsys\Loader {
 		$mod = $this->getPlugin($service);
 		return $mod;
 	}
-	
+
 
 }

@@ -5,7 +5,7 @@ use DOMText;
 use DOMCdataSection;
 use DOMNode;
 class Compiler extends BaseClass{
-	
+
 	const NS = ATal::NS;
 
 	/**
@@ -16,54 +16,54 @@ class Compiler extends BaseClass{
 	 * @var string
 	 */
 	protected $template;
-	
+
 	/**
 	 * Espressione regolare per trovare le variabili racchiuse tra parentresi graffe
 	 * @var string
 	 */
 	protected $currRegex;
 	/**
-	 * 
+	 *
 	 * @var loaders\Attributes
-	 */	
+	 */
 	protected $attributes;
 	/**
-	 * 
-	 * @var loaders\Selectors 
-	 */		
+	 *
+	 * @var loaders\Selectors
+	 */
 	protected $selectors;
-	
+
 	/**
-	 * 
+	 *
 	 * @var filters\XmlFilter
 	 */
 	protected $preXmlFilters;
 	/**
-	 * 
+	 *
 	 * @var filters\XmlFilter
-	 */	
+	 */
 	protected $postXmlFilters;
 	/**
-	 * 
+	 *
 	 * @var filters\DomFilter
-	 */	
+	 */
 	protected $postApplyTemplatesFilters;
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * @var filters\StringFilter
-	 */	
+	 */
 	protected $preFilters;
 	/**
-	 * 
+	 *
 	 * @var filters\StringFilter
-	 */	
+	 */
 	protected $postFilters;
 	/**
-	 * 
+	 *
 	 * @var filters\StringFilter
-	 */	
+	 */
 	protected $postLoadFilters;
 	/**
 	 * Crea un compilatore per il template $atal.
@@ -71,24 +71,24 @@ class Compiler extends BaseClass{
 	 */
 	function __construct(ATal $tal) {
 		$this->tal = $tal;
-		
+
 		$this->currRegex = '/\\{([\'a-z\$\\\\].*?)\\}/';
-		
+
 		$this->attributes = new loaders\Attributes ($this->tal, $this);
 		$this->selectors = new loaders\Selectors ($this->tal, $this);
-				
+
 		$this->preXmlFilters = new filters\XmlFilter ($this);
 		$this->postXmlFilters = new filters\XmlFilter ($this);
 		$this->postApplyTemplatesFilters = new filters\DomFilter ($this);
-		
+
 		$this->postLoadFilters = new filters\StringFilter ($this);
-		
+
 		$this->preFilters = new filters\StringFilter ($this);
 		$this->postFilters = new filters\StringFilter ($this);
-		
+
 		$this->postFilters->addFilter(array($this,'_replaceAttributeVars'));
 		$this->postFilters->addFilter(array($this,'_replaceTextVars'));
-		
+
 	}
 	/**
 	 * @return \goetas\atal\ATal
@@ -189,20 +189,20 @@ class Compiler extends BaseClass{
 	 * @return xml\XMLDom
 	 */
 	protected function toDom($tpl, $tipo, $query) {
-		
+
 		$xmlString = file_get_contents ( $tpl );
 		$xmlString = $this->getPostLoadFilters()->applyFilters($xmlString);
 
 		$tplDom = new xml\XMLDom ();
 		$tplDom->loadXMLStrict( $xmlString );
-		
+
 		$nodes = array();
 		$dtd = null;
 		try {
 			if ($tipo) {
 				$selector = $this->getSelectors()->selector($tipo);
 				$selector->setDom($tplDom);
-							
+
 				$res = $selector->select ( $query );
 				foreach ( $res as $node ) {
 					$nodes[]=$node ;
@@ -214,32 +214,32 @@ class Compiler extends BaseClass{
 		} catch ( \Exception $e ) {
 			throw $e;
 		}
-		
+
 		if(!$dtd){
 			$tplDom = new xml\XMLDom ();
 		}
 
-		$root = $tplDom->addChildNS ( self::NS, "atal-content" );	
-			
+		$root = $tplDom->addChildNS ( self::NS, "atal-content" );
+
 		foreach ( $nodes as $node ) {
 			$root->appendChild ($tplDom->importNode ( $node, true));
-		}	
-			
+		}
+
 		return $tplDom;
 	}
 	public function getExtensionTemplate(xml\XMLDom $xml) {
-		
+
 		$res = $xml->query ( "/t:atal-content/*/@t:extends", array ("t" => self::NS ) );
-		
+
 		if($res->length){
 			$cw = getcwd();
 
 			if(!chdir(dirname($this->template))){
-				throw  new Exception("Non posso spostarmi nella cartella ".dirname($this->template));	
+				throw  new Exception("Non posso spostarmi nella cartella ".dirname($this->template));
 			}
 			$rp = realpath($res->item(0)->value);
 			if(!$rp){
-				throw  new Exception("Non trovo il file ".$res->item(0)->value." ($cw)");	
+				throw  new Exception("Non trovo il file ".$res->item(0)->value." ($cw)");
 			}
 			chdir($cw);
 			return $rp;
@@ -251,7 +251,7 @@ class Compiler extends BaseClass{
 	 * @param $xml
 	 */
 	protected function serializeXml($tpl, $tipo, $query, $templateName, $parentParts, xml\XMLDom $xml) {
-		
+
 		foreach ( $xml->query ( "//processing-instruction()" ) as $node ) {
 			if($node->parentNode && $node->parentNode->namespaceURI!=self::NS){
 				$new = $xml->createTextNode("\n");
@@ -262,28 +262,28 @@ class Compiler extends BaseClass{
 				}
 			}
 		}
-		
+
 		$cnt = array();
-		
-		
+
+
 		$className = $this->tal->getClassFromParts($tpl, $tipo, $query);
-		
-		
+
+
 		$cnt[] = "<?php\n";
 		$cnt[] = "//$templateName\n";
-		
+
 		if($parentParts){
 			$cnt[] = "require_once(\$this->compile('".addcslashes($parentParts[0], "\\")."'));\n";
 			$baseClasName = $this->tal->getClassFromParts($parentParts[0], $tipo, $query);;
 		}else{
-			$baseClasName = '\\goetas\\atal\\Template';	
+			$baseClasName = '\\goetas\\atal\\Template';
 		}
-		
+
 		$cnt[] = "class $className extends $baseClasName{\n";
 		if(!$parentParts){
 			$cnt[] = "function display(){\n";
 			$cnt[] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?>";
-			
+
 			if ($this->tal->xmlDeclaration) {
 				$cnt []= '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 			}
@@ -300,9 +300,9 @@ class Compiler extends BaseClass{
 				}
 			}
 			// fine bug
-			
+
 			$cnt[] = "<?php\t}\n ";
-		}		
+		}
 		foreach ( $xml->query ( "/t:atal-content/t:atal-block", array ("t" => self::NS ) ) as $node ) {
 			$tcnt = '';
 			foreach ($node->childNodes as $cn){
@@ -313,13 +313,13 @@ class Compiler extends BaseClass{
 			}else{
 				throw new \Exception("errore atal block");
 			}
-			
+
 		}
 		$cnt[] = "}"; // fine classe
 		$cnt = implode("", $cnt);
-		
+
 		return $cnt;
-		
+
 	}
 	/**
 	 * Compila un template e salvalo in $destination
@@ -330,47 +330,47 @@ class Compiler extends BaseClass{
 	 */
 	public function compile($tpl, $tipo, $query, $destination) {
 		$this->template = $tpl;
-		
+
 		$xml  = $this->toDom ( $tpl, $tipo, $query );
-		
-		$xml = $this->getPreXmlFilters()->applyFilters($xml);	
-		
+
+		$xml = $this->getPreXmlFilters()->applyFilters($xml);
+
 		$baseTemplate = $this->getExtensionTemplate($xml);
 
 		$parents = array();
 		if (!$baseTemplate){
-						
+
 		}else{
 			try{
 				$cw = getcwd();
 				chdir(dirname($this->template));
-							
-				list ($tpl2, $tipo2, $query2) = $parentParts = $this->tal->parseUriParts($baseTemplate); 
-				
+
+				list ($tpl2, $tipo2, $query2) = $parentParts = $this->tal->parseUriParts($baseTemplate);
+
 				$destination2 = $this->tal->getCacheName($tpl2, $tipo2, $query2);
-								
+
 				$this->compile($tpl2, $tipo2, $query2, $destination2);
-				
+
 				chdir($cw);
 			}catch(\Exception $e){
 				chdir($cw);
 				throw $e;
 			}
-			
+
 			$parents = $this->findDefBlocks($xml->documentElement);
-			
+
 		}
-		
+
 		$this->findBlocks($xml->documentElement);
-		
+
 		$this->applyTemplates ( $xml->documentElement );
 		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
 		//foreach ($parents as $nd){
 			//$nd->remove();
 		//}
-		
+
 		$xml = $this->getPostXmlFilters()->applyFilters($xml);
-	
+
 		$cnt = $this->serializeXml ( $tpl, $tipo, $query, $destination, $parentParts, $xml );
 		//echo "\n--cnt---$tpl----\n".$cnt."\n";
 		$cnt = $this->getPostFilters()->applyFilters($cnt);
@@ -379,15 +379,15 @@ class Compiler extends BaseClass{
 			rename ( $destination.".tmp", $destination );
 		}
 	}
-	
+
 	public function findDefBlocks(xml\XMLDomElement $node) {
 
 		$res = $node->query ( "/t:atal-content/*[@t:extends]/*", array ("t" => self::NS ) );
 
 		$parents = array();
 		$nomi = array();
-		foreach ($res as $blocco ) {	
-			
+		foreach ($res as $blocco ) {
+
 			$blockName = $blocco->getAttributeNs(self::NS, "block");
 			if(!$blockName){
 				throw new Exception("Tutti gli elementi di figli di @extends devono essere definizioni di blocco");
@@ -412,7 +412,7 @@ class Compiler extends BaseClass{
 			$blocco->setAttributeNs(self::NS, "block-def", $blockName);
 			$blocco->setAttributeNs(self::NS, "block-call", $blockName);
 			$blocco->removeAttributeNs(self::NS, "block");
-		}		
+		}
 	}
 	/**
 	 * Esegue il parsing di espressioni e attributi di tipo ATal
@@ -423,9 +423,9 @@ class Compiler extends BaseClass{
 	public function applyTemplates(xml\XMLDomElement $node, $skip = array()) {
 		$attributes = array ();
 		$talAttributes = array ();
-		
+
 		$childNodes = array ();
-		
+
 		foreach ( $node->attributes as $attr ) {
 			$attributes [] = $attr;
 		}
@@ -444,7 +444,7 @@ class Compiler extends BaseClass{
 						$continueRule = $attPlugin->start ( $node, $attr  );
 						try {
 							$node->removeAttributeNode ( $attr );
-						} catch ( DOMException $e ) {					
+						} catch ( DOMException $e ) {
 						}
 						if ($continueRule & Attribute::STOP_NODE && $continueRule & Attribute::STOP_ATTRIBUTE) {
 							return;
@@ -493,7 +493,7 @@ class Compiler extends BaseClass{
 				$xml = "{{__NOCDATA__{$xml}__NOCDATA__}}";
 			}
 			$newEl = $nodo->ownerDocument->createCDATASection($xml);
-			
+
 			if ($nodo->parentNode instanceof DOMNode) {
 				$nodo->parentNode->replaceChild( $newEl , $nodo );
 			} else {
@@ -510,18 +510,18 @@ class Compiler extends BaseClass{
 				echo htmlentities($attr->value);
 			}
 			$val = $attr->value;
-			
+
 			foreach ( $mch [1] as $k => $mc ) {
 				$attName = "\$__tal_attr_" . md5 ( $k . microtime () );
 				$code .= "$attName  =  " . $this->parsedExpression ( $mc ) . " ;\n ";
 				$val = str_replace ( $mch [0] [$k], "[#tal_attr#" . $attName . "#tal_attr#]", $val );
 			}
 			$attr->value = htmlspecialchars ( $val, ENT_QUOTES, 'UTF-8' );
-			
+
 			$pi = $nodo->ownerDocument->createProcessingInstruction ( "php", $code );
 			$nodo->parentNode->insertBefore ( $pi, $nodo );
 		}
-	}	
+	}
 	/**
 	 * Esegue il parsing di un espressione e ci applica i relativi modificatori.
 	 * @param string $exp
@@ -562,10 +562,10 @@ class Compiler extends BaseClass{
 				}
 				$var = "\$this->modifiers->modifier('$modName')->modify($var, " . $this->dumpKeyed($modParams)." )";
 			}elseif ( $part==='' || preg_match ( '#(^[a-z][a-z0-9_\\-]*$)#i', $part )) { // modificatore senza parametri o di default
-				$var = "\$this->modifiers->modifier('$part')->modify($var , array() )";		
+				$var = "\$this->modifiers->modifier('$part')->modify($var , array() )";
 			} else{
 				throw new Exception ( "Errore di sintassi vicino a '$part'" );
-			}			
+			}
 		}
 		return $var;
 	}
@@ -582,10 +582,10 @@ class Compiler extends BaseClass{
 		$str = str_split ( $str, 1 );
 		$str [] = " ";
 		$str_len = count ( $str );
-		
+
 		$splitrer = str_split ( $splitrer, 1 );
 		$splitrer_len = count ( $splitrer );
-		
+
 		$parts = array ();
 		$inApex = false;
 		$next = 0;

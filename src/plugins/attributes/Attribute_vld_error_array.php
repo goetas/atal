@@ -9,7 +9,7 @@ class Attribute_vld_error_array extends DynamicAttribute{
 		if (! count ( $params )) {
 			throw new Exception ( "AttrRuntimePlugin_vld_error: specificare almeno un parametro" );
 		}
-		
+
 		$errorData = $params ["error"] ? $params ["error"] : $params [0];
 		if (! is_array ( $errorData ) && ! ($errorData instanceof Traversable)) {
 			return '';

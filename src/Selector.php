@@ -11,7 +11,7 @@ abstract class Selector extends Plugin implements ISelector{
 	 *
 	 * @var Compiler
 	 */
-	protected $compiler;	
+	protected $compiler;
 	public function setDom(xml\XMLDom $dom){
 		$this->dom = $dom;
 	}

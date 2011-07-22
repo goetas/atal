@@ -18,7 +18,7 @@ class Modifiers extends \goetas\pluginsys\Loader {
 		});
 	}
 	/**
-	 * 
+	 *
 	 * @param string $modifier
 	 * @return IModifier
 	 */
@@ -28,6 +28,6 @@ class Modifiers extends \goetas\pluginsys\Loader {
 		}
 		return $this->getPlugin($modifier,true);
 	}
-	
+
 
 }

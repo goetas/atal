@@ -7,6 +7,6 @@ class Modifier_concat extends Modifier {
 			return $params[0].$params[1].$str;
 		}else{
 			return $str.$params[1].$params[0];
-		}	
-	}	
+		}
+	}
 }

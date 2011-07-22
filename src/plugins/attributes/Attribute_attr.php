@@ -5,14 +5,14 @@ use goetas\atal\Attribute;
 use goetas\atal\ATal;
 use Exception;
 class Attribute_attr extends Attribute {
-	protected $fatto = false; 
-	
+	protected $fatto = false;
+
 	protected $attrsToRemove = array();
-	
+
 	public function prependPI() {
 		if(!$this->fatto){
 			$this->compiler->getPostApplyTemplatesFilters()->addFilter( array($this, "_removeAttrs" ) );
-			
+
 			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "_replaceAttrs" ) );
 		}
 	}
@@ -26,15 +26,15 @@ class Attribute_attr extends Attribute {
 	}
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
 		$this->prependPI();
-		
+
 		$expressions = $this->compiler->splitExpression( $att->value, ";" );
 
 		$varName = "\$__attr_" . $node->uniqueId();
-		
+
 		$precode =  "if(!isset($varName)){ $varName=array(); }\n";
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
-		
+
 
 		foreach ( $expressions as $expression ){
 			list ( $condition, $attName, $attExpr ) = $this->splitAttrExpression( $expression );
@@ -61,7 +61,7 @@ class Attribute_attr extends Attribute {
 			}
 			$code .= "if ($condition) { " . $varName . "['$attName']=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
 		}
-				
+
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
 		if(!$node->parentNode instanceof \DOMElement ){
 			throw new Exception("Errore di compilazione del nodo $node->nodeName. ($node->nodeValue)");

@@ -18,7 +18,7 @@ use goetas\atal\Exception;
 
 class Attribute_translate_attr extends Attribute {
 	protected $attrs = array();
-	protected $fatto = false; 
+	protected $fatto = false;
 	public function prependPI() {
 		if(!$this->fatto){
 			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "replaceAttrs" ) );

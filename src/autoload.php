@@ -7,5 +7,5 @@ spl_autoload_register (function($cname){
 			require_once($path);
 		}
 	}
-}); 
+});
 ?>

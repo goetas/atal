@@ -12,7 +12,7 @@ class ATal {
 	 * @var string
 	 */
 	protected $compileDir;
-	
+
 	/**
 	 * @var goetas\atal\loaders\Modifiers
 	 */
@@ -22,7 +22,7 @@ class ATal {
 	 * @var \goetas\atal\BaseRuntimeAttribute
 	 */
 	protected $baseRuntimeAttribute;
-	
+
 	/**
 	 * @var goetas\atal\loaders\Services
 	 */
@@ -31,40 +31,40 @@ class ATal {
 	 * insieme di callbackper configurare a runtime il compilatore
 	 * @var array
 	 */
-	protected $compilerSetups = array();	
+	protected $compilerSetups = array();
 	/**
 	 * Includi la dichiarazione XML nel file di output
 	 * @var bool
-	 */	
+	 */
 	public $xmlDeclaration = false;
 	/**
 	 * Attiva la modalità di debug (ricompila sempre i template)
 	 * @var bool
 	 */
 	public $debug = 0;
-	
+
 	protected $scope = array ();
 	protected $data = array ();
-	
+
 	protected $loadMap = array();
-	
+
 	/**
-	 * 
+	 *
 	 * @param string $compileDir cartella da usare per la cache dei templates compilati
 	 * @param string $defaultModifier pre-modificatore di default. "escape" è il modificatore di default
 	 */
 	public function __construct($compileDir = null, $defaultModifier='escape') {
-		
+
 		$this->addScope ( );
 		if ($compileDir !== null) {
 			$this->setCompileDir ( $compileDir );
 		}
-		
-		$this->modifiers = new loaders\Modifiers ( $this , $defaultModifier); 
+
+		$this->modifiers = new loaders\Modifiers ( $this , $defaultModifier);
 		$this->services = new loaders\Services ( $this );
-	
+
 		$this->setup();
-		
+
 		spl_autoload_register (array($this, 'templateLoader'));
 	}
 	public function templateLoader($class){
@@ -74,13 +74,13 @@ class ATal {
 	}
 	/**
 	 * Ritorna il gestore dei servizi
-	 * @return \goetas\atal\loaders\Services 
+	 * @return \goetas\atal\loaders\Services
 	 */
 	function getServices(){
 		return $this->services;
 	}
 	/**
-	 * Configurazione di atal. Sovrascrivere la funzione per aggiungere funzionalità ad atal. 
+	 * Configurazione di atal. Sovrascrivere la funzione per aggiungere funzionalità ad atal.
 	 * Chiamata nel costruttore
 	 */
 	protected function setup() {
@@ -102,20 +102,20 @@ class ATal {
 
 		$compiler->getPreXmlFilters()->addFilter(array($this,'_addTIDAttrs'));
 		$compiler->getPreXmlFilters()->addFilter(array($this,'_handleT'));
-		
+
 		$compiler->getPostXmlFilters()->addFilter(array($this,'_removeTIDAttrs'));
-		
+
 		$compiler->getPostFilters()->addFilter(array($this,'_removeXmlns'));
-	
+
 		$compiler->getPostFilters()->addFilter(array($this,'_replaceShortPI'));
-		
+
 		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultAttributes'), __NAMESPACE__.'\IAttribute' );
-		
+
 		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') , __NAMESPACE__.'\ISelector');
-		
+
 		foreach ($this->compilerSetups as $callback) {
 			call_user_func($callback, $compiler, $this);
-		}	
+		}
 	}
 	/**
 	 * funzione che gestisce il tag "<t:t></t:t>" e gli aggiune l'attributo t:omit="true"
@@ -132,7 +132,7 @@ class ATal {
 	 * Aggiunge a tutti i tag l'attributo ID unico. utile in fase di duplicazione dei nodi.
 	 * @param xml\XMLDom $xml
 	 * @return xml\XMLDom
-	 */	
+	 */
 	public function _addTIDAttrs(xml\XMLDom $xml) {
 		foreach ( $xml->query ( "//*" ) as $node ) {
 			$node->setAttributeNS ( self::NS, "id", uniqid () );
@@ -159,8 +159,8 @@ class ATal {
 		return preg_replace('#<(.*) xmlns:[a-zA-Z0-9]+=("|\')'.self::NS.'("|\')(.*)>#m',"<\\1\\4>", $str);
 	}
 	/**
-	 * Sistema eventuali tag &lt;?php in semplice testo. 
-	 * Questo impedisce l'inserimento di php processing instruction all'interno dei templates- 
+	 * Sistema eventuali tag &lt;?php in semplice testo.
+	 * Questo impedisce l'inserimento di php processing instruction all'interno dei templates-
 	 * @param string $str
 	 * @return string
 	 */
@@ -174,34 +174,34 @@ class ATal {
 		}, $str );
 	}
 	/**
-	 * Ritorna il gestore dei modificatori. 
-	 * @return \goetas\atal\loaders\Modifiers 
+	 * Ritorna il gestore dei modificatori.
+	 * @return \goetas\atal\loaders\Modifiers
 	 */
 	public function getModifiers() {
 		return $this->modifiers;
 	}
 	function __clone() {
 		$this->clear ();
-	}	
+	}
 	/**
-	 * Restituisce la ReflectionClass relativa al plugin "attributo" $attrName 
+	 * Restituisce la ReflectionClass relativa al plugin "attributo" $attrName
 	 * @param string $attrName
 	 * @return ReflectionClass
 	 */
 	function _defaultAttributes($attrName) {
-		$cname = "Attribute_".preg_replace("/[^a-z0-9_]/i","_", $attrName); 
+		$cname = "Attribute_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
 		$fullCname = __NAMESPACE__."\\plugins\\attributes\\$cname";
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
 		}
 	}
 	/**
-	 * Restituisce la ReflectionClass relativa al plugin "modificatore" $attrName 
+	 * Restituisce la ReflectionClass relativa al plugin "modificatore" $attrName
 	 * @param string $attrName
 	 * @return ReflectionClass
 	 */
 	function _defaultModifiers($attrName) {
-		$cname = "Modifier_".preg_replace("/[^a-z0-9_]/i","_", $attrName); 
+		$cname = "Modifier_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
 		$fullCname = __NAMESPACE__."\\plugins\\modifiers\\$cname";
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
@@ -210,14 +210,14 @@ class ATal {
 		if(is_callable($attrName)){ // funzione standard di php
 			return new BasePhpModifier($attrName);
 		}
-	}	
+	}
 	/**
-	 * Restituisce la ReflectionClass relativa al plugin "selettore" $attrName 
+	 * Restituisce la ReflectionClass relativa al plugin "selettore" $attrName
 	 * @param string $attrName
 	 * @return ReflectionClass
 	 */
 	function _defaultSelectors($attrName) {
-		$cname = "Selector_".preg_replace("/[^a-z0-9_]/i","_", $attrName); 
+		$cname = "Selector_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
 		$fullCname = __NAMESPACE__."\\plugins\\selectors\\$cname";
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
@@ -232,7 +232,7 @@ class ATal {
 		list ( $tpl, $query ) = explode ( '#', $templatePath, 2 );
 		$mch = array ();
 		$tipo = null;
-		
+
 		if (strlen ( $query ) && preg_match ( "/^([a-z]+)\\s*:(.+)$/i", $query, $mch )) {
 			$tipo = $mch [1];
 			$query = $mch [2];
@@ -250,12 +250,12 @@ class ATal {
 		if(!class_exists($className)){
 			//die( "Non trovo la classe $className per compilare il file '$file' " );
 			try {
-				throw new Exception ( "Non trovo la classe $className per compilare il file '$tpl, $tipo, $query' " );	
+				throw new Exception ( "Non trovo la classe $className per compilare il file '$tpl, $tipo, $query' " );
 			} catch (Exception $e) {
 				die($e);
 			}
-			
-			
+
+
 		}
 		$ist = new $className($this);
 		$ist->addScope($this->getData ());
@@ -263,7 +263,7 @@ class ATal {
 	}
 	protected function compile($tpl, $tipo=null, $query=null) {
 		$compiledFile = $this->getCacheName($tpl, $tipo, $query);
-		
+
 		if(!is_file($tpl)){
 			throw new Exception ( "Non trovo il file '$tpl' per poter iniziare la compilazione" );
 		}elseif( $this->isChanged($compiledFile, $tpl)) {
@@ -279,17 +279,17 @@ class ATal {
 	 */
 	public function output($templatePath) {
 		try {
-			list ($tpl, $tipo, $query) = $this->parseUriParts($templatePath); 
-			
+			list ($tpl, $tipo, $query) = $this->parseUriParts($templatePath);
+
 			$compiledFile = $this->compile($tpl, $tipo, $query);
-			
+
 			$this->runCompiled (  $tpl, $tipo, $query , $compiledFile );
-			
+
 		} catch ( DOMException $e ) {
 			throw new Exception ( "Errore durante la compilazione del file '$templatePath' (" . $e->getMessage () . ")" , $e->getCode(), $e);
 		}
 	}
-	
+
 	/**
 	 * Esegui il template e ritorna il relativo output
 	 * @param string $templatePath
@@ -314,7 +314,7 @@ class ATal {
 	 */
 	public function getCacheName($tpl, $tipo, $q) {
 		return $this->getCompileDir () . DIRECTORY_SEPARATOR . $this->getClassFromParts($tpl, $tipo, $q).".php";
-		
+
 		return $this->getCompileDir () . DIRECTORY_SEPARATOR . preg_replace("/[^a-z0-9_\\-\\.]/i", "_", basename ( $tpl ) ). "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . realpath($tpl) ) . ".php";
 	}
 	public function getClassFromParts($tpl, $tipo='', $q='') {
@@ -416,7 +416,7 @@ class ATal {
 	public function &__get($varName) {
 		return $this->data [$varName];
 	}
-	
+
 	/**
 	 * assigns values to template variables by reference
 	 * @param string $tpl_var the template variable name

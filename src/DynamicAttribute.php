@@ -6,7 +6,7 @@ use goetas\atal\xml;
 use goetas\atal\Attribute;
 use goetas\atal\ATal;
 abstract class DynamicAttribute extends Attribute {
-	protected $fatto = false; 
+	protected $fatto = false;
 	public function prependPI() {
 		if(!$this->fatto){
 			$str =" require_once( '" . addslashes( __FILE__ ) . "'); \n";
@@ -27,7 +27,7 @@ abstract class DynamicAttribute extends Attribute {
 		$str = str_replace(" xmlns=\"".$node->lookupNamespaceURI(null)."\"","", trim( $node->saveXML( false )) ) ;
 
 		$parts = $this->compiler->splitExpression( $att->value, ";" );
-	
+
 		foreach ( $parts as $part ){
 			if(preg_match( "/^([a-z_\\0-9]+)\\s*=\\s*(.*)/i", $part, $mch )){
 				$mch [2] = trim( $mch [2] );
@@ -39,7 +39,7 @@ abstract class DynamicAttribute extends Attribute {
 		$code .=" \\".get_class($this)."::run( " . $this->compiler->dumpKeyed( $params ) . " , '" . addcslashes( $str , "\\'" ) . "')";
 
 		$pi = $this->dom->createProcessingInstruction( "php", "print( $code );");
-		
+
 		if(!$opt['preserveContent']){
 			$node->removeChilds();
 		}
@@ -54,9 +54,8 @@ abstract class DynamicAttribute extends Attribute {
 			return self::STOP_NODE;
 		}
 	}
-	
+
 	static function run(array $params, $content){
-		
+
 	}
 }
-?>
