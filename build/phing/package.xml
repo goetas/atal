@@ -3,34 +3,25 @@
     <property file="build/build.properties" />
 
      <target name="package">
-		 <delete dir="${path.results/lib" />
+		 <delete dir="${path.results}/pkg" />
 		 <delete dir="${path.package}" />
-		 <mkdir dir="${path.results}/lib" />
-		 <mkdir dir="${path.package}" />
-		 <exec
-            os="Linux"
-            outputProperty="version.number"
-            command="git rev-parse HEAD"
-            dir="${project.basedir}"
-            />
-		<phingcall target="copyFilesToResultsLib" />
-		
-        <phingcall target="packageFiles" />
      	
+		 <mkdir dir="${path.results}/pkg" />
+		 <mkdir dir="${path.package}" />
+     	
+     	<svnlastrevision workingcopy="${project.basedir}" propertyname="version.number"/>
+		<echo message="Versione: {version.number}"></echo>
+     	
+		<phingcall target="copyFilesToResultsLib" />
+        <phingcall target="packageFiles" />
         <phingcall target="packagePear" />
     </target>
 
 	<target name="copyFilesToResultsLib">
-		<delete dir="${path.results}/lib/atal" />
-		<mkdir dir="${path.results}/lib/atal" />
+		<delete dir="${path.results}/pkg/atal" />
+		<mkdir dir="${path.results}/pkg/atal" />
 		
-		<delete dir="${path.results}/lib/pluginsys" />
-		<mkdir dir="${path.results}/lib/pluginsys" />
-			
-		<delete dir="${path.results}/lib/xmldom" />
-		<mkdir dir="${path.results}/lib/xmldom" />
-
-        <copy todir="${path.results}/lib/atal">
+        <copy todir="${path.results}/pkg/atal">
             <filterchain>
                 <replacetokens begintoken="@@" endtoken="@@">
                     <token key="version" value="${version.number}" />
@@ -40,13 +31,28 @@
                 <include name="**/**" />
             </fileset>
         </copy>
-		<copy todir="${path.results}/lib/xmldom">
+		
+		
+		<delete dir="${path.results}/pkg/xmldom" />
+		<mkdir dir="${path.results}/pkg/xmldom" />
+		<copy todir="${path.results}/pkg/xmldom">
             <fileset dir="${path.vendors}/xmldom/src">
                 <include name="**/**" />
             </fileset>
         </copy>
-		<copy todir="${path.results}/lib/pluginsys">
+		
+		<delete dir="${path.results}/pkg/pluginsys" />
+		<mkdir dir="${path.results}/pkg/pluginsys" />
+		<copy todir="${path.results}/pkg/pluginsys">
             <fileset dir="${path.vendors}/pluginsys/src">
+                <include name="**/**" />
+            </fileset>
+        </copy>
+		
+		<delete dir="${path.results}/pkg/api" />
+		<mkdir dir="${path.results}/pkg/api" />
+		<copy todir="${path.results}/pkg/api">
+            <fileset dir="${path.results}/api">
                 <include name="**/**" />
             </fileset>
         </copy>
@@ -54,7 +60,7 @@
 
 	<target name="packageFiles">
 		<zip destfile="${path.package}/ATal.zip">
-            <fileset dir="${path.results}/lib">
+            <fileset dir="${path.results}/pkg">
                 <include name="**/**" />
             </fileset>
         </zip>
@@ -62,8 +68,8 @@
 	</target>
 
 	<target name="packagePear">
-		<pearpkg name="ATal" dir="${path.results}/lib" destfile="${path.results}/lib/package.xml">
-            <fileset dir="${path.results}/lib">
+		<pearpkg name="ATal" dir="${path.results}/pkg" destfile="${path.results}/pkg/package.xml">
+            <fileset dir="${path.results}/pkg">
                 <include name="**/**" />
             </fileset>
             <option name="notes">Release Notes</option>

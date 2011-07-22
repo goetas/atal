@@ -13,7 +13,7 @@
         <exec 
 			passthru="true"
 			command='phpuml 
-						"${path.lib}" 
+						"${path.lib}" "${path.vendors}/xmldom/src" "${path.vendors}/pluginsys/src" 
 						-f htmlnew 
 						-n ATal 
 						--no-deployment-view 
