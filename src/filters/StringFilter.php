@@ -9,8 +9,8 @@ class StringFilter extends Filter{
 	 */
 	function applyFilters($str) {
 		foreach ($this->filters as $filter) {
-			$str = call_user_func($filter,$str);
+			$str = call_user_func($filter, $str);
 		}
 		return $str;
 	}
-} 
+}

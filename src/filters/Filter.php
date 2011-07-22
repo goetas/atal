@@ -10,7 +10,6 @@ class Filter extends BaseClass {
 	protected $compiler;
 	protected $filters = array();
 	function __construct(Compiler $compiler) {
-		
 	}
 	/**
 	 * 
@@ -24,4 +23,4 @@ class Filter extends BaseClass {
 			throw new InvalidArgumentException ( "callback non valida per " . __METHOD__ );
 		}
 	}
-} 
+}

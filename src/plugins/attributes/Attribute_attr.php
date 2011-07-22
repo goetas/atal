@@ -53,7 +53,7 @@ class Attribute_attr extends Attribute {
 			list ( $prefix, $name ) = explode( ":", $attName );
 
 			if(strlen( $prefix ) && strlen( $name )){
-				if($node->lookupNamespaceURI( $prefix ) === NULL){
+				if($node->lookupNamespaceURI( $prefix ) === null){
 					throw new Exception( "Preffisso '$prefix' non ha nessun namespace associato in '{" . $node->namespaceURI . "}" . $node->nodeName . "'" );
 				}else{
 					$code .= $varName . "['xmlns:$prefix']='" . addcslashes($node->lookupNamespaceURI( $prefix ),"'")  . "'; \n";
