@@ -19,7 +19,7 @@
 			<property name="eolChar" value="\n" />
 		</properties>
 	</rule>
-
+	
 	<rule ref="Generic.Files.LineLength">
 		<properties>
 			<property name="lineLimit" value="500" />
@@ -30,18 +30,25 @@
 	<rule ref="Internal.NoCodeFound" />
 
 	<rule ref="Generic.Formatting.DisallowMultipleStatements"/>
-	<rule ref="Generic.Formatting.MultipleStatementAlignment"/>
+	<rule ref="Generic.Formatting.MultipleStatementAlignment">
+		<exclude name="Generic.Formatting.MultipleStatementAlignment.NotSameWarning"></exclude>
+	</rule>
 	<rule ref="Generic.Formatting.SpaceAfterCast"/>
 	<rule ref="Generic.Functions.CallTimePassByReference" />
 	<rule ref="Generic.Functions.FunctionCallArgumentSpacing" />
 	<rule ref="Generic.Metrics.NestingLevel" />
 
-	<rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
+	<rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie">
+		<exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie.SpaceBeforeBrace"/>
+	</rule>
 	<rule ref="PEAR.Functions.ValidDefaultValue"/>
 
 	<rule ref="Generic.NamingConventions.ConstructorName"/>
 	<rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
+	<!-- Escludo questa regola per non avere i warning per la class tipo Attribute_foreach
 	<rule ref="PEAR.NamingConventions.ValidClassName"/>
+	 -->
+	
 
 	<rule ref="Generic.PHP.DisallowShortOpenTag"/>
 	<rule ref="Generic.PHP.DeprecatedFunctions" />
