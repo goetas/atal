@@ -12,8 +12,8 @@ class Attribute_extends extends Attribute{
 
 		$olddir = getcwd();
 		chdir($dir);
-		list ($tpl,$tipo,$query ) = $this->compiler->parseUriParts($att->value);
-		list($xmlTemplate,$tplDom) =  $this->compiler->loadXMLTemplate($tpl,$tipo,$query );
+		list ($tpl, $tipo, $query ) = $this->compiler->parseUriParts($att->value);
+		list($xmlTemplate, $tplDom) =  $this->compiler->loadXMLTemplate($tpl, $tipo, $query );
 
 
 
@@ -33,7 +33,7 @@ class Attribute_extends extends Attribute{
 		$padre->removeChild($node);
 
 		// soltituisco il tag "extends" con il contenuto del template a cui si rifferisce
-		foreach ( $xmlTemplate->query( "/t:atal-content/node()|/text()",$a) as $nodeNew ){
+		foreach ( $xmlTemplate->query( "/t:atal-content/node()|/text()", $a) as $nodeNew ){
 			$nd = $dom->importNode($nodeNew,true);
 			$padre->appendChild($nd);
 			if($nd instanceof xml\XMLDomElement && $nd->getAttributeNS(ATal::NS, 'extends')){

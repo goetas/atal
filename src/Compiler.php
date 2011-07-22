@@ -74,8 +74,8 @@ class Compiler extends BaseClass{
 		
 		$this->currRegex = '/\\{([\'a-z\$\\\\].*?)\\}/';
 		
-		$this->attributes = new loaders\Attributes ($this->tal,$this);
-		$this->selectors = new loaders\Selectors ($this->tal,$this);
+		$this->attributes = new loaders\Attributes ($this->tal, $this);
+		$this->selectors = new loaders\Selectors ($this->tal, $this);
 				
 		$this->preXmlFilters = new filters\XmlFilter ($this);
 		$this->postXmlFilters = new filters\XmlFilter ($this);
@@ -256,7 +256,7 @@ class Compiler extends BaseClass{
 			if($node->parentNode && $node->parentNode->namespaceURI!=self::NS){
 				$new = $xml->createTextNode("\n");
 				if($node->nextSibling){
-					$node->parentNode->insertBefore($new,$node->nextSibling);
+					$node->parentNode->insertBefore($new, $node->nextSibling);
 				}else{
 					$node->parentNode->appendChild($new);
 				}
@@ -316,7 +316,7 @@ class Compiler extends BaseClass{
 			
 		}
 		$cnt[] = "}"; // fine classe
-		$cnt = implode("",$cnt);
+		$cnt = implode("", $cnt);
 		
 		return $cnt;
 		
@@ -610,9 +610,9 @@ class Compiler extends BaseClass{
 			}
 		}
 		if ($pcount != 0) {
-			throw new Exception ( "Perentesi non bilanciate nell'espressione '".implode("",$str)."'" );
+			throw new Exception ( "Perentesi non bilanciate nell'espressione '".implode("", $str)."'" );
 		}elseif ($inApex !== false) {
-			throw new Exception ( "Apici non bilanciati nell'espressione '".implode("",$str)."'" );
+			throw new Exception ( "Apici non bilanciati nell'espressione '".implode("", $str)."'" );
 		}
 		return $parts;
 	}

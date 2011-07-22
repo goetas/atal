@@ -60,7 +60,7 @@ class ATal {
 			$this->setCompileDir ( $compileDir );
 		}
 		
-		$this->modifiers = new loaders\Modifiers ( $this ,$defaultModifier); 
+		$this->modifiers = new loaders\Modifiers ( $this , $defaultModifier); 
 		$this->services = new loaders\Services ( $this );
 	
 		$this->setup();
@@ -114,7 +114,7 @@ class ATal {
 		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') , __NAMESPACE__.'\ISelector');
 		
 		foreach ($this->compilerSetups as $callback) {
-			call_user_func($callback,$compiler,$this);
+			call_user_func($callback, $compiler, $this);
 		}	
 	}
 	/**
@@ -156,7 +156,7 @@ class ATal {
 	 * @return string
 	 */
 	public function _removeXmlns($str) {
-		return preg_replace('#<(.*) xmlns:[a-zA-Z0-9]+=("|\')'.self::NS.'("|\')(.*)>#m',"<\\1\\4>",$str);
+		return preg_replace('#<(.*) xmlns:[a-zA-Z0-9]+=("|\')'.self::NS.'("|\')(.*)>#m',"<\\1\\4>", $str);
 	}
 	/**
 	 * Sistema eventuali tag &lt;?php in semplice testo. 
@@ -189,7 +189,7 @@ class ATal {
 	 * @return ReflectionClass
 	 */
 	function _defaultAttributes($attrName) {
-		$cname = "Attribute_".preg_replace("/[^a-z0-9_]/i","_",$attrName); 
+		$cname = "Attribute_".preg_replace("/[^a-z0-9_]/i","_", $attrName); 
 		$fullCname = __NAMESPACE__."\\plugins\\attributes\\$cname";
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
@@ -201,7 +201,7 @@ class ATal {
 	 * @return ReflectionClass
 	 */
 	function _defaultModifiers($attrName) {
-		$cname = "Modifier_".preg_replace("/[^a-z0-9_]/i","_",$attrName); 
+		$cname = "Modifier_".preg_replace("/[^a-z0-9_]/i","_", $attrName); 
 		$fullCname = __NAMESPACE__."\\plugins\\modifiers\\$cname";
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
@@ -217,7 +217,7 @@ class ATal {
 	 * @return ReflectionClass
 	 */
 	function _defaultSelectors($attrName) {
-		$cname = "Selector_".preg_replace("/[^a-z0-9_]/i","_",$attrName); 
+		$cname = "Selector_".preg_replace("/[^a-z0-9_]/i","_", $attrName); 
 		$fullCname = __NAMESPACE__."\\plugins\\selectors\\$cname";
 		if(class_exists($fullCname)){
 			return new ReflectionClass($fullCname);
@@ -269,7 +269,7 @@ class ATal {
 		}elseif( $this->isChanged($compiledFile, $tpl)) {
 			$compiler = new Compiler ( $this );
 			$this->setupCompiler($compiler);
-			$compiler->compile ( $tpl, $tipo, $query ,$compiledFile);
+			$compiler->compile ( $tpl, $tipo, $query , $compiledFile);
 		}
 		return $compiledFile;
 	}
@@ -283,7 +283,7 @@ class ATal {
 			
 			$compiledFile = $this->compile($tpl, $tipo, $query);
 			
-			$this->runCompiled (  $tpl, $tipo, $query ,$compiledFile );
+			$this->runCompiled (  $tpl, $tipo, $query , $compiledFile );
 			
 		} catch ( DOMException $e ) {
 			throw new Exception ( "Errore durante la compilazione del file '$templatePath' (" . $e->getMessage () . ")" , $e->getCode(), $e);

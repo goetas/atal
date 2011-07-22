@@ -60,7 +60,7 @@ class Attribute_translate extends Attribute {
 	}
 	public static function checkHtml($s) {
 		if(strpos($s,"&")!==false){
-			return preg_replace("/&(?![a-z]+;)/i","&amp;",$s);  // in caso che i traduttori sbaglino, sistemo le "&" con la relativa entita html
+			return preg_replace("/&(?![a-z]+;)/i","&amp;", $s);  // in caso che i traduttori sbaglino, sistemo le "&" con la relativa entita html
 		}else{
 			return $s;
 		}

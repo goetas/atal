@@ -12,9 +12,9 @@ class Attribute_no_parse_inline extends Attribute {
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
 		foreach ( $node->query( ".//text()|.//@*", array("t" => ATal::NS ) ) as $nodo ){
 			if($nodo instanceof \DOMAttr){
-				$nodo->value = preg_replace($this->compiler->currRegex,"__atal_inline\\1}atal_inline__",$nodo->value);
+				$nodo->value = preg_replace($this->compiler->currRegex,"__atal_inline\\1}atal_inline__", $nodo->value);
 			}elseif ($nodo instanceof \DOMText){
-				$nodo->data = preg_replace($this->compiler->currRegex,"__atal_inline\\1}atal_inline__",$nodo->data);
+				$nodo->data = preg_replace($this->compiler->currRegex,"__atal_inline\\1}atal_inline__", $nodo->data);
 			}
 		}
 		return self::STOP_NODE;

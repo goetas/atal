@@ -19,7 +19,7 @@ class Attribute_block_call extends Attribute{
 		$code='';
 		foreach ($expressions as $expression){
 			$mch=array();
-			if(preg_match("/^(".preg_quote( '$', "/" ) . "[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)([^=]*)\\s*=\\s*(.+)/",$expression,$mch)){
+			if(preg_match("/^(".preg_quote( '$', "/" ) . "[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)([^=]*)\\s*=\\s*(.+)/", $expression, $mch)){
 				$code.="$mch[1]$mch[2] = $mch[3];\n";
 			}else{
 				throw new Exception("Sintassi plugin non valida: '$att->value'");

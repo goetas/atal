@@ -5,7 +5,7 @@ class Modifier_formatgeo extends Modifier {
 	function modify($radian, array $params=array()){
 		$grad = rad2deg(floatval($radian));
 		if($params[0]=="degsex"){
-			return self::totexxt( $grad/60, 0 ,$params[1]=="LAT");
+			return self::totexxt( $grad/60, 0 , $params[1]=="LAT");
 		}else{
 			return $grad;
 		}

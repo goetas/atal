@@ -7,7 +7,7 @@ class Attribute_no_conflicts extends Attribute{
 	protected $oldRegex = array();
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
 
-		list($p1, $p2) = explode("|",$att->value);
+		list($p1, $p2) = explode("|", $att->value);
 
 
 		array_push($this->oldRegex , $this->compiler->getCurrRegex());
