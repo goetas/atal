@@ -19,7 +19,6 @@ class BasicHTMLTest extends  PHPUnit_Framework_TestCase{
     }
     public function testGet() {
     	$str = $this->tal->get(__DIR__."/templates/1.xml");
-    	var_dump($str);
     	$this->assertEquals("<div>Test</div>", $str );
     }    
 }

@@ -4,7 +4,7 @@
 
     <target name="test">
         <phingcall target="lint" />
-        <phingcall target="unit-all" />
+        <phingcall target="unit" />
     </target>
 
     <target name="test-lite">
@@ -21,20 +21,7 @@
         />
     </target>
 
-    <target name="unit-all">
-        <delete dir="${path.results}/coverage" />
-        <mkdir dir="${path.results}/coverage" />
-        <mkdir dir="${path.results}/logs" />
-        <exec
-            passthru="true"
-            checkreturn="true"
-            command='phpunit --log-junit "${path.logs}/junit.xml"
-                       --coverage-clover "${path.logs}/clover.xml"
-                       --coverage-html "${path.results}/coverage"
-                       --configuration "${path.tests}/phpunit.xml"'
-        />
-    </target>
-
+ 
     <target name="lint">
         <phplint haltonfailure="true" deprecatedAsError="true">
             <fileset dir="${path.lib}">

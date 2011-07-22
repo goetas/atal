@@ -16,15 +16,21 @@
 		<phingcall target="copyFilesToResultsLib" />
 		
         <phingcall target="packageFiles" />
+     	
         <phingcall target="packagePear" />
-		<phingcall target="packagePhar" />
     </target>
 
 	<target name="copyFilesToResultsLib">
-		<delete dir="${path.results}/lib" />
-		<mkdir dir="${path.results}/lib" />
+		<delete dir="${path.results}/lib/atal" />
+		<mkdir dir="${path.results}/lib/atal" />
+		
+		<delete dir="${path.results}/lib/pluginsys" />
+		<mkdir dir="${path.results}/lib/pluginsys" />
+			
+		<delete dir="${path.results}/lib/xmldom" />
+		<mkdir dir="${path.results}/lib/xmldom" />
 
-        <copy todir="${path.results}/lib">
+        <copy todir="${path.results}/lib/atal">
             <filterchain>
                 <replacetokens begintoken="@@" endtoken="@@">
                     <token key="version" value="${version.number}" />
@@ -34,10 +40,20 @@
                 <include name="**/**" />
             </fileset>
         </copy>
+		<copy todir="${path.results}/lib/xmldom">
+            <fileset dir="${path.vendors}/xmldom/src">
+                <include name="**/**" />
+            </fileset>
+        </copy>
+		<copy todir="${path.results}/lib/pluginsys">
+            <fileset dir="${path.vendors}/pluginsys/src">
+                <include name="**/**" />
+            </fileset>
+        </copy>
 	</target>
 
 	<target name="packageFiles">
-		<zip destfile="${path.package}/CryptLib.zip">
+		<zip destfile="${path.package}/ATal.zip">
             <fileset dir="${path.results}/lib">
                 <include name="**/**" />
             </fileset>
@@ -46,40 +62,26 @@
 	</target>
 
 	<target name="packagePear">
-		<pearpkg name="CryptLib" dir="${path.results}/lib" destfile="${path.results}/lib/package.xml">
+		<pearpkg name="ATal" dir="${path.results}/lib" destfile="${path.results}/lib/package.xml">
             <fileset dir="${path.results}/lib">
                 <include name="**/**" />
             </fileset>
             <option name="notes">Release Notes</option>
-            <option name="description">A Cryptography Library for PHP</option>
-            <option name="summary">A Cryptography Library for PHP</option>
+            <option name="description">A Template engine for PHP</option>
+            <option name="summary">A Template engine for PHP</option>
             <option name="version" value="${version.string}" />
-            <option name="state" value="alpha" />
+            <option name="state" value="stable" />
+			<option name="license" value="LGPL" />
+			
             <mapping name="maintainers">
                 <element>
-                    <element key="handle" value="ircmaxell" />
-                    <element key="name" value="Anthony Ferrara" />
-                    <element key="email" value="ircmaxell@ircmaxell.com" />
+                    <element key="handle" value="goetas" />
+                    <element key="name" value="Asmir Mustafic" />
+                    <element key="email" value="goetas@lignano.it" />
                     <element key="role" value="lead" />
                 </element>
             </mapping>
         </pearpkg>
 	</target>
 
-	<target name="packagePhar">
-		<pharpackage
-            destfile="${path.package}/CryptLib.phar"
-            basedir="${path.results}/lib"
-            stub="${path.build}/phar.stub.php"
-            signature="sha1"
-            >
-            <fileset dir="${path.results}/lib">
-                <include name="**/**" />
-            </fileset>
-            <metadata>
-                <element name="version" value="${version.number}" />
-            </metadata>
-
-        </pharpackage>
-	</target>
 </project>
