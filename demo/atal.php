@@ -1,6 +1,6 @@
 <?php 
 // percorso del checkout di atal
-require "atal/autoload.php";
+require "src/autoload.php";
 require "pluginsys/autoload.php";
 require "xmldom/autoload.php";
 
