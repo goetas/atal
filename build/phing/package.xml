@@ -56,6 +56,13 @@
                 <include name="**/**" />
             </fileset>
         </copy>
+		
+		
+		<copy todir="${path.results}/pkg">
+            <fileset dir="${project.basedir}">
+                <include name="LICENSE" />
+            </fileset>
+        </copy>
 	</target>
 
 	<target name="packageFiles">
