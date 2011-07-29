@@ -402,7 +402,9 @@ class Compiler extends BaseClass{
 		$childNodes = array ();
 
 		foreach ( $node->attributes as $attr ) {
-			$attributes [] = $attr;
+			if($attr->namespaceURI != self::NS || $attr->localName != 'id'){ 
+				$attributes [] = $attr;
+			}
 		}
 		foreach ( $node->childNodes as $child ) {
 			$childNodes [] = $child;
@@ -410,42 +412,44 @@ class Compiler extends BaseClass{
 		$stopNode = 0;
 		$attPluginsUsed = array ();
 		foreach ( $attributes as $attr ) {
-			if($attr->namespaceURI == self::NS){ // è un attributo tal
-				if ($attr->localName != 'id') {
-					$attPlugin = $this->attributes->attribute($attr->localName);
-					$attPlugin->setDom($node->ownerDocument);
-					if (! in_array ( $attr->localName, $skip ) && $attr->ownerElement === $node) {
-						$attPluginsUsed [] = array ($attPlugin, $node, $attr );
-						$continueRule = $attPlugin->start ( $node, $attr  );
-						try {
-							$node->removeAttributeNode ( $attr );
-						} catch ( DOMException $e ) {
-						}
-						if ($continueRule & Attribute::STOP_NODE && $continueRule & Attribute::STOP_ATTRIBUTE) {
-							return;
-						} elseif ($continueRule & Attribute::STOP_NODE) {
-							$stopNode = 1;
-						} elseif ($continueRule & Attribute::STOP_ATTRIBUTE) {
-							break;
-						}
-					}
+			if($attr->namespaceURI == self::NS && !in_array ( $attr->localName, $skip ) && $attr->ownerElement === $node){ // è un attributo tal
+				
+				$attPlugin = $this->attributes->attribute($attr->localName);
+				$attPlugin->setDom($node->ownerDocument);
+				
+				$attPluginsUsed [] = array ($attPlugin, $node, $attr );
+				$continueRule = $attPlugin->start ( $node, $attr  );
+				try {
+					$node->removeAttributeNode ( $attr );
+				} catch ( DOMException $e ) {
 				}
-			} else {
+				if ($continueRule & Attribute::STOP_NODE && $continueRule & Attribute::STOP_ATTRIBUTE) {
+					return;
+				} elseif ($continueRule & Attribute::STOP_NODE) {
+					$stopNode = 1;
+				} elseif ($continueRule & Attribute::STOP_ATTRIBUTE) {
+					break;
+				}
+				
+			} elseif($attr->namespaceURI != self::NS){ // non è un attributo tal{
 				$this->applyAttributeVars ( $attr );
 			}
 		}
 		if (! $stopNode) {
-			foreach ( $childNodes as $child ) {
-				if ($child instanceof xml\XMLDomElement) {
-					$this->applyTemplates ( $child );
-				} elseif ($child instanceof DOMText) {
-					$this->applyTextVars ( $child ); // applica le variabili sul testo
-				}
-			}
+			$this->applyTemplatesToChilds( $childNodes );
 			foreach ( $attPluginsUsed as $data ) {
 				if ($data [1]->ownerDocument != null) { // nodo ancora non rimosso
 					$data [0]->end ( $data [1], $data [2] );
 				}
+			}
+		}
+	}
+	protected function applyTemplatesToChilds( $childNodes ){
+		foreach ( $childNodes as $child ) {
+			if ($child instanceof xml\XMLDomElement) {
+				$this->applyTemplates ( $child );
+			} elseif ($child instanceof DOMText) {
+				$this->applyTextVars ( $child ); // applica le variabili sul testo
 			}
 		}
 	}

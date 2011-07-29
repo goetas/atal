@@ -21,7 +21,19 @@ class BasicHTMLTest extends  PHPUnit_Framework_TestCase{
     public function testGet() {
     	$str = $this->tal->get(__DIR__."/templates/1.xml");
     	$this->assertEquals("<div>Test</div>", $str );
-    }    
+    }  
+    public function testIf() {
+    	$str = $this->tal->get(__DIR__."/templates/if.xml");
+    	$this->assertEquals("<div>Test</div>", $str );
+    } 
+    public function testIf2() {
+    	$str = $this->tal->get(__DIR__."/templates/if2.xml");
+    	$this->assertEquals("", $str );
+    } 
+    public function testForeach() {
+    	$str = $this->tal->get(__DIR__."/templates/foreach.xml");
+    	$this->assertEquals("<div><div>0</div><div>1</div></div>", $str );
+    } 
     public function testExtends() {
     	chdir(__DIR__);
     	$str = $this->tal->get("templates/2.xml");
