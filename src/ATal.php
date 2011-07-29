@@ -5,7 +5,13 @@ use InvalidArgumentException;
 use ReflectionClass;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-class ATal {
+/**
+ * SVN revision @@version@@
+ * PHP Template engine
+ * @author goetas
+ *
+ */
+class ATal extends DataContainer{
 	const NS = "ATal";
 	/**
 	 * directory di file comiplati
@@ -42,12 +48,11 @@ class ATal {
 	 * @var bool
 	 */
 	public $debug = 0;
-
-	protected $scope = array ();
-	protected $data = array ();
-
-	protected $loadMap = array();
-
+	/**
+	 * 
+	 * @var \goetas\atal\finders\Aggregate
+	 */
+	protected $finder;
 	/**
 	 *
 	 * @param string $compileDir cartella da usare per la cache dei templates compilati
@@ -55,17 +60,28 @@ class ATal {
 	 */
 	public function __construct($compileDir = null, $defaultModifier='escape') {
 
-		$this->addScope ( );
+		parent::__construct();
+				
 		if ($compileDir !== null) {
 			$this->setCompileDir ( $compileDir );
 		}
 
 		$this->modifiers = new loaders\Modifiers ( $this , $defaultModifier);
 		$this->services = new loaders\Services ( $this );
+		$this->finder = new finders\Aggregate();
+		
+		$this->finder->addFinder(new finders\Filesystem('.'));
 
 		$this->setup();
-
+	
 		spl_autoload_register (array($this, 'templateLoader'));
+	}
+	/**
+	 * 
+	 * @return \goetas\atal\finders\Aggregate
+	 */
+	public function getFinder() {
+		return $this->finder;
 	}
 	public function templateLoader($class){
 		if(preg_match("/^ATal_[a-f0-9]{32}/", $class)){
@@ -180,9 +196,6 @@ class ATal {
 	public function getModifiers() {
 		return $this->modifiers;
 	}
-	function __clone() {
-		$this->clear ();
-	}
 	/**
 	 * Restituisce la ReflectionClass relativa al plugin "attributo" $attrName
 	 * @param string $attrName
@@ -245,48 +258,52 @@ class ATal {
 	 * Esegue un template
 	 * @param string $__file nome dei file da eseguire
 	 */
-	protected function runCompiled($tpl, $tipo, $query ) {
-		$className = $this->getClassFromParts($tpl, $tipo, $query);
+	protected function runCompiled(Template $t) {
+		$className = $this->getClassName($t);
+		
 		if(!class_exists($className)){
-			//die( "Non trovo la classe $className per compilare il file '$file' " );
-			try {
-				throw new Exception ( "Non trovo la classe $className per compilare il file '$tpl, $tipo, $query' " );
-			} catch (Exception $e) {
-				die($e);
-			}
-
-
+			throw new Exception ( "Non trovo la classe $className per compilare il file '$t' " );
 		}
+		
 		$ist = new $className($this);
 		$ist->addScope($this->getData ());
 		$ist->display();
 	}
-	protected function compile($tpl, $tipo=null, $query=null) {
-		$compiledFile = $this->getCacheName($tpl, $tipo, $query);
-
-		if(!is_file($tpl)){
-			throw new Exception ( "Non trovo il file '$tpl' per poter iniziare la compilazione" );
-		}elseif( $this->isChanged($compiledFile, $tpl)) {
+	protected function compile(Template $t, $compiledFile = null) {
+		if(!$compiledFile){
+			$compiledFile = $this->getCacheName($t);
+		}
+		
+		if( $this->debug || !is_file($compiledFile) || !$this->isFresh($t, filemtime($compiledFile))) {
 			$compiler = new Compiler ( $this );
 			$this->setupCompiler($compiler);
-			$compiler->compile ( $tpl, $tipo, $query , $compiledFile);
+			$compiler->compile ($t,  $this->getTemplate($t) , $compiledFile);
 		}
 		return $compiledFile;
+	}
+	/**
+	 * 
+	 * @return Template
+	 */
+	public function ensureTemplate($template) {
+		if(!($template instanceof Template)){
+			$template = new Template($template);
+		}
+		return $template;
 	}
 	/**
 	 * Esegui il template e mostra il relativo output
 	 * @param string $templatePath
 	 */
-	public function output($templatePath) {
+	public function output($template) {
+		
+		$template = $this->ensureTemplate($template);
+		
 		try {
-			list ($tpl, $tipo, $query) = $this->parseUriParts($templatePath);
-
-			$compiledFile = $this->compile($tpl, $tipo, $query);
-
-			$this->runCompiled (  $tpl, $tipo, $query , $compiledFile );
-
+			$this->compile( $template );
+			$this->runCompiled ( $template );
 		} catch ( DOMException $e ) {
-			throw new Exception ( "Errore durante la compilazione del file '$templatePath' (" . $e->getMessage () . ")" , $e->getCode(), $e);
+			throw new Exception ( "Errore durante la compilazione di '$template' (" . $e->getMessage () . ")" , $e->getCode(), $e);
 		}
 	}
 
@@ -295,30 +312,26 @@ class ATal {
 	 * @param string $templatePath
 	 * @return string
 	 */
-	public function get($templatePath) {
+	public function get($template) {
 		ob_start ();
-		$this->output ( $templatePath );
+		$this->output ( $template );
 		return ob_get_clean ();
-	}
-	/**
-	 * Verifica se il file compilato è campiato rispetto al file template.
-	 * @param string $cacheFile
-	 * @param string $originalFile
-	 */
-	protected function isChanged($cacheFile, $originalFile){
-		return $this->debug || ! is_file ( $cacheFile ) || filemtime ( $cacheFile ) < filemtime ( $originalFile );
 	}
 	/**
 	 * Ritorna il path del file da usare come cache per il template $tpl
 	 * @param string $tpl
 	 */
-	public function getCacheName($tpl, $tipo, $q) {
-		return $this->getCompileDir () . DIRECTORY_SEPARATOR . $this->getClassFromParts($tpl, $tipo, $q).".php";
-
-		return $this->getCompileDir () . DIRECTORY_SEPARATOR . preg_replace("/[^a-z0-9_\\-\\.]/i", "_", basename ( $tpl ) ). "_" . md5 ( $tpl.strval ( $this->xmlDeclaration ) . realpath($tpl) ) . ".php";
+	public function getCacheName(Template $t) {
+		return $this->getCompileDir () . DIRECTORY_SEPARATOR . "ATal_".md5($this->getFinder()->getCacheName($t->getBaseName())).".php";
 	}
-	public function getClassFromParts($tpl, $tipo='', $q='') {
-		return "ATal_".md5("$tpl, $tipo, $q");
+	public function getClassName(Template $t) {
+		return "ATal_".md5($this->getFinder()->getCacheName($t->getBaseName()));
+	}
+	public function isFresh(Template $t, $current) {
+		return $this->getFinder()->isFresh($t->getBaseName(), $current);
+	}
+	public function getTemplate(Template $t) {
+		return $this->getFinder()->getTemplate($t->getBaseName());
 	}
 	/**
 	 * Ritorna la cartella per la cache dei templates
@@ -360,79 +373,5 @@ class ATal {
 			}
 		}
 		return $count;
-	}
-	/**
-	 * Ritorna lo stack corrente
-	 * @return array
-	 */
-	public function &getData() {
-		return $this->data;
-	}
-	/**
-	 * aggiungi uno stack
-	 * @param array $vars
-	 */
-	public function addScope(array $vars = array()) {
-		unset ( $vars ["this"], $vars ["__file"] );
-		$this->scope [] = &$this->data ;
-		end ( $this->scope );
-		$key = key ( $this->scope );
-		foreach ($vars as $k => &$v){
-			$this->scope [$key][$k]=&$v;
-		}
-		$this->data = &$this->scope [$key];
-	}
-	/**
-	 * rimuovi uno stack
-	 */
-	public function removeScope() {
-		array_pop ( $this->scope );
-		end ( $this->scope );
-		$this->data = &$this->scope [key ( $this->scope )];
-	}
-	/**
-	 * imposta una variabile nello stack corrente
-	 * @param $varName
-	 * @param $value
-	 */
-	function assign($varName, $value = null) {
-		if ($varName != '') {
-			return $this->data [$varName] = $value;
-		}
-		return null;
-	}
-	/**
-	 * imposta una variabile nello stack corrente
-	 * @param string $varName
-	 * @param mixed $value
-	 */
-	public function __set($varName, $value) {
-		$this->data [$varName] = $value;
-	}
-	/**
-	 * Recupera una variabile dallo stack corrente
-	 * @param string $varName
-	 */
-	public function &__get($varName) {
-		return $this->data [$varName];
-	}
-
-	/**
-	 * assigns values to template variables by reference
-	 * @param string $tpl_var the template variable name
-	 * @param mixed $value the referenced value to assign
-	 */
-	function assignByRef($varName, &$value) {
-		if ($varName != '') {
-			$this->data [$varName] = &$value;
-		}
-	}
-	/**
-	 * Svuota tutta lo stack
-	 */
-	public function clear() {
-		$this->scope = array ();
-		$this->data = array ();
-		$this->addScope ();
 	}
 }

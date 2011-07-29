@@ -188,9 +188,7 @@ class Compiler extends BaseClass{
 	 * @param string $query
 	 * @return xml\XMLDom
 	 */
-	protected function toDom($tpl, $tipo, $query) {
-
-		$xmlString = file_get_contents ( $tpl );
+	protected function toDom($xmlString, Template $t) {		
 		$xmlString = $this->getPostLoadFilters()->applyFilters($xmlString);
 
 		$tplDom = new xml\XMLDom ();
@@ -200,10 +198,10 @@ class Compiler extends BaseClass{
 		$dtd = null;
 		try {
 			if ($tipo) {
-				$selector = $this->getSelectors()->selector($tipo);
+				$selector = $this->getSelectors()->selector($t->getSelectorType());
 				$selector->setDom($tplDom);
 
-				$res = $selector->select ( $query );
+				$res = $selector->select ( $t->getSelectorQuery() );
 				foreach ( $res as $node ) {
 					$nodes[]=$node ;
 				}
@@ -224,25 +222,12 @@ class Compiler extends BaseClass{
 		foreach ( $nodes as $node ) {
 			$root->appendChild ($tplDom->importNode ( $node, true));
 		}
-
 		return $tplDom;
 	}
-	public function getExtensionTemplate(xml\XMLDom $xml) {
-
+	protected function getExtensionTemplate(xml\XMLDom $xml) {
 		$res = $xml->query ( "/t:atal-content/*/@t:extends", array ("t" => self::NS ) );
-
 		if($res->length){
-			$cw = getcwd();
-
-			if(!chdir(dirname($this->template))){
-				throw  new Exception("Non posso spostarmi nella cartella ".dirname($this->template));
-			}
-			$rp = realpath($res->item(0)->value);
-			if(!$rp){
-				throw  new Exception("Non trovo il file ".$res->item(0)->value." ($cw)");
-			}
-			chdir($cw);
-			return $rp;
+			return $res->item(0)->value;
 		}
 		return null;
 	}
@@ -250,7 +235,7 @@ class Compiler extends BaseClass{
 	 * Ritorna una stringa del DOM presente in $xml
 	 * @param $xml
 	 */
-	protected function serializeXml($tpl, $tipo, $query, $templateName, $parentParts, xml\XMLDom $xml) {
+	protected function serializeXml(Template $t, $templateName, xml\XMLDom $xml, Template $parentTemplate = null, $parentTemplateAbs = null) {
 
 		foreach ( $xml->query ( "//processing-instruction()" ) as $node ) {
 			if($node->parentNode && $node->parentNode->namespaceURI!=self::NS){
@@ -266,21 +251,25 @@ class Compiler extends BaseClass{
 		$cnt = array();
 
 
-		$className = $this->tal->getClassFromParts($tpl, $tipo, $query);
+		$className = $this->tal->getClassName($t);
 
 
 		$cnt[] = "<?php\n";
-		$cnt[] = "//$templateName\n";
+		$cnt[] = "//$t\n";
 
-		if($parentParts){
-			$cnt[] = "require_once(\$this->compile('".addcslashes($parentParts[0], "\\")."'));\n";
-			$baseClasName = $this->tal->getClassFromParts($parentParts[0], $tipo, $query);;
+		if($parentTemplate){
+			$parentCacheName = addcslashes($this->tal->getCacheName($parentTemplate), "\\");
+			$parentClassName = addcslashes($this->tal->getClassName($parentTemplate), "\\");
+			$parentBaseName = addcslashes($parentTemplate->getBaseName(), "\\");
+			
+			$cnt[] = "\$this->compile(\$this->ensureTemplate('".$parentBaseName."'),'".$parentCacheName."');\n";
+			
+			$cnt[] = "require_once('".$parentCacheName."');\n";
+			
+			$cnt[] = "class $className extends $parentClassName{\n";
 		}else{
-			$baseClasName = '\\goetas\\atal\\Template';
-		}
-
-		$cnt[] = "class $className extends $baseClasName{\n";
-		if(!$parentParts){
+			$cnt[] = "class $className extends \\goetas\\atal\\CompiledTemplate{\n";
+			
 			$cnt[] = "function display(){\n";
 			$cnt[] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?>";
 
@@ -301,7 +290,7 @@ class Compiler extends BaseClass{
 			}
 			// fine bug
 
-			$cnt[] = "<?php\t}\n ";
+			$cnt[] = "<?php\t}\n";
 		}
 		foreach ( $xml->query ( "/t:atal-content/t:atal-block", array ("t" => self::NS ) ) as $node ) {
 			$tcnt = '';
@@ -328,55 +317,41 @@ class Compiler extends BaseClass{
 	 * @param string $query
 	 * @param string $destination
 	 */
-	public function compile($tpl, $tipo, $query, $destination) {
-		$this->template = $tpl;
+	public function compile(Template $t, $string, $destination) {
+		$this->template = $t->getBaseName();
 
-		$xml  = $this->toDom ( $tpl, $tipo, $query );
+		$xml  = $this->toDom ( $string, $t );
 
 		$xml = $this->getPreXmlFilters()->applyFilters($xml);
 
-		$baseTemplate = $this->getExtensionTemplate($xml);
-
-		$parents = array();
-		if (!$baseTemplate){
-
+		$parentTemplatePath = $this->getExtensionTemplate($xml);
+		
+		if ($parentTemplatePath){
+			$newName = $this->tal->getFinder()->getRelativeTo($parentTemplatePath, $t->getBaseName());
+		
+	
+			$parentTemplate = $this->tal->ensureTemplate($newName);
+			
+					
+			$this->findDefBlocks($xml->documentElement);
 		}else{
-			try{
-				$cw = getcwd();
-				chdir(dirname($this->template));
-
-				list ($tpl2, $tipo2, $query2) = $parentParts = $this->tal->parseUriParts($baseTemplate);
-
-				$destination2 = $this->tal->getCacheName($tpl2, $tipo2, $query2);
-
-				$this->compile($tpl2, $tipo2, $query2, $destination2);
-
-				chdir($cw);
-			}catch(\Exception $e){
-				chdir($cw);
-				throw $e;
-			}
-
-			$parents = $this->findDefBlocks($xml->documentElement);
-
+			$parentTemplate = null;
 		}
 
 		$this->findBlocks($xml->documentElement);
 
 		$this->applyTemplates ( $xml->documentElement );
 		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
-		//foreach ($parents as $nd){
-			//$nd->remove();
-		//}
-
 		$xml = $this->getPostXmlFilters()->applyFilters($xml);
 
-		$cnt = $this->serializeXml ( $tpl, $tipo, $query, $destination, $parentParts, $xml );
-		//echo "\n--cnt---$tpl----\n".$cnt."\n";
+		$cnt = $this->serializeXml ( $t, $destination, $xml, $parentTemplate );
+
 		$cnt = $this->getPostFilters()->applyFilters($cnt);
-		//if($destination2) die($cnt);
-		if(file_put_contents ( $destination.".tmp", $cnt )){
+		
+		if(file_put_contents ( $destination.".tmp", $cnt ) ){
 			rename ( $destination.".tmp", $destination );
+		}else{
+			throw new Exception("Non riesco a salvare il fine in cache");
 		}
 	}
 
