@@ -197,7 +197,7 @@ class Compiler extends BaseClass{
 		$nodes = array();
 		$dtd = null;
 		try {
-			if ($tipo) {
+			if ($t->getSelectorType()) {
 				$selector = $this->getSelectors()->selector($t->getSelectorType());
 				$selector->setDom($tplDom);
 
