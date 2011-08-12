@@ -46,14 +46,16 @@ class Attribute_foreach extends Attribute {
 
 		$code .= " foreach ( $itname as $mch[1]) { \n";
 
-		if ($loopName) {
-			$code .= "\t\$__foreach_{$name}->index++;\n";
-		}
+		
 
 		$pi = $this->dom->createProcessingInstruction ( "php", $code );
 		$node->parentNode->insertBefore ( $pi, $node );
-
-		$codeEnd = " } //endforeach \n } //endif\n unset($itname";
+		
+		$codeEnd = '';
+		if ($loopName) {
+			$codeEnd .= "\t\$__foreach_{$name}->index++;\n";
+		}
+		$codeEnd .= " } //endforeach \n } //endif\n unset($itname";
 		if ($loopName) {
 			$codeEnd .= ",\$__foreach[$loopName]";
 		}
@@ -105,7 +107,7 @@ class Attribute_foreach_helper_loop extends atal\BaseClass {
 				return $this->index == 0;
 				break;
 			case "last" :
-				return $this->index == ($this->total - 1);
+				return $this->total && $this->index == ($this->total - 1);
 				break;
 			case "counter" :
 				return $this->index + 1;
