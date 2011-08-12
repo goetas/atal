@@ -14,7 +14,7 @@ class Filesystem implements IFinder{
 		return $this->getPath($name);
 	}
 	public function isFresh($name, $current){
-		return filemtime($this->getPath($name)) < $time;
+		return filemtime($this->getPath($name)) < $current;
 	}
 	protected static function isAbsolutePath($path) {
 		return ($path [0] == "/" || substr( $path, 0, 2 ) == "\\\\" || preg_match( "#^[a-z]://#i", $path ) || preg_match( "#^[a-z-0-9-\.]+://#i", $path ));
