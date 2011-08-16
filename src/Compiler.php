@@ -531,7 +531,7 @@ class Compiler extends BaseClass{
 					$mch = array ();
 					if (preg_match ( "/^([a-z][a-z0-9_\\-]*)\\s*\\=(.*)/i", $modifierParam, $mch )) { // parametri con nome
 						$exs = trim ( $mch [2] );
-						$exs = $exs == "(" && $exs [strlen ( $exs ) - 1] == ")" ? substr ( $exs, 1, - 1 ) : $exs;
+						$exs = $exs[0] == "(" && $exs [strlen ( $exs ) - 1] == ")" ? substr ( $exs, 1, - 1 ) : $exs;
 						$modParams[$mch [1]]=$this->parsedExpression ( $exs, true );
 					} else { // parametri numerici
 						$paramStr = trim ( $modifierParam );
