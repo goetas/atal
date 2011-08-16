@@ -273,7 +273,6 @@ class ATal extends DataContainer{
 		if(!$compiledFile){
 			$compiledFile = $this->getCacheName($t);
 		}
-		
 		if( $this->debug || !is_file($compiledFile) || !$this->isFresh($t, filemtime($compiledFile))) {
 			$compiler = new Compiler ( $this );
 			$this->setupCompiler($compiler);
@@ -322,10 +321,10 @@ class ATal extends DataContainer{
 	 * @param string $tpl
 	 */
 	public function getCacheName(Template $t) {
-		return $this->getCompileDir () . DIRECTORY_SEPARATOR . "ATal_".md5($this->getFinder()->getCacheName($t->getBaseName())).".php";
+		return $this->getCompileDir () . DIRECTORY_SEPARATOR . $this->getClassName($t).".php";
 	}
 	public function getClassName(Template $t) {
-		return "ATal_".md5($this->getFinder()->getCacheName($t->getBaseName()));
+		return "ATal_".md5($t.$this->getFinder()->getCacheName($t->getBaseName()));
 	}
 	public function isFresh(Template $t, $current) {
 		return $this->getFinder()->isFresh($t->getBaseName(), $current);

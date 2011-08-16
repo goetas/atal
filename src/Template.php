@@ -30,6 +30,10 @@ protected $tpl;
 		return $this->query;
 	}
 	public function __toString() {
-		return "$this->tpl,  $this->tipo, $this->query";
+		if(!$this->tipo){
+			return $this->tpl;
+		}else{
+			return "$this->tpl#$this->tipo:$this->query";
+		}
 	}
 }
