@@ -23,7 +23,7 @@ class Modifiers extends \goetas\pluginsys\Loader {
 	 * @return IModifier
 	 */
 	public function modifier($modifier) {
-		if(!$modifier){
+		if($modifier===''){
 			$modifier = $this->defaultModifier;
 		}
 		return $this->getPlugin($modifier,true);
