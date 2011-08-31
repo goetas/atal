@@ -19,4 +19,3 @@ class Attribute_set extends Attribute{
 		$node->parentNode->insertBefore($pi, $node);
 	}
 }
-?>

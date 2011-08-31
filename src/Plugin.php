@@ -19,5 +19,3 @@ abstract class Plugin extends  BaseClass implements IPlugin{
 		return array();
 	}
 }
-
-?>

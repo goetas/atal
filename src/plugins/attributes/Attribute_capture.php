@@ -14,4 +14,3 @@ class Attribute_capture extends Attribute{
 	}
 
 }
-?>

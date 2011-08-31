@@ -141,7 +141,16 @@ class ATal extends DataContainer{
 	public function _handleT(xml\XMLDom $xml) {
 		foreach ( $xml->query ( "//t:t[not(@t:omit)]", array ("t" => self::NS ) ) as $node ) {
 			$node->setAttributeNS ( self::NS, "omit", 'true' );
+			$nds = $node->query("text()");
+			foreach ($nds as $nd){
+				$len = strlen($nd->data);
+				$txt = ltrim($nd->data);
+				$nd->deleteData(0, $len);
+				$nd->insertData(0, $txt);
+			}
 		}
+		//echo $xml->saveXML();
+		//die();
 		return $xml;
 	}
 	/**
@@ -183,7 +192,7 @@ class ATal extends DataContainer{
 	public function _replaceShortPI($str) {
 		return preg_replace_callback( "#\\<\\?([a-z]+) #", function($mch){
 			if($mch[1]=="php"){
-				return "<?$mch[1] ";
+				return "<?php ";
 			}else{
 				return "<?php print( \"<?$mch[1] \" ); ?>";
 			}

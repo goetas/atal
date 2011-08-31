@@ -17,4 +17,3 @@ class Attribute_content extends Attribute{
 
 
 }
-?>

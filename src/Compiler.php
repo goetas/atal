@@ -102,7 +102,7 @@ class Compiler extends BaseClass{
 	 * @return string
 	 */
 	public function _replaceAttributeVars($string) {
-		return preg_replace ( "/" . preg_quote ( "[#tal_attr#", "/" ) . "(" . preg_quote ( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote ( "#tal_attr#]", "/" ) . "/", "<?php print( \\1 ) ?>", $string );
+		return preg_replace ( "/" . preg_quote ( "[#tal_attr#", "/" ) . "(" . preg_quote ( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote ( "#tal_attr#]", "/" ) . "/", "<?php print( \\1 ) ?>\n", $string );
 	}
 	/**
 	 * @return \goetas\atal\loaders\Attributes
@@ -271,7 +271,7 @@ class Compiler extends BaseClass{
 			$cnt[] = "class $className extends \\goetas\\atal\\CompiledTemplate{\n";
 			
 			$cnt[] = "function display(){\n";
-			$cnt[] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?>";
+			$cnt[] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?>\n";
 
 			if ($this->tal->xmlDeclaration) {
 				$cnt []= '<?xml version="1.0" encoding="utf-8"?>' . "\n";
@@ -466,7 +466,7 @@ class Compiler extends BaseClass{
 		if (preg_match_all ( $this->currRegex, $nodo->data, $mch )) {
 			$xml = $nodo->data;
 			foreach ( $mch [0] as $k => $pattern ) {
-				$xml = str_replace ( $pattern, '<?php print( '. $this->parsedExpression ( $mch [1] [$k] ) . '); ?>' , $xml );
+				$xml = str_replace ( $pattern, '<?php print( '. $this->parsedExpression ( $mch [1] [$k] ) . "); ?>\n" , $xml );
 			}
 			if(!($nodo instanceof DOMCdataSection)){
 				$xml = "{{__NOCDATA__{$xml}__NOCDATA__}}";

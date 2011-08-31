@@ -9,5 +9,3 @@ class XMLDomElement extends \goetas\xml\XMLDomElement {
 		return parent::cloneNode($deep);
 	}
 }
-
-?>

@@ -13,4 +13,3 @@ class Attribute_replace_cdata extends Attribute{
 
 
 }
-?>

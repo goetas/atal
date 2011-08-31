@@ -10,4 +10,3 @@ class Attribute_append extends Attribute{
 
 
 }
-?>

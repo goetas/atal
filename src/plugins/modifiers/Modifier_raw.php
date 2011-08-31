@@ -8,4 +8,3 @@ class Modifier_raw extends Modifier {
 
 
 }
-?>

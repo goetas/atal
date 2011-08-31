@@ -20,4 +20,3 @@ class Attribute_simple_include extends Attribute{
 
 
 }
-?>

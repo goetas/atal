@@ -31,4 +31,3 @@ class Attribute_include_replace extends Attribute{
 
 
 }
-?>

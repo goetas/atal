@@ -29,4 +29,4 @@ class Attribute_template extends Attribute{
 		return array("call");
 	}
 }
-?>
+

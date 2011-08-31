@@ -23,4 +23,3 @@ class Modifier_first extends Modifier{
 		}
 	}
 }
-?>

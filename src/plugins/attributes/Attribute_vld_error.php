@@ -41,4 +41,3 @@ class Attribute_vld_error extends DynamicAttribute {
 		return $dom->saveXML ( $root );
 	}
 }
-?>

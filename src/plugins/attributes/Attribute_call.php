@@ -49,4 +49,3 @@ class Attribute_call extends Attribute{
 	}
 
 }
-?>

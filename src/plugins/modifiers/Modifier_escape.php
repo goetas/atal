@@ -43,4 +43,3 @@ class Modifier_escape extends Modifier {
 	}
 
 }
-?>

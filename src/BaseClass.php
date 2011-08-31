@@ -8,4 +8,3 @@ class BaseClass {
 		throw new \RuntimeException("Undefined property $varName");
 	}
 }
-?>

@@ -14,4 +14,3 @@ class Attribute_if extends Attribute {
 
 	}
 }
-?>

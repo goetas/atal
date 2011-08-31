@@ -13,4 +13,3 @@ class Modifier_default extends Modifier{
 		}
 	}
 }
-?>

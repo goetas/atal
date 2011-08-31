@@ -38,4 +38,3 @@ class Attribute_vld_error_array extends DynamicAttribute{
 		return $ret;
 	}
 }
-?>

@@ -3,7 +3,7 @@
  * Esempio
  * <?php
  * $atal->articleTitle='Two Sisters Reunite after Eighteen Years at Checkout Counter.';
-* ?>
+* 
 *
 * where template is:
 *

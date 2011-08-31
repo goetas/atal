@@ -15,4 +15,3 @@ class Attribute_replace extends Attribute{
 
 
 }
-?>

@@ -52,4 +52,3 @@ class Modifier_formatgeo extends Modifier {
 
 
 }
-?>
