@@ -8,7 +8,7 @@ use RecursiveIteratorIterator;
 /**
  * SVN revision @@version@@
  * PHP Template engine
- * @author goetas
+ * @author goetas Asmir Mustafic
  *
  */
 class ATal extends DataContainer{
