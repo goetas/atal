@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ATal 2.0" default="build-lite" basedir="../">
-	
+	<property file="build/build.properties"/>  
 	<import file="${path.build}/phing/document.xml" />
 	<import file="${path.build}/phing/package.xml" />
 	<import file="${path.build}/phing/quality.xml" />
@@ -12,12 +12,10 @@
 	
 	 <target name="clean-lite">
 	    <delete dir="${path.results}" />
-	 	<delete dir="${path.cache}" />
 		
-	 	<mkdir dir="${path.results}"  />
-	 	<mkdir dir="${path.cache}" />
+	    <mkdir dir="${path.results}"  />
 	 	
-        <mkdir dir="${path.results}/logs" />
+             <mkdir dir="${path.results}/logs" />
     </target>
 
     <target name="build">
