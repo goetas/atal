@@ -40,9 +40,9 @@ class Attribute_call extends Attribute{
 		$fcode .= "}\n";
 		$fcode .= "}\n";
 
-		$fcode .= " \$__tal->addScope(get_defined_vars()); ";
-		$fcode .= "__atal_setf_template_{$nome}(\$__tal); \n";
-		$fcode .= " \$__tal->removeScope(); ";
+		$fcode .= " \$this->addScope(get_defined_vars()); ";
+		$fcode .= "__atal_setf_template_{$nome}(\$this); \n";
+		$fcode .= " \$this->removeScope(); ";
 
 
 		return $fcode;

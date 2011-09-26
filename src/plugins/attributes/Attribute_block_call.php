@@ -14,19 +14,29 @@ class Attribute_block_call extends Attribute{
 
 		$expressions = $compiler->splitExpression($att->value,";");
 
-		$functname = md5(array_shift($expressions).$compiler->getTemplate());
+		$functname = array_shift($expressions);
 
-		$code='';
-		foreach ($expressions as $expression){
-			$mch=array();
-			if(preg_match("/^(".preg_quote( '$', "/" ) . "[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)([^=]*)\\s*=\\s*(.+)/", $expression, $mch)){
-				$code.="$mch[1]$mch[2] = $mch[3];\n";
-			}else{
-				throw new Exception("Sintassi plugin non valida: '$att->value'");
+		if(count($expressions)){
+			$code="call_user_func(function(\$data){\n\t";
+			$code.="extract(\$data);";
+			foreach ($expressions as $expression){
+				$mch=array();
+				if(preg_match("/^(".preg_quote( '$', "/" ) . "[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)([^=]*)\\s*=\\s*(.+)/", $expression, $mch)){
+					$code.="$mch[1]$mch[2] = $mch[3];\n";
+				}else{
+					throw new Exception("Sintassi plugin non valida: '$att->value'");
+				}
 			}
+			$code .=";\n";
+			$code .="\$ret = get_defined_vars(); unset(\$ret['__atal__scope']);\n";
+			$code .="return \$ret;\n}, get_defined_vars())\n";
 		}
 
-		$fcode = "\$this->{$att->value}(); ";
+		$fcode = "\$this->addScope(get_defined_vars()); ";
+
+		$fcode .= "\$this->{$functname}($code); ";
+		$fcode .= "\$this->removeScope(); ";
+
 		return $fcode;
 	}
 
