@@ -7,27 +7,24 @@ class Attribute_include extends Attribute{
 		if($att->value[0]=="#"){
 			$att->value = $this->compiler->getTemplate().$att->value;
 		}
-		$pi = $this->dom->createProcessingInstruction("php",
-		" try{
-		 \$__ntal = clone(\$this->getTal()); ".
-		" \$__tal_odir = getcwd();".
-		" chdir(".var_export(dirname($this->compiler->getTemplate()),1)."); ".
-
-		" \$__ntal->addScope(get_defined_vars());".
-		" \$__ntal->xmlDeclaration = false; \$__ntal->dtdDeclaration = false;".
-
-		" echo \$__ntal->get(\"$att->value\"); unset(\$__ntal);".
-		" chdir(\$__tal_odir); \n".
-		"}catch(\\Exception \$__tal_exception){".
-		"chdir(\$__tal_odir);".
-		"echo htmlspecialchars(\$__tal_exception->getMessage(),ENT_QUOTES,'utf-8');".
-		"}\n".
-		"unset(\$__tal_odir);\n"
-		);
+		$pi = $this->dom->createProcessingInstruction("php",$this->generatePI($node,$att));
 		$node->removeChilds();
 		$node->appendChild($pi);
 		return self::STOP_NODE;
 	}
 
+	protected function generatePI(xml\XMLDomElement $node, \DOMAttr $att) {
+		$piStr = " try{
+			 \$__ntal = clone(\$this->getTal());\n".
 
+			" \$__ntal->addScope(get_defined_vars());\n".
+			" \$__ntal->xmlDeclaration = false;\n \$__ntal->dtdDeclaration = false;\n".
+
+			" echo \$__ntal->get(".var_export($this->atal->getFinder()->getRelativeTo($att->value, $this->compiler->getTemplate()),1).");\n".
+		"}catch(\\Exception \$__tal_exception){".
+			"echo htmlspecialchars(\$__tal_exception->getMessage(),ENT_QUOTES,'utf-8');".
+		"}\n".
+		"unset(\$__ntal,\$__tal_exception);\n";
+		return $piStr;
+	}
 }
