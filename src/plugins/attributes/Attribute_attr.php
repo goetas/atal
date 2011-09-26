@@ -11,8 +11,7 @@ class Attribute_attr extends Attribute {
 
 	public function prependPI() {
 		if(!$this->fatto){
-			$this->compiler->getPostApplyTemplatesFilters()->addFilter( array($this, "_removeAttrs" ) );
-
+			$this->compiler->getPostFilters()->addFilter( array($this, "_removeAttrs" ) );
 			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "_replaceAttrs" ) );
 		}
 	}
@@ -20,6 +19,7 @@ class Attribute_attr extends Attribute {
 		foreach ( $this->attrsToRemove as $k => $attrData ){
 			@$attrData [0]->removeAttribute( $attrData [1] );
 		}
+		return $xml;
 	}
 	public static function _replaceAttrs($stream) {
 		return preg_replace( "/" . preg_quote( 'atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php foreach (\$\\1 as \$__attName => &\$__attValue){" . " echo \$__attName.\"=\\\"\$__attValue\\\" \";" . " } \n unset(\$\\1, \$__attName,\$__attValue); ?>\n", $stream );
