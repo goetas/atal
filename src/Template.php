@@ -2,8 +2,8 @@
 namespace goetas\atal;
 class Template {
 protected $tpl;
-	protected $tipo; 
-	protected $query;  
+	protected $tipo;
+	protected $query;
 	public function __construct($path) {
 		list( $this->tpl,  $this->tipo, $this->query) = $this->parseUriParts($path);
 	}

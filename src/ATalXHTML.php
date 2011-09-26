@@ -10,7 +10,6 @@ class ATalXHTML extends ATal {
 		$_this = $this;
 		$this->addCompilerSetup(function(Compiler $compiler)use($_this){
 			$compiler->getPostLoadFilters()->addFilter(array($_this,'_replaceHtmlEntities'));
-
 			$compiler->getPostFilters()->addFilter(array($_this,'_replaceShortTags'));
 		});
 

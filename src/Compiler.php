@@ -12,10 +12,6 @@ class Compiler extends BaseClass{
 	 * @var ATal
 	 */
 	protected $tal;
-	/**
-	 * @var string
-	 */
-	protected $template;
 
 	/**
 	 * Espressione regolare per trovare le variabili racchiuse tra parentresi graffe
@@ -66,11 +62,18 @@ class Compiler extends BaseClass{
 	 */
 	protected $postLoadFilters;
 	/**
+	 *
+	 * @var Template
+	 */
+	protected $templateRef;
+
+	/**
 	 * Crea un compilatore per il template $atal.
 	 * @param \goetas\atal\ATal $tal
 	 */
-	function __construct(ATal $tal) {
+	function __construct(ATal $tal, Template $templateRef) {
 		$this->tal = $tal;
+		$this->setTemplateRef($templateRef);
 
 		$this->currRegex = '/\\{([\'a-z\$\\\\].*?)\\}/';
 
@@ -90,6 +93,20 @@ class Compiler extends BaseClass{
 		$this->postFilters->addFilter(array($this,'_replaceTextVars'));
 
 	}
+	/**
+	 * @return Template
+	 */
+	public function getTemplateRef() {
+		return $this->templateRef;
+	}
+
+	/**
+	 * @param Template $templateRef
+	 */
+	public function setTemplateRef(Template $templateRef) {
+		$this->templateRef = $templateRef;
+	}
+
 	/**
 	 * @return \goetas\atal\ATal
 	 */
@@ -163,7 +180,7 @@ class Compiler extends BaseClass{
 	 * @return string
 	 */
 	public function getTemplate() {
-		return $this->template;
+		return $this->getTemplateRef()->getBaseName();
 	}
 	/**
 	 * Ritorna la regex corrente per estrarre le variabili "inline"
@@ -188,7 +205,7 @@ class Compiler extends BaseClass{
 	 * @param string $query
 	 * @return xml\XMLDom
 	 */
-	protected function toDom($xmlString, Template $t) {		
+	protected function toDom($xmlString) {
 		$xmlString = $this->getPostLoadFilters()->applyFilters($xmlString);
 
 		$tplDom = new xml\XMLDom ();
@@ -197,11 +214,11 @@ class Compiler extends BaseClass{
 		$nodes = array();
 		$dtd = null;
 		try {
-			if ($t->getSelectorType()) {
-				$selector = $this->getSelectors()->selector($t->getSelectorType());
+			if ($this->getTemplateRef()->getSelectorType()) {
+				$selector = $this->getSelectors()->selector($this->getTemplateRef()->getSelectorType());
 				$selector->setDom($tplDom);
 
-				$res = $selector->select ( $t->getSelectorQuery() );
+				$res = $selector->select ( $this->getTemplateRef()->getSelectorQuery() );
 				foreach ( $res as $node ) {
 					$nodes[]=$node ;
 				}
@@ -235,7 +252,7 @@ class Compiler extends BaseClass{
 	 * Ritorna una stringa del DOM presente in $xml
 	 * @param $xml
 	 */
-	protected function serializeXml(Template $t, $templateName, xml\XMLDom $xml, Template $parentTemplate = null, $parentTemplateAbs = null) {
+	protected function serializeXml( $templateName, xml\XMLDom $xml, Template $parentTemplate = null, $parentTemplateAbs = null) {
 
 		foreach ( $xml->query ( "//processing-instruction()" ) as $node ) {
 			if($node->parentNode && $node->parentNode->namespaceURI!=self::NS){
@@ -251,25 +268,48 @@ class Compiler extends BaseClass{
 		$cnt = array();
 
 
-		$className = $this->tal->getClassName($t);
+		$className = $this->tal->getClassName($this->getTemplateRef());
 
 
 		$cnt[] = "<?php\n";
-		$cnt[] = "//$t\n";
+		$cnt[] = "//".$this->getTemplateRef()."\n";
+
+
+		$initNodes = $xml->query ( "//t:init-function", array ("t" => self::NS ) ) ;
+
+		$init = array();
+		$init[] = "\tfunction init(){\n";
+		$init[] = "\t\tparent::init();\n";
+		$ndRemove = array();
+		$ndRemove2 = array();
+		foreach ($initNodes as $node ) {
+			if(!isset($ndRemove[$node->getAttribute('key')])){
+				$init [] = '$this->pluginVars[\''.$node->getAttribute('key').'\'] = call_user_func(function('.$node->getAttribute('params').'){';
+				$init []= $node->saveXML(false);
+				$init [] = '}, $this->pluginVars[\''.$node->getAttribute( 'key').'\']);'."\n";
+			}
+			$ndRemove[$node->getAttribute('key')] = true;
+			$ndRemove2[] = $node;
+		}
+		$init[] = "\t}\n";
+
+		foreach ($ndRemove2 as $node ) {
+			$node->remove();
+		}
 
 		if($parentTemplate){
 			$parentCacheName = addcslashes($this->tal->getCacheName($parentTemplate), "\\");
 			$parentClassName = addcslashes($this->tal->getClassName($parentTemplate), "\\");
 			$parentBaseName = addcslashes($parentTemplate->getBaseName(), "\\");
-			
+
 			$cnt[] = "\$this->compile(\$this->ensureTemplate('".$parentBaseName."'),'".$parentCacheName."');\n";
-			
+
 			$cnt[] = "require_once('".$parentCacheName."');\n";
-			
+
 			$cnt[] = "class $className extends $parentClassName{\n";
 		}else{
 			$cnt[] = "class $className extends \\goetas\\atal\\CompiledTemplate{\n";
-			
+
 			$cnt[] = "function display(){\n";
 			$cnt[] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?>\n";
 
@@ -291,6 +331,9 @@ class Compiler extends BaseClass{
 			// fine bug
 
 			$cnt[] = "<?php\t}\n";
+		}
+		if($ndRemove){
+			$cnt[] = implode("",$init);
 		}
 		foreach ( $xml->query ( "/t:atal-content/t:atal-block", array ("t" => self::NS ) ) as $node ) {
 			$tcnt = '';
@@ -317,22 +360,19 @@ class Compiler extends BaseClass{
 	 * @param string $query
 	 * @param string $destination
 	 */
-	public function compile(Template $t, $string, $destination) {
-		$this->template = $t->getBaseName();
+	public function compile($string, $destination) {
 
-		$xml  = $this->toDom ( $string, $t );
+		$xml  = $this->toDom ( $string );
 
 		$xml = $this->getPreXmlFilters()->applyFilters($xml);
 
 		$parentTemplatePath = $this->getExtensionTemplate($xml);
-		
+
 		if ($parentTemplatePath){
-			$newName = $this->tal->getFinder()->getRelativeTo($parentTemplatePath, $t->getBaseName());
-		
-	
+			$newName = $this->tal->getFinder()->getRelativeTo($parentTemplatePath, $this->getTemplateRef()->getBaseName());
+
 			$parentTemplate = $this->tal->ensureTemplate($newName);
-			
-					
+
 			$this->findDefBlocks($xml->documentElement);
 		}else{
 			$parentTemplate = null;
@@ -341,13 +381,13 @@ class Compiler extends BaseClass{
 		$this->findBlocks($xml->documentElement);
 
 		$this->applyTemplates ( $xml->documentElement );
-		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
+		$xml = $this->getPostApplyTemplatesFilters()->applyFilters($xml);
 		$xml = $this->getPostXmlFilters()->applyFilters($xml);
 
-		$cnt = $this->serializeXml ( $t, $destination, $xml, $parentTemplate );
+		$cnt = $this->serializeXml ( $destination, $xml, $parentTemplate );
 
 		$cnt = $this->getPostFilters()->applyFilters($cnt);
-		
+
 		if(file_put_contents ( $destination.".tmp", $cnt ) ){
 			rename ( $destination.".tmp", $destination );
 		}else{
@@ -402,7 +442,7 @@ class Compiler extends BaseClass{
 		$childNodes = array ();
 
 		foreach ( $node->attributes as $attr ) {
-			if($attr->namespaceURI != self::NS || $attr->localName != 'id'){ 
+			if($attr->namespaceURI != self::NS || $attr->localName != 'id'){
 				$attributes [] = $attr;
 			}
 		}
@@ -413,10 +453,10 @@ class Compiler extends BaseClass{
 		$attPluginsUsed = array ();
 		foreach ( $attributes as $attr ) {
 			if($attr->namespaceURI == self::NS && !in_array ( $attr->localName, $skip ) && $attr->ownerElement === $node){ // è un attributo tal
-				
+
 				$attPlugin = $this->attributes->attribute($attr->localName);
 				$attPlugin->setDom($node->ownerDocument);
-				
+
 				$attPluginsUsed [] = array ($attPlugin, $node, $attr );
 				$continueRule = $attPlugin->start ( $node, $attr  );
 				try {
@@ -430,7 +470,7 @@ class Compiler extends BaseClass{
 				} elseif ($continueRule & Attribute::STOP_ATTRIBUTE) {
 					break;
 				}
-				
+
 			} elseif($attr->namespaceURI != self::NS){ // non è un attributo tal{
 				$this->applyAttributeVars ( $attr );
 			}

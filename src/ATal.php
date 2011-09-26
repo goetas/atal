@@ -8,7 +8,7 @@ use RecursiveIteratorIterator;
 /**
  * SVN revision @@version@@
  * PHP Template engine
- * @author goetas Asmir Mustafic
+ * @author goetas
  *
  */
 class ATal extends DataContainer{
@@ -34,10 +34,16 @@ class ATal extends DataContainer{
 	 */
 	protected $services;
 	/**
-	 * insieme di callbackper configurare a runtime il compilatore
+	 * insieme di callback per configurare a runtime il compilatore
 	 * @var array
 	 */
 	protected $compilerSetups = array();
+	/**
+	 * insieme di callback per configurare atal
+	 * @var array
+	 */
+	protected $setups = array();
+
 	/**
 	 * Includi la dichiarazione XML nel file di output
 	 * @var bool
@@ -49,10 +55,14 @@ class ATal extends DataContainer{
 	 */
 	public $debug = 0;
 	/**
-	 * 
+	 *
 	 * @var \goetas\atal\finders\Aggregate
 	 */
 	protected $finder;
+	/**
+	 * @var array
+	 */
+	protected $pluginVars = array();
 	/**
 	 *
 	 * @param string $compileDir cartella da usare per la cache dei templates compilati
@@ -61,7 +71,7 @@ class ATal extends DataContainer{
 	public function __construct($compileDir = null, $defaultModifier='escape') {
 
 		parent::__construct();
-				
+
 		if ($compileDir !== null) {
 			$this->setCompileDir ( $compileDir );
 		}
@@ -69,15 +79,19 @@ class ATal extends DataContainer{
 		$this->modifiers = new loaders\Modifiers ( $this , $defaultModifier);
 		$this->services = new loaders\Services ( $this );
 		$this->finder = new finders\Aggregate();
-		
+
 		$this->finder->addFinder(new finders\Filesystem('.'));
 
 		$this->setup();
-	
+
 		spl_autoload_register (array($this, 'templateLoader'));
 	}
+	public function addExtension(IExtension $extension) {
+		$extension->setup($this);
+		$this->addCompilerSetup(array($extension, 'setupCompiler'));
+	}
 	/**
-	 * 
+	 *
 	 * @return \goetas\atal\finders\Aggregate
 	 */
 	public function getFinder() {
@@ -101,10 +115,20 @@ class ATal extends DataContainer{
 	 */
 	protected function setup() {
 		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') , __NAMESPACE__.'\IModifier');
+		foreach ($this->setups as $callback) {
+			call_user_func($callback, $this);
+		}
 	}
 	public function addCompilerSetup($callback) {
 		if(is_callable($callback)){
 			$this->compilerSetups[]=$callback;
+		}else{
+			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
+		}
+	}
+	public function addSetup($callback) {
+		if(is_callable($callback)){
+			$this->setups[]=$callback;
 		}else{
 			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
 		}
@@ -269,28 +293,31 @@ class ATal extends DataContainer{
 	 */
 	protected function runCompiled(Template $t) {
 		$className = $this->getClassName($t);
-		
+
 		if(!class_exists($className)){
 			throw new Exception ( "Non trovo la classe $className per compilare il file '$t' " );
 		}
-		
+
 		$ist = new $className($this);
 		$ist->addScope($this->getData ());
 		$ist->display();
+	}
+	public function & getPluginVars() {
+		return $this->pluginVars;
 	}
 	protected function compile(Template $t, $compiledFile = null) {
 		if(!$compiledFile){
 			$compiledFile = $this->getCacheName($t);
 		}
 		if( $this->debug || !is_file($compiledFile) || !$this->isFresh($t, filemtime($compiledFile))) {
-			$compiler = new Compiler ( $this );
+			$compiler = new Compiler ( $this, $t );
 			$this->setupCompiler($compiler);
-			$compiler->compile ($t,  $this->getTemplate($t) , $compiledFile);
+			$compiler->compile ($this->getTemplate($t) , $compiledFile);
 		}
 		return $compiledFile;
 	}
 	/**
-	 * 
+	 *
 	 * @return Template
 	 */
 	public function ensureTemplate($template) {
@@ -304,9 +331,9 @@ class ATal extends DataContainer{
 	 * @param string $templatePath
 	 */
 	public function output($template) {
-		
+
 		$template = $this->ensureTemplate($template);
-		
+
 		try {
 			$this->compile( $template );
 			$this->runCompiled ( $template );
