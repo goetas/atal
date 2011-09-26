@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace goetas\atal\finders;
 use goetas\atal\IFinder;
 use goetas\atal\FinderException;
@@ -6,6 +6,9 @@ class Filesystem implements IFinder{
 	protected $baseDir;
 	public function __construct($baseDir) {
 		$this->baseDir = rtrim($baseDir, "\\/");
+		if(!$this->baseDir){
+			$this->baseDir = '.';
+		}
 	}
 	public function getTemplate($name){
 		return file_get_contents($this->getPath($name));
@@ -27,6 +30,7 @@ class Filesystem implements IFinder{
 		}elseif(is_file($this->baseDir.DIRECTORY_SEPARATOR.$name)){
 			return $this->baseDir.DIRECTORY_SEPARATOR.$name;
 		}
+
 		throw new FinderException("Non riesco a trovare il template '$name'");
 	}
 	public function getRelativeTo($name, $base){
@@ -39,9 +43,9 @@ class Filesystem implements IFinder{
 		}
 		$dir = rtrim($dir, "\\/");
 		if(is_file($dir.DIRECTORY_SEPARATOR.$name)){
-			return $dir.DIRECTORY_SEPARATOR.$name;
+			return file_get_contents($dir.DIRECTORY_SEPARATOR.$name);
 		}
-		throw new FinderException("Non riesco a trovare il template '$name' xdxx");
+		throw new FinderException("Non riesco a trovare il template '$name'");
 	}
-	
+
 }
