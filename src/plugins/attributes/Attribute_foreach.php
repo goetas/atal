@@ -24,7 +24,7 @@ class Attribute_foreach extends Attribute {
 		$this->prependPI ();
 
 		$name = uniqid ( 'l' );
-		$loopName = null;
+		$loopName = "'default'";
 		if (preg_match ( "/^([a-zA-Z_0-9]+)\\s*:\\s*([^:]+)/", $att->value, $mch )) {
 			$loopName = "'" . $mch [1] . "'";
 			$att->value = trim ( $mch [2] );
@@ -46,13 +46,14 @@ class Attribute_foreach extends Attribute {
 
 		$code .= " foreach ( $itname as $mch[1]) { \n";
 
-		
+
 
 		$pi = $this->dom->createProcessingInstruction ( "php", $code );
 		$node->parentNode->insertBefore ( $pi, $node );
-		
+
 		$codeEnd = '';
 		if ($loopName) {
+			$codeEnd .= "\t\$__foreach_loop = &\$__foreach_{$name};\n";
 			$codeEnd .= "\t\$__foreach_{$name}->index++;\n";
 		}
 		$codeEnd .= " } //endforeach \n } //endif\n unset($itname";
