@@ -43,7 +43,7 @@ class Filesystem implements IFinder{
 		}
 		$dir = rtrim($dir, "\\/");
 		if(is_file($dir.DIRECTORY_SEPARATOR.$name)){
-			return file_get_contents($dir.DIRECTORY_SEPARATOR.$name);
+			return ($dir.DIRECTORY_SEPARATOR.$name);
 		}
 		throw new FinderException("Non riesco a trovare il template '$name'");
 	}
