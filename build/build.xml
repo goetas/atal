@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="ATal 2.0" default="build-lite" basedir="../">
-    <property file="build/build.properties" />
 	
 	<import file="${path.build}/phing/document.xml" />
 	<import file="${path.build}/phing/package.xml" />
