@@ -9,7 +9,7 @@ class XmlFilter extends Filter{
 	 * @return xml\XMLDom
 	 */
 	function applyFilters(xml\XMLDom $xml) {
-		foreach ($this->filters as $filter) {
+		foreach ($this->getFilters() as $filter) {
 			$xml = call_user_func($filter, $xml);
 			if(!($xml instanceof xml\XMLDom)){
 				throw new InvalidArgumentException ( "Return type of callback must be instanceof goetas\\atal\\xml\\XMLDom ");

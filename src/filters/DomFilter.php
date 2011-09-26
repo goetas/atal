@@ -9,7 +9,7 @@ class DomFilter extends Filter{
 	 * @return void
 	 */
 	function applyFilters(xml\XMLDom $xml) {
-		foreach ($this->filters as $filter) {
+		foreach ($this->getFilters() as $filter) {
 			call_user_func($filter, $xml);
 		}
 	}
