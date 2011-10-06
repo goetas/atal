@@ -11,7 +11,7 @@
  * &lt;img xmlns:t="ATal" title="eventi dell'%anno" t:translate-attr="title(anno=('2009'|modificatore_generico))"/&gt;
  */
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 class Attribute_translate_domain extends Attribute {
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {

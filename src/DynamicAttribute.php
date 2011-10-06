@@ -2,7 +2,7 @@
 namespace goetas\atal;
 use Traversable;
 use Exception;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 use goetas\atal\ATal;
 abstract class DynamicAttribute extends Attribute {

@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 use goetas\atal\ATal;
 use Exception;
@@ -22,14 +22,14 @@ class Attribute_attr extends Attribute {
 		return $xml;
 	}
 	public static function _replaceAttrs($stream) {
-		return preg_replace( "/" . preg_quote( 'atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php foreach (\$\\1 as \$__attName => &\$__attValue){" . " echo \$__attName.\"=\\\"\$__attValue\\\" \";" . " } \n unset(\$\\1, \$__attName,\$__attValue); ?>\n", $stream );
+		return preg_replace( "/" . preg_quote( 'atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php foreach (\$\\1 as \$__attName => &\$__attValue){" . " echo \$__attName.\"=\\\"\$__attValue\\\" \";" . " } \n unset(\$\\1, \$__attName,\$__attValue); ?>", $stream );
 	}
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
 		$this->prependPI();
 
 		$expressions = $this->compiler->splitExpression( $att->value, ";" );
 
-		$varName = "\$__attr_" . $node->uniqueId();
+		$varName = "\$__attr_" . spl_object_hash($node);
 
 		$precode =  "if(!isset($varName)){ $varName=array(); }\n";
 		$code = '';

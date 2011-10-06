@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 class Attribute_include_replace extends Attribute_include{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){

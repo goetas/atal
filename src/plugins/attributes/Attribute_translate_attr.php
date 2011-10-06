@@ -11,7 +11,7 @@
  * &lt;img xmlns:t="ATal" title="eventi dell'%anno" t:translate-attr="title(anno=('2009'|modificatore_generico))"/&gt;
  */
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 use goetas\atal\ATal;
 use goetas\atal\Exception;
@@ -65,7 +65,7 @@ class Attribute_translate_attr extends Attribute {
 				$attrs [$part] = '';
 			}
 		}
-		$varName = "\$__attr_" . $node->uniqueId();
+		$varName = "\$__attr_" . spl_object_hash($node);
 
 		$code = $varName . " = (array)$varName;\n";
 

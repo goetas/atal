@@ -1,7 +1,7 @@
 <?php
 namespace goetas\atal\plugins\attributes;
 use goetas\atal;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 use ArrayAccess;
 use Countable;

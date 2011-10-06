@@ -1,5 +1,6 @@
 <?php
 namespace goetas\atal;
+use goetas\xml;
 Interface IAttribute extends IPlugin{
 	/**
 	 * Ferma l'elaborazione del contenuto del nodo

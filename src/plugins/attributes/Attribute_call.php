@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use Exception;
 use goetas\atal\Attribute;
 use goetas\atal\Compiler;

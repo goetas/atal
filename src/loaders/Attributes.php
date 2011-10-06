@@ -5,7 +5,7 @@ use goetas\atal\Compiler;
 use goetas\atal\ATal;
 use goetas\atal\IModifier;
 use goetas\atal\IAttribute;
-use goetas\atal\xml;
+use goetas\xml;
 class Attributes extends \goetas\pluginsys\Loader {
 	/**
 	 * @var Compiler

@@ -6,7 +6,7 @@
  * &lt;p xmlns:t="ATal" t:translate-var="$var='Eventi del %anno'" t:content="$var|translate-var:anno='2009'"&gt;testo di prova&lt;/p&gt;
  */
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Exception;
 use goetas\atal\Attribute;
 use goetas\atal\ATal;

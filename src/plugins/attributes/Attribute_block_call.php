@@ -1,13 +1,14 @@
 <?php
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use Exception;
 use goetas\atal\Attribute;
 use goetas\atal\Compiler;
 class Attribute_block_call extends Attribute{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
 		$pi = $this->dom->createProcessingInstruction("php",self::prepareCode($att, $this->compiler));
-		$node->parentNode->replaceChild($pi, $node);
+		$node->removeChilds();
+		$node->appendChild($pi);
 		return self::STOP_NODE | self::STOP_ATTRIBUTE;
 	}
 	public static function prepareCode(\DOMAttr $att, Compiler $compiler){

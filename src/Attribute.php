@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal;
-
+use goetas\xml;
 abstract class Attribute extends Plugin implements IAttribute{
 	/**
 	 * @var xml\XMLDom

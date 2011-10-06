@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 use Exception;
 class Attribute_attr_append extends Attribute_attr {
@@ -9,7 +9,7 @@ class Attribute_attr_append extends Attribute_attr {
 		$this->prependPI();
 		$expressions = $this->compiler->splitExpression( $att->value, ";" );
 
-		$varName = "\$__attr_" . $node->uniqueId();
+		$varName = "\$__attr_" . spl_object_hash($node);
 		$precode =  "if(!isset($varName)){ $varName=array(); }\n";
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";

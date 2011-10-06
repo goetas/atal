@@ -5,6 +5,7 @@ use InvalidArgumentException;
 use ReflectionClass;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use goetas\xml;
 /**
  * SVN revision @@version@@
  * PHP Template engine
@@ -140,10 +141,7 @@ class ATal extends DataContainer{
 	 */
 	protected function setupCompiler(Compiler $compiler) {
 
-		$compiler->getPreXmlFilters()->addFilter(array($this,'_addTIDAttrs'));
 		$compiler->getPreXmlFilters()->addFilter(array($this,'_handleT'));
-
-		$compiler->getPostXmlFilters()->addFilter(array($this,'_removeTIDAttrs'));
 
 		$compiler->getPostFilters()->addFilter(array($this,'_removeXmlns'));
 
@@ -172,30 +170,6 @@ class ATal extends DataContainer{
 				$nd->deleteData(0, $len);
 				$nd->insertData(0, $txt);
 			}
-		}
-		//echo $xml->saveXML();
-		//die();
-		return $xml;
-	}
-	/**
-	 * Aggiunge a tutti i tag l'attributo ID unico. utile in fase di duplicazione dei nodi.
-	 * @param xml\XMLDom $xml
-	 * @return xml\XMLDom
-	 */
-	public function _addTIDAttrs(xml\XMLDom $xml) {
-		foreach ( $xml->query ( "//*" ) as $node ) {
-			$node->setAttributeNS ( self::NS, "id", uniqid () );
-		}
-		return $xml;
-	}
-	/**
-	 * Rimuove tutti i tag t:id aggiunti dalla fuunzione {@method _addTIDAttrs()}
-	 * @param xml\XMLDom $xml
-	 * @return xml\XMLDom
-	 */
-	public function _removeTIDAttrs(xml\XMLDom $xml) {
-		foreach ( $xml->query ( "//*[@t:id]/@t:id", array ("t" => self::NS ) ) as $tt ) {
-			$tt->ownerElement->removeAttributeNode ( $tt );
 		}
 		return $xml;
 	}

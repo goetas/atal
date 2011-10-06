@@ -1,7 +1,7 @@
 <?php
 namespace goetas\atal\filters;
 use InvalidArgumentException;
-use goetas\atal\xml;
+use goetas\xml;
 class DomFilter extends Filter{
 	/**
 	 *

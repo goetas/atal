@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal\plugins\attributes;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\Attribute;
 class Attribute_if extends Attribute {
 	static $cnt = 0;

@@ -2,7 +2,7 @@
 namespace goetas\atal\plugins\attributes;
 use Traversable;
 use Exception;
-use goetas\atal\xml;
+use goetas\xml;
 use goetas\atal\DynamicAttribute;
 use goetas\atal\ATal;
 class Attribute_vld_error extends DynamicAttribute {
