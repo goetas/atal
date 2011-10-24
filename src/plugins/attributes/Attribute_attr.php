@@ -11,7 +11,7 @@ class Attribute_attr extends Attribute {
 
 	public function prependPI() {
 		if(!$this->fatto){
-			$this->compiler->getPostFilters()->addFilter( array($this, "_removeAttrs" ) );
+			$this->compiler->getPostApplyTemplatesFilters()->addFilter( array($this, "_removeAttrs" ) );
 			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "_replaceAttrs" ) );
 		}
 	}

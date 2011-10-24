@@ -157,7 +157,7 @@ class Compiler extends BaseClass{
 	/**
 	 * @return the $postApplyTemplatesFilters
 	 */
-	public function getPostApplyTemplatesFilterss() {
+	public function getPostApplyTemplatesFilters() {
 		return $this->postApplyTemplatesFilters;
 	}
 
@@ -394,17 +394,19 @@ class Compiler extends BaseClass{
 		$this->findBlocks ( $xml->documentElement );
 
 		$this->applyTemplates ( $xml->documentElement );
-		//$xml = $this->getPostApplyTemplatesFilters()->applyFilters($xml);
+		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
 		$xml = $this->getPostXmlFilters ()->applyFilters ( $xml );
 
 		$cnt = $this->serializeXml ( $destination, $xml, $parentTemplate );
 
 		$cnt = $this->getPostFilters ()->applyFilters ( $cnt );
-
-		if (file_put_contents ( $destination . ".tmp", $cnt )) {
-			rename ( $destination . ".tmp", $destination );
+		
+		$cacheName = $destination .".". md5(microtime()) .".tmp";
+		
+		if (file_put_contents ($cacheName , $cnt )) {
+			rename ( $cacheName , $destination );
 		} else {
-			throw new Exception ( "Non riesco a salvare il fine in cache" );
+			throw new Exception ( "Non riesco a salvare il file in cache" );
 		}
 	}
 
