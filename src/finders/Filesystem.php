@@ -33,7 +33,15 @@ class Filesystem implements IFinder{
 
 		throw new FinderException("Non riesco a trovare il template '$name'");
 	}
-	public function getRelativeTo($name, $base){
+	public function getRelativeTo($fullName, $base){
+		$pos = strpos($fullName, "#");
+		if($pos!==false){
+			$name = substr($fullName, 0,$pos);
+			$hash = substr($fullName, $pos);
+		}else{
+			$name = $fullName;
+			$hash = '';
+		}
 		if(self::isAbsolutePath($base)){
 			$dir = dirname($base);
 		}elseif($this->baseDir=='.'){
@@ -43,7 +51,7 @@ class Filesystem implements IFinder{
 		}
 		$dir = rtrim($dir, "\\/");
 		if(is_file($dir.DIRECTORY_SEPARATOR.$name)){
-			return ($dir.DIRECTORY_SEPARATOR.$name);
+			return ($dir.DIRECTORY_SEPARATOR.$name).$hash;
 		}
 		throw new FinderException("Non riesco a trovare il template '$name'");
 	}
