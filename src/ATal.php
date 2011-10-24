@@ -1,5 +1,7 @@
 <?php
 namespace goetas\atal;
+use goetas\atal\extensions\fixcdata\FixCdata;
+
 use DOMException;
 use InvalidArgumentException;
 use ReflectionClass;
@@ -116,6 +118,7 @@ class ATal extends DataContainer{
 	 */
 	protected function setup() {
 		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') , __NAMESPACE__.'\IModifier');
+		$this->addExtension(new FixCdata());
 		foreach ($this->setups as $callback) {
 			call_user_func($callback, $this);
 		}
