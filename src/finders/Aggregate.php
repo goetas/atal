@@ -1,8 +1,12 @@
 <?php 
 namespace goetas\atal\finders;
+
+use goetas\atal\TemplateRef;
+use goetas\atal\Template;
+
 use goetas\atal\IFinder;
 use goetas\atal\FinderException;
-class Aggregate implements IFinder{
+class Aggregate {
 	protected $finders = array();
 	public function __construct(array $finders = array()) {
 		array_map(array($this, 'addFinder'), array_reverse($finders));
@@ -20,40 +24,37 @@ class Aggregate implements IFinder{
 		$this->finders = array();
 		array_map(array($this, 'addFinder'), array_reverse($finders));
 	}
-	public function getTemplate($name){
+	public function getTemplate(TemplateRef $templateRef, &$finderRef = null){
 		foreach (array_reverse($this->finders) as $finder){
 			try {
-				return $finder->getTemplate($name);
+				$res = $finder->getTemplate($templateRef);
+				$finderRef = $finder;
+				return $res;
 			}catch (FinderException $e){
 			}
 		}
-		throw new FinderException(__METHOD__." Non riesco a trovare il template '$name'");
+		throw new FinderException(__METHOD__." Non riesco a trovare il template '$templateRef'");
 	}
-	public function getCacheName($name){
+	public function getCacheName(TemplateRef $templateRef, &$finderRef = null){
 		foreach (array_reverse($this->finders) as $finder){
 			try {
-				return $k.DIRECTORY_SEPARATOR.$finder->getCacheName($name);
+				$res = $finder->getCacheName($templateRef);
+				$finderRef = $finder;
+				return $res; 
 			}catch (FinderException $e){
 			}
 		}
-		throw new FinderException(__METHOD__." Non riesco a trovare il template '$name'");
+		throw new FinderException(__METHOD__." Non riesco a trovare il template '$templateRef'");
 	}
-	public function isFresh($name, $current){
+	public function isFresh(TemplateRef $templateRef, $current, &$finderRef = null){
 		foreach (array_reverse($this->finders) as $finder){
 			try {
-				return $finder->isFresh($name, $current);
+				$res = $finder->isFresh($templateRef, $current); 
+				$finderRef = $finder;
+				return $res; 
 			}catch (FinderException $e){
 			}
 		}
-		throw new FinderException(__METHOD__." Non riesco a trovare il template '$name'");
-	}
-	public function getRelativeTo($name, $current){
-		foreach (array_reverse($this->finders) as $finder){
-			try {
-				return $finder->getRelativeTo($name, $current);
-			}catch (FinderException $e){
-			}
-		}
-		throw new FinderException(__METHOD__." Non riesco a trovare il template '$name' from '$current'");
+		throw new FinderException(__METHOD__." Non riesco a trovare il template '$templateRef'");
 	}
 }

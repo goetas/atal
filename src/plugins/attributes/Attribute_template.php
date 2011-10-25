@@ -6,7 +6,7 @@ use DOMException;
 use goetas\atal\Attribute;
 class Attribute_template extends Attribute{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
-		$nome = md5($att->value.$this->compiler->getTemplate());
+		$nome = md5($att->value.$this->compiler->getTemplate()->getRef());
 		$piStart = $this->dom->createProcessingInstruction("php",
 		" if (!function_exists('__atal_template_".$nome."')){ function __atal_template_".$nome." (\$__tal ){ ".
 		" extract(\$__tal->getData()); ");

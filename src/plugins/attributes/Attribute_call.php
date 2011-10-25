@@ -15,7 +15,7 @@ class Attribute_call extends Attribute{
 
 		$expressions = $compiler->splitExpression($att->value,";");
 
-		$functname = md5(array_shift($expressions).$compiler->getTemplate());
+		$functname = md5(array_shift($expressions).$compiler->getTemplate()->getRef());
 
 		$code='';
 		foreach ($expressions as $expression){
@@ -27,7 +27,7 @@ class Attribute_call extends Attribute{
 			}
 		}
 
-		$nome = md5($att->value.$compiler->getTemplate());
+		$nome = md5($att->value.$compiler->getTemplate()->getRef());
 
 		$fcode = " if (!defined(' __atal_setf_template_{$nome}')) { "; // uso le costanti per oviare ad un bug di php in cui function_exists sbaglia
 		$fcode .= "define(' __atal_setf_template_{$nome}', true);  ";

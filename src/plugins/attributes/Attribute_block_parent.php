@@ -14,7 +14,7 @@ class Attribute_block_parent extends Attribute{
 
 		$expressions = $compiler->splitExpression($att->value,";");
 
-		$functname = md5(array_shift($expressions).$compiler->getTemplate());
+		$functname = md5(array_shift($expressions).$compiler->getTemplate()->getRef());
 
 		$code='';
 		foreach ($expressions as $expression){

@@ -65,15 +65,15 @@ class Compiler extends BaseClass{
 	 *
 	 * @var Template
 	 */
-	protected $templateRef;
+	protected $template;
 
 	/**
 	 * Crea un compilatore per il template $atal.
 	 * @param \goetas\atal\ATal $tal
 	 */
-	function __construct(ATal $tal, Template $templateRef) {
+	function __construct(ATal $tal, Template $template) {
 		$this->tal = $tal;
-		$this->setTemplateRef ( $templateRef );
+		$this->setTemplate ( $template );
 
 		$this->currRegex = '/\\{([\'a-z\$\\\\].*?)\\}/';
 
@@ -97,15 +97,15 @@ class Compiler extends BaseClass{
 	/**
 	 * @return Template
 	 */
-	public function getTemplateRef() {
-		return $this->templateRef;
+	public function getTemplate() {
+		return $this->template;
 	}
 
 	/**
 	 * @param Template $templateRef
 	 */
-	public function setTemplateRef(Template $templateRef) {
-		$this->templateRef = $templateRef;
+	public function setTemplate(Template $template) {
+		$this->template = $template;
 	}
 
 	/**
@@ -177,13 +177,6 @@ class Compiler extends BaseClass{
 	function __clone() {
 	}
 	/**
-	 * Ritorna il nome del template corrente
-	 * @return string
-	 */
-	public function getTemplate() {
-		return $this->getTemplateRef ()->getBaseName ();
-	}
-	/**
 	 * Ritorna la regex corrente per estrarre le variabili "inline"
 	 * @return string $currRegex
 	 */
@@ -201,25 +194,28 @@ class Compiler extends BaseClass{
 	/**
 	 * Ritorna la rappresentazione DOM di $tpl e esegui il filtro di tipo "selettore".
 	 * Applica anche i filtri postLoad sul file
-	 * @param string $tpl
-	 * @param string $tipo
-	 * @param string $query
 	 * @return xml\XMLDom
 	 */
-	protected function toDom($xmlString) {
-		$xmlString = $this->getPostLoadFilters ()->applyFilters ( $xmlString );
+	protected function toDom() {
+		
+		
+		
+		$xmlString = $this->getPostLoadFilters ()->applyFilters ( $this->getTemplate ()->getContent() );
 
 		$tplDom = new xml\XMLDom ();
 		$tplDom->loadXMLStrict ( $xmlString );
 
 		$nodes = array ();
 		$dtd = null;
+		
+		$ref = $this->getTemplate ()->getRef();
+		
 		try {
-			if ($this->getTemplateRef ()->getSelectorType ()) {
-				$selector = $this->getSelectors ()->selector ( $this->getTemplateRef ()->getSelectorType () );
+			if ($ref->getSelectorType ()) {
+				$selector = $this->getSelectors ()->selector ( $ref->getSelectorType () );
 				$selector->setDom ( $tplDom );
 
-				$res = $selector->select ( $this->getTemplateRef ()->getSelectorQuery () );
+				$res = $selector->select ( $ref->getSelectorQuery () );
 				foreach ( $res as $node ) {
 					$nodes [] = $node;
 				}
@@ -251,18 +247,14 @@ class Compiler extends BaseClass{
 	}
 	protected function cleanXml(xml\XMLDomElement $el){
 
-
-
-
 	}
 	/**
 	 * Ritorna una stringa del DOM presente in $xml
 	 * @param $xml
 	 */
-	protected function serializeXml($templateName, xml\XMLDom $xml, Template $parentTemplate = null, $parentTemplateAbs = null) {
+	protected function serializeXml( $destinationClass, xml\XMLDom $xml, TemplateRef $parentTemplate = null) {
 
 		$this->cleanXml($xml->documentElement);
-
 
 
 		foreach ( $xml->query ( "//processing-instruction()" ) as $node ) {
@@ -278,10 +270,9 @@ class Compiler extends BaseClass{
 
 		$cnt = array ();
 
-		$className = $this->tal->getClassName ( $this->getTemplateRef () );
-
 		$cnt [] = "<?php\n";
-		$cnt [] = "//" . $this->getTemplateRef () . "\n";
+		$cnt [] = "// ATal generated template. Do not edit.\n";
+		$cnt [] = "// Compiled form : " . $this->getTemplate ()->getRef()->getRealPath(). "\n";
 
 		$initNodes = $xml->query ( "//t:init-function", array ("t" => self::NS ) );
 		foreach ( $initNodes as $node ) {
@@ -309,17 +300,14 @@ class Compiler extends BaseClass{
 		}
 
 		if ($parentTemplate) {
-			$parentCacheName = addcslashes ( $this->tal->getCacheName ( $parentTemplate ), "\\" );
+			$parentCacheName = addcslashes ( $this->tal->getCachePath( $parentTemplate ), "\\" );
 			$parentClassName = addcslashes ( $this->tal->getClassName ( $parentTemplate ), "\\" );
 			$parentBaseName = addcslashes ( $parentTemplate->getBaseName (), "\\" );
 
-			$cnt [] = "\$this->compile(\$this->ensureTemplate('" . $parentBaseName . "'),'" . $parentCacheName . "');\n";
-
-			$cnt [] = "require_once('" . $parentCacheName . "');\n";
-
-			$cnt [] = "class $className extends $parentClassName{\n";
+			$cnt [] = "\$this->compile(\$this->convertTemplateName('" . $parentBaseName . "', \$__tal_template_info['templateRef']));\n";
+			$cnt [] = "class $destinationClass extends $parentClassName {\n";
 		} else {
-			$cnt [] = "class $className extends \\goetas\\atal\\CompiledTemplate{\n";
+			$cnt [] = "class $destinationClass extends \\goetas\\atal\\CompiledTemplate{\n";
 
 			$cnt [] = "function display(){\n";
 			$cnt [] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?>\n";
@@ -340,7 +328,6 @@ class Compiler extends BaseClass{
 				}
 			}
 			// fine bug
-
 
 			$cnt [] = "<?php\t}\n";
 		}
@@ -368,24 +355,21 @@ class Compiler extends BaseClass{
 	}
 	/**
 	 * Compila un template e salvalo in $destination
-	 * @param string $tpl
-	 * @param string $tipo
-	 * @param string $query
-	 * @param string $destination
 	 */
-	public function compile($string, $destination) {
-
-		$xml = $this->toDom ( $string );
+	public function compile($destinationFile, $destinationClass) {
+		
+		$xml = $this->toDom ( );
 
 		$xml = $this->getPreXmlFilters ()->applyFilters ( $xml );
 
 		$parentTemplatePath = $this->getExtensionTemplate ( $xml );
 
 		if ($parentTemplatePath) {
-			$newName = $this->tal->getFinder ()->getRelativeTo ( $parentTemplatePath, $this->getTemplateRef ()->getBaseName () );
-
-			$parentTemplate = $this->tal->ensureTemplate ( $newName );
-
+			
+			$parentTemplateRef = $this->tal->convertTemplateName ( $parentTemplatePath , $this->getTemplate()->getRef());
+			// ask to current finder!
+			$parentTemplate = $this->getTemplate()->getFinder ()->getTemplate($parentTemplateRef)->getRef();
+						
 			$this->findDefBlocks ( $xml->documentElement );
 		} else {
 			$parentTemplate = null;
@@ -397,14 +381,14 @@ class Compiler extends BaseClass{
 		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
 		$xml = $this->getPostXmlFilters ()->applyFilters ( $xml );
 
-		$cnt = $this->serializeXml ( $destination, $xml, $parentTemplate );
+		$cnt = $this->serializeXml ( $destinationClass, $xml, $parentTemplate );
 
 		$cnt = $this->getPostFilters ()->applyFilters ( $cnt );
 		
-		$cacheName = $destination .".". md5(microtime()) .".tmp";
+		$cacheName = $destinationFile .".". md5(microtime()) .".tmp";
 		
 		if (file_put_contents ($cacheName , $cnt )) {
-			rename ( $cacheName , $destination );
+			rename ( $cacheName , $destinationFile );
 		} else {
 			throw new Exception ( "Non riesco a salvare il file in cache" );
 		}
@@ -551,7 +535,7 @@ class Compiler extends BaseClass{
 			$code = '';
 			$nodo = $attr->ownerElement;
 			if (! $nodo->ownerDocument) {
-				echo htmlentities ( $attr->value );
+				//echo htmlentities ( $attr->value );
 			}
 			$val = $attr->value;
 

@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal;
-
+use goetas\xml;
 abstract class Selector extends Plugin implements ISelector{
 	/**
 	 *

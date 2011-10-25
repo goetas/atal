@@ -15,7 +15,7 @@ class ATalXHTML extends ATal {
 
 	}
 	function _replaceShortTags($str) {
-		$cnnt = preg_replace_callback( "#<(textarea|div|span|p|h1|h2|h3|h4|h5|h6|label|fieldset|leggend|strong|small|cite|script|style|select|em|td|b)[\\s]*([^\\>]*)/>#i", function($mch){
+		$cnnt = preg_replace_callback( "#<(iframe|textarea|div|span|p|h1|h2|h3|h4|h5|h6|label|fieldset|leggend|strong|small|cite|script|style|select|em|td|b)[\\s]*([^\\>]*)/>#i", function($mch){
 			if(strpos($mch[0], '<base ')!==false || strpos($mch[0], '<br')!==false || strpos($mch[0], '<param ')!==false){
 				return $mch[0];
 			}

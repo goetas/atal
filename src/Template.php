@@ -1,39 +1,64 @@
 <?php
 namespace goetas\atal;
 class Template {
-protected $tpl;
-	protected $tipo;
-	protected $query;
-	public function __construct($path) {
-		list( $this->tpl,  $this->tipo, $this->query) = $this->parseUriParts($path);
+	/**
+	 * @var TemplateRef
+	 */
+	protected $ref;
+	/**
+	 * @var string
+	 */
+	protected $fullName;
+	protected $content;
+	
+	public function __construct(TemplateRef $ref, IFinder $finder) {
+		$this->ref = $ref;
+		$this->finder = $finder;
+	
 	}
-	protected function parseUriParts($path) {
-		list ( $tpl, $query ) = explode ( '#', $path, 2 );
-		$mch = array ();
-		$tipo = null;
+	
+	/**
+	 * 
+	 * @var IFinder
+	 */
+	protected $finder;
+	
+	/**
+	 * @param field_type $content
+	 */
+	public function setContent($content) {
+		$this->content = $content;
+	}
 
-		if (strlen ( $query ) && preg_match ( "/^([a-z]+)\\s*:(.+)$/i", $query, $mch )) {
-			$tipo = $mch [1];
-			$query = $mch [2];
-		} elseif (strlen ( $query )) {
-			$tipo = "id";
-		}
-		return array (trim ( $tpl ), $tipo, $tipo ? $query : null );
+	/**
+	 * @return the $finder
+	 */
+	public function getFinder() {
+		return $this->finder;
 	}
-	public function getBaseName() {
-		return $this->tpl;
+
+	/**
+	 * @return the $ref
+	 */
+	public function getRef() {
+		return $this->ref;
+	}	
+	/**
+	 * @return the $fullName
+	 */
+	public function getFullName() {
+		return $this->fullName;
 	}
-	public function getSelectorType() {
-		return $this->tipo;
+	/**
+	 * @return the $content
+	 */
+	public function getContent() {
+		return $this->content;
 	}
-	public function getSelectorQuery() {
-		return $this->query;
-	}
-	public function __toString() {
-		if(!$this->tipo){
-			return $this->tpl;
-		}else{
-			return "$this->tpl#$this->tipo:$this->query";
-		}
+	/**
+	 * @param field_type $fullName
+	 */
+	public function setFullName($fullName) {
+		$this->fullName = $fullName;
 	}
 }
