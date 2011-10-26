@@ -189,12 +189,6 @@ class ATal extends DataContainer{
 		foreach ( $xml->query ( "//t:t[not(@t:omit)]", array ("t" => self::NS ) ) as $node ) {
 			$node->setAttributeNS ( self::NS, "omit", 'true' );
 			$nds = $node->query("text()");
-			foreach ($nds as $nd){
-				$len = strlen($nd->data);
-				$txt = ltrim($nd->data);
-				$nd->deleteData(0, $len);
-				$nd->insertData(0, $txt);
-			}
 		}
 		return $xml;
 	}
