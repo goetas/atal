@@ -197,9 +197,9 @@ class Compiler extends BaseClass{
 	 * @return xml\XMLDom
 	 */
 	protected function toDom() {
-		
-		
-		
+
+
+
 		$xmlString = $this->getPostLoadFilters ()->applyFilters ( $this->getTemplate ()->getContent() );
 
 		$tplDom = new xml\XMLDom ();
@@ -207,9 +207,9 @@ class Compiler extends BaseClass{
 
 		$nodes = array ();
 		$dtd = null;
-		
+
 		$ref = $this->getTemplate ()->getRef();
-		
+
 		try {
 			if ($ref->getSelectorType ()) {
 				$selector = $this->getSelectors ()->selector ( $ref->getSelectorType () );
@@ -273,6 +273,9 @@ class Compiler extends BaseClass{
 		$cnt [] = "<?php\n";
 		$cnt [] = "// ATal generated template. Do not edit.\n";
 		$cnt [] = "// Compiled form : " . $this->getTemplate ()->getRef()->getRealPath(). "\n";
+		if($parentTemplate){
+			$cnt [] = "// Parent : " . $parentTemplate->getRealPath(). "\n";
+		}
 
 		$initNodes = $xml->query ( "//t:init-function", array ("t" => self::NS ) );
 		foreach ( $initNodes as $node ) {
@@ -357,7 +360,7 @@ class Compiler extends BaseClass{
 	 * Compila un template e salvalo in $destination
 	 */
 	public function compile($destinationFile, $destinationClass) {
-		
+
 		$xml = $this->toDom ( );
 
 		$xml = $this->getPreXmlFilters ()->applyFilters ( $xml );
@@ -365,11 +368,11 @@ class Compiler extends BaseClass{
 		$parentTemplatePath = $this->getExtensionTemplate ( $xml );
 
 		if ($parentTemplatePath) {
-			
+
 			$parentTemplateRef = $this->tal->convertTemplateName ( $parentTemplatePath , $this->getTemplate()->getRef());
 			// ask to current finder!
 			$parentTemplate = $this->getTemplate()->getFinder ()->getTemplate($parentTemplateRef)->getRef();
-						
+
 			$this->findDefBlocks ( $xml->documentElement );
 		} else {
 			$parentTemplate = null;
@@ -384,9 +387,9 @@ class Compiler extends BaseClass{
 		$cnt = $this->serializeXml ( $destinationClass, $xml, $parentTemplate );
 
 		$cnt = $this->getPostFilters ()->applyFilters ( $cnt );
-		
+
 		$cacheName = $destinationFile .".". md5(microtime()) .".tmp";
-		
+
 		if (file_put_contents ($cacheName , $cnt )) {
 			rename ( $cacheName , $destinationFile );
 		} else {
@@ -435,9 +438,22 @@ class Compiler extends BaseClass{
 				throw new Exception ( "Dichiarazione duplicata per il blocco '$blockName'" );
 			}
 			$nomi [$blockName] = true;
-			$blocco->setAttributeNs ( self::NS, "block-def", $blockName );
-			$blocco->setAttributeNs ( self::NS, "block-call", $blockName );
-			$blocco->removeAttributeNs ( self::NS, "block" );
+
+
+			$nodesAttr = array ();
+			while ( $blocco->attributes->length ) {
+				$nodesAttr [] = $attr = $blocco->attributes->item ( 0 );
+				$blocco->removeAttributeNode ( $attr );
+			}
+			while ( count ( $nodesAttr ) ) {
+				$nodeAttr = array_shift ( $nodesAttr );
+				if($nodeAttr->name=='block' && $nodeAttr->namespaceURI==self::NS){
+					$blocco->setAttributeNs ( self::NS, "block-def", $blockName );
+					$blocco->setAttributeNs ( self::NS, "block-call", $blockName );
+				}else{
+					$blocco->setAttributeNode ($nodeAttr);
+				}
+			}
 		}
 	}
 	/**

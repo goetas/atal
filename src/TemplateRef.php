@@ -57,6 +57,9 @@ class TemplateRef {
 	public function getBaseName() {
 		return $this->tpl;
 	}
+	public function setBaseName($tpl) {
+		$this->tpl = $tpl;
+	}
 	public function getSelectorType() {
 		return $this->tipo;
 	}

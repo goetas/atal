@@ -31,12 +31,14 @@ class Attribute_block_call extends Attribute{
 			$code .=";\n";
 			$code .="\$ret = get_defined_vars(); unset(\$ret['__atal__scope']);\n";
 			$code .="return \$ret;\n}, get_defined_vars())\n";
+		}else{
+			$code="get_defined_vars()";
 		}
 
-		$fcode = "\$this->addScope(get_defined_vars()); ";
+		//$fcode = "\$this->addScope(get_defined_vars()); ";
 
 		$fcode .= "\$this->{$functname}($code); ";
-		$fcode .= "\$this->removeScope(); ";
+		//$fcode .= "\$this->removeScope(); ";
 
 		return $fcode;
 	}
