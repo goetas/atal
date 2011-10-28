@@ -26,7 +26,7 @@ class Attribute_block_parent extends Attribute{
 			}
 		}
 
-		$fcode = "parent::{$att->value}(); ";
+		$fcode = "parent::{$att->value}(get_defined_vars()); ";
 		return $fcode;
 	}
 

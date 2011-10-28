@@ -10,16 +10,22 @@ use ArrayIterator;
 use DOMAttr;
 class Attribute_foreach extends Attribute {
 	protected $fatto = false;
-	public function prependPI() {
+	public function prependPI($node) {
 		if (! $this->fatto) {
-			$str = "\nrequire_once( '" . addslashes ( __FILE__ ) . "');\n";
-			$pi = $this->dom->createProcessingInstruction ( "php", $str );
-			$this->dom->insertBefore ( $pi, $this->dom->documentElement );
+			$init = $node->addChildNs(atal\ATal::NS, 'init-function');
+			$init->setAttr("key", __CLASS__);
+			$init->setAttr("params", '$precedente');
+
+			$str = "\nif(!\$precedente){";
+
+			$str .= "\n\treturn require_once( '" . addslashes ( __FILE__ ) . "');\n";
+			$str .= "}\n";
+			$init->addTextChild($str);
 			$this->fatto = true;
 		}
 	}
 	function start(xml\XMLDomElement $node, DOMAttr $att) {
-		$this->prependPI ();
+		$this->prependPI ($node);
 
 		$name = uniqid ( 'l' );
 		$loopName = "'default'";
