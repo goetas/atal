@@ -13,8 +13,6 @@ class Attribute_foreach extends Attribute {
 	public function prependPI() {
 		if (! $this->fatto) {
 			$str = "\nrequire_once( '" . addslashes ( __FILE__ ) . "');\n";
-			$str .= "if(!(\$__foreach instanceof \\" . __NAMESPACE__ . "\\Attribute_foreach_helper)) {\n\t\$__foreach = new \\" . __NAMESPACE__ . "\\Attribute_foreach_helper();\n}";
-
 			$pi = $this->dom->createProcessingInstruction ( "php", $str );
 			$this->dom->insertBefore ( $pi, $this->dom->documentElement );
 			$this->fatto = true;
@@ -37,6 +35,7 @@ class Attribute_foreach extends Attribute {
 		$code .= " if ( is_array($itname) || ( $itname instanceof Traversable ) ) {\n";
 
 		if ($loopName) {
+			$code .= "\t\$__foreach=\\" . __NAMESPACE__ . "\\Attribute_foreach_helper::getInstance(); \n";
 			$code .= "\t\$__foreach[$loopName]=new \\" . __NAMESPACE__ . "\\Attribute_foreach_helper_loop(); \n";
 			$code .= "\t\$__foreach_{$name} = \$__foreach[$loopName];\n";
 			$code .= "\t\$__foreach_{$name}->total=(($itname instanceof Countable) || is_array($itname))?count($itname):null;\n";
@@ -69,6 +68,15 @@ class Attribute_foreach extends Attribute {
 
 }
 class Attribute_foreach_helper implements ArrayAccess, Countable, IteratorAggregate {
+	protected static $ist;
+	protected function __construct(){
+	}
+	public static function getInstance() {
+		if(is_null(self::$ist)){
+			self::$ist = new self();
+		}
+		return self::$ist;
+	}
 	protected $data = array ();
 
 	public function count() {
