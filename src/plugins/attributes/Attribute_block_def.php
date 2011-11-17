@@ -6,26 +6,59 @@ use goetas\atal\Attribute;
 use goetas\atal\Compiler;
 use goetas\atal\ATal;
 class Attribute_block_def extends Attribute{
-	function start(xml\XMLDomElement $node, \DOMAttr $att){
+	protected $fatto = false;
 
-		$piS = $this->dom->createProcessingInstruction( "php", "\nfunction {$att->value} (array \$__atal__scope  = array()) {\n\textract(\$__atal__scope, EXTR_OVERWRITE);\n" );
+	protected $elsToRemove = array();
+
+	public function prependPI() {
+		if(!$this->fatto){
+			$this->compiler->getPostFilters()->addFilter( array($this, "_removeEls" ) );
+		}
+	}
+	public function _removeEls($stream) {
+		foreach ($this->elsToRemove as $el){
+			$stream = preg_replace("~<([0-9a-z]+:)?".preg_quote($el, "~")."~", "", $stream);
+			$stream = preg_replace("~</([0-9a-z]+:)?".preg_quote($el, "~").">~", "", $stream);
+		}
+		return $stream;
+	}
+	function start(xml\XMLDomElement $node, \DOMAttr $att){
+		$this->prependPI();
+		$piS = $this->dom->createProcessingInstruction( "php", "\nfunction {$att->value} (array \$__atal__scope, \$__atal__parent = 0) {\n\textract(\$__atal__scope); unset(\$__atal__scope);\n" );
 		$piE = $this->dom->createProcessingInstruction( "php", " \n}\n " );
 
+
+		$piSif = $this->dom->createProcessingInstruction( "php", "\nif (!\$__atal__parent){ // start self omit\n" );
+		$piEif = $this->dom->createProcessingInstruction( "php", " \n} // end self omit\n " );
+
 		$newNode = $node->ownerDocument->documentElement->addChildNs(ATal::NS, "atal-block");
+
 
 		$newNode->appendChild($piS);
 		$newNode->addTextChild("\n");
 
+		$nodeName = "atal-block-remove-".spl_object_hash($node);
+
+		$this->elsToRemove[]=$nodeName;
+
+		$newNode->appendChild($piSif);
+
+		$tomittedNode = $newNode->addChildNs(ATal::NS, $nodeName);
 
 
-		$tomittedNode = $newNode->addChildNs(ATal::NS, "atal-block-omit");
+		$tomittedNode->appendChild($piEif);
+
 		$node->removeAttributeNode($att);
+
+		$startToCopy = 0;
 		foreach ( $node->attributes as $attNode ) {
-			if($attNode->namespaceURI==ATal::NS && $attNode->name!='block-call'){
-				$tomittedNode->setAttributeNS (ATal::NS, $attNode->name, $attNode->value);
+			if($startToCopy){
+				$tomittedNode->setAttributeNS ($attNode->namespaceURI, $attNode->name, $attNode->value);
+			}elseif($attNode->namespaceURI==ATal::NS && $attNode->name=='block-call'){
+				$startToCopy = 1;
 			}
 		}
-		$tomittedNode->setAttributeNS(ATal::NS, "omit", "true");
+		//$tomittedNode->setAttributeNS(ATal::NS, "omit", "\$__atal__parent");
 
 		foreach ($node->childNodes as $nd){
 			$tomittedNode->appendChild($nd->cloneNode(true));
@@ -33,7 +66,16 @@ class Attribute_block_def extends Attribute{
 
 		$newNode->appendChild($piE);
 
+
+
+
 		$this->compiler->applyTemplates($tomittedNode);
+
+
+		if($att->value == "rowImmobileElenco"){
+			//echo $newNode->saveXML();
+			//die();
+		}
 
 	}
 }

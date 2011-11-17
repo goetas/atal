@@ -65,7 +65,7 @@ class Attribute_foreach extends Attribute {
 		if ($loopName) {
 			$codeEnd .= ",\$__foreach[$loopName]";
 		}
-		$codeEnd .= " )";
+		$codeEnd .= " ); ";
 
 		$pi = $this->dom->createProcessingInstruction ( "php", $codeEnd );
 		$node->parentNode->insertAfter ( $pi, $node );

@@ -4,29 +4,18 @@ use goetas\xml;
 use goetas\atal\ATal;
 use DOMException;
 use goetas\atal\Attribute;
-class Attribute_template extends Attribute{
+class Attribute_template extends Attribute_block_def{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
-		$nome = md5($att->value.$this->compiler->getTemplate()->getRef());
-		$piStart = $this->dom->createProcessingInstruction("php",
-		" if (!function_exists('__atal_template_".$nome."')){ function __atal_template_".$nome." (\$__tal ){ ".
-		" extract(\$__tal->getData()); ");
-		$node->parentNode->insertBefore($piStart, $node);
+		parent::start($node, $att);
 
-		$piEnd = $this->dom->createProcessingInstruction("php"," }} ");
-		$node->parentNode->insertAfter($piEnd, $node);
+		$php = Attribute_call::prepareCode($att, $this->compiler);
 
-		if($node->hasAttributeNS(ATal::NS, 'call') && $node->getAttributeNS(ATal::NS,"call") == $att->value){
-			$pi = $this->dom->createProcessingInstruction("php",Attribute_call::prepareCode($att, $this->compiler));
-			$node->parentNode->insertAfter($pi, $piEnd);
-			try {
-				$node->removeAttributeNS(ATal::NS,"call");
-			}catch (DOMException $e){
 
-			}
-		}
-	}
-	function depends(){
-		return array("call");
+		$piS = $this->dom->createProcessingInstruction( "php", $php);
+		$node->parentNode->replaceChild($piS, $node);
+
+		return self::STOP_NODE | self::STOP_ATTRIBUTE;
 	}
 }
+
 
