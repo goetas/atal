@@ -5,7 +5,7 @@ use Traversable;
 use Exception;
 use goetas\xml;
 class Attribute_vld_error_array extends DynamicAttribute{
-	function run(array $params = array(), $content = '') {
+	static function run(array $params = array(), $content = '') {
 		if (! count ( $params )) {
 			throw new Exception ( "AttrRuntimePlugin_vld_error: specificare almeno un parametro" );
 		}
