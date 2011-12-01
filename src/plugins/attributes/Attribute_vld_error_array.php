@@ -16,6 +16,9 @@ class Attribute_vld_error_array extends DynamicAttribute{
 		}
 		$dom = new xml\XMLDom ();
 		foreach ( $errorData as $index => $errori ) {
+			// se il plugin viene chiamato n volte i messaggi vengono stampanti n volte, poso specificare params[index]
+			if ($params ["index"] && $params ["index"]!=$index) continue;
+
 			$root = $dom->addChildNS ( "Validation", "validation" )->setAttr ( "index", $index );
 			//main
 			if ($errori instanceof Exception) {
