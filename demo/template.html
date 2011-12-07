@@ -11,10 +11,11 @@
 			</li>
 		</ul>
 		<hr/>
-
-		<div t:foreach="$users as $user => $age">
-			<h2>{$user}</h2>			
-			<span class="age " t:attr-append="$age>60?class=' over60'" t:content="$age">99</span>
+		<div class="details" t:block="listdetail">
+			<div t:foreach="$users as $user => $age">
+				<h2>{$user}</h2>			
+				<span class="age " t:attr-append="$age>60?class=' over60'" t:content="$age">99</span>
+			</div>
 		</div>
 	</body>
 </html>
