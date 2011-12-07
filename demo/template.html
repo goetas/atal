@@ -4,6 +4,17 @@
 		<title>Hello world</title>
 	</head>
 	<body>
-		<h1 t:omit="rand(0,1)">{$variabile}</h1>
+		<h1>{$users|count} total users</h1>
+		<ul t:if="count($users)">
+			<li t:foreach="$users as $user => $age" t:if="$age>25">
+				<a t:attr="$age>60?class='over60'" href="?username={$user|urlencode}" t:content="$user">example name</a>
+			</li>
+		</ul>
+		<hr/>
+
+		<div t:foreach="$users as $user => $age">
+			<h2>{$user}</h2>			
+			<span class="age " t:attr-append="$age>60?class=' over60'" t:content="$age">99</span>
+		</div>
 	</body>
 </html>
