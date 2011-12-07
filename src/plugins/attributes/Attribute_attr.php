@@ -8,11 +8,31 @@ class Attribute_attr extends Attribute {
 	protected $fatto = false;
 
 	protected $attrsToRemove = array();
-
-	public function prependPI() {
+	public function impodeAttr($attrs) {
+		if(!count($attrs)){
+			return '';
+		}
+		$ret = array();
+		foreach ($attrs as $name => $value){
+			$ret[] = $name.'="'.$value.'"';
+		}
+		return " "-implode(" ", $ret);
+	}
+	public function prependPI(xml\XMLDomElement $node) {
 		if(!$this->fatto){
 			$this->compiler->getPostApplyTemplatesFilters()->addFilter( array($this, "_removeAttrs" ) );
 			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "_replaceAttrs" ) );
+
+			$init = $node->addChildNs(ATal::NS, 'init-function');
+			$init->setAttr("key", __CLASS__);
+			$init->setAttr("params", '$precedente');
+
+			$str = "\nif(!\$precedente){";
+			$str .= "\n\treturn require_once( '" . addslashes ( __FILE__ ) . "');\n";
+			$str .= "}\n";
+			$init->addTextChild($str);
+			
+			$this->fatto = true;
 		}
 	}
 	public function _removeAttrs($xml) {
@@ -22,10 +42,10 @@ class Attribute_attr extends Attribute {
 		return $xml;
 	}
 	public static function _replaceAttrs($stream) {
-		return preg_replace( "/" . preg_quote( 'atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php foreach (\$\\1 as \$__attName => &\$__attValue){" . " echo \$__attName.\"=\\\"\$__attValue\\\" \";" . " } \n unset(\$\\1, \$__attName,\$__attValue); ?>", $stream );
+		return preg_replace( "/" . preg_quote( ' atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php ".__CLASS__."::impodeAttr(\$\\1); unset(\$\\1); ?>", $stream );
 	}
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
-		$this->prependPI();
+		$this->prependPI($node);
 
 		$expressions = $this->compiler->splitExpression( $att->value, ";" );
 

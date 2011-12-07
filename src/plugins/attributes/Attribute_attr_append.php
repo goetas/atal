@@ -6,7 +6,7 @@ use Exception;
 class Attribute_attr_append extends Attribute_attr {
 
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
-		$this->prependPI();
+		$this->prependPI($node);
 		$expressions = $this->compiler->splitExpression( $att->value, ";" );
 
 		$varName = "\$__attr_" . spl_object_hash($node);
