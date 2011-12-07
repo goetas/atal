@@ -16,4 +16,4 @@ $tal->output("template.html");
 
 
 // extended template
-$tal->output("template-ext.html");
+//$tal->output("template-ext.html");

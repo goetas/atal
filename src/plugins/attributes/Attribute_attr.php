@@ -8,7 +8,7 @@ class Attribute_attr extends Attribute {
 	protected $fatto = false;
 
 	protected $attrsToRemove = array();
-	public function impodeAttr($attrs) {
+	public static function impodeAttr($attrs) {
 		if(!count($attrs)){
 			return '';
 		}
