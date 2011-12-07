@@ -17,7 +17,7 @@ class Attribute_block_call extends Attribute{
 	}
 	public function _removeEls($stream) {
 		foreach ($this->elsToRemove as $el){
-			$stream = preg_replace("~><([0-9a-z]+:)?".preg_quote($el, "~")."/>~", "", $stream);
+			$stream = preg_replace("~(><([0-9a-z]+:)?".preg_quote($el, "~")."/>)|(><([0-9a-z]+:)?".preg_quote($el, "~")."></([0-9a-z]+:)?".preg_quote($el, "~").">)~", "", $stream);
 		}
 		return $stream;
 	}
