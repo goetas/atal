@@ -16,7 +16,7 @@ class Attribute_attr extends Attribute {
 		foreach ($attrs as $name => $value){
 			$ret[] = $name.'="'.$value.'"';
 		}
-		return " "-implode(" ", $ret);
+		return " ".implode(" ", $ret);
 	}
 	public function prependPI(xml\XMLDomElement $node) {
 		if(!$this->fatto){
@@ -42,7 +42,7 @@ class Attribute_attr extends Attribute {
 		return $xml;
 	}
 	public static function _replaceAttrs($stream) {
-		return preg_replace( "/" . preg_quote( ' atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php ".__CLASS__."::impodeAttr(\$\\1); unset(\$\\1); ?>", $stream );
+		return preg_replace( "/" . preg_quote( ' atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php echo ".__CLASS__."::impodeAttr(\$\\1); unset(\$\\1); ?>", $stream );
 	}
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
 		$this->prependPI($node);
