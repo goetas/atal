@@ -49,12 +49,6 @@ class Attribute_block_call extends Attribute{
 				$startToRemove = 1;
 			}
 		}
-
-		if($att->value == "rowImmobileElenco"){
-			//echo $node->saveXML();
-			//die();
-		}
-
 		return self::STOP_NODE | self::STOP_ATTRIBUTE;
 	}
 	public static function prepareCode(\DOMAttr $att, Compiler $compiler, $scope = '$this->', $parent = 0){
