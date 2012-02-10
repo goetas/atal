@@ -6,7 +6,7 @@ class Modifier_default extends Modifier{
 		return self::defaultValue($str, $params[0]);
 	}
 	public static function defaultValue($test, $alternative){
-		if($test){
+		if(strlen($test)){
 			return $test;
 		}else{
 			return $alternative;
