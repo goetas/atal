@@ -278,9 +278,6 @@ class Compiler extends BaseClass{
 		}
 
 		$initNodes = $xml->query ( "//t:init-function", array ("t" => self::NS ) );
-		foreach ( $initNodes as $node ) {
-
-		}
 
 		$init = array ();
 		$init [] = "\tfunction init(){\n";

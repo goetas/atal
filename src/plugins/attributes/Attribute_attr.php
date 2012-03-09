@@ -22,12 +22,12 @@ class Attribute_attr extends Attribute {
 		if(!$this->fatto){
 			$this->compiler->getPostApplyTemplatesFilters()->addFilter( array($this, "_removeAttrs" ) );
 			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "_replaceAttrs" ) );
-
-			$init = $node->addChildNs(ATal::NS, 'init-function');
+			
+			$init = $node->ownerDocument->documentElement->addChildNs(ATal::NS, 'init-function');
 			$init->setAttr("key", __CLASS__);
 			$init->setAttr("params", '$precedente');
 
-			$str = "\nif(!\$precedente){";
+			$str = "\nif(!\$precedenteZZZ){";
 			$str .= "\n\treturn require_once( '" . addslashes ( __FILE__ ) . "');\n";
 			$str .= "}\n";
 			$init->addTextChild($str);
