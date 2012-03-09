@@ -15,11 +15,15 @@ class ATalXHTML extends ATal {
 
 	}
 	function _replaceShortTags($str) {
-		$str = preg_replace_callback( "#<(iframe|textarea|div|span|p|h1|h2|h3|h4|h5|h6|label|fieldset|leggend|strong|small|cite|script|style|select|em|td|b)[\\s]*([^\\>]*)/>#i", function($mch){
+		$str = preg_replace_callback( "#<(iframe|textarea|div|span|p|h1|h2|h3|h4|h5|h6|label|fieldset|leggend|strong|small|cite|script|style|select|em|td|b)([\\s].*?|[\\s]*)/>#i", function($mch){
 			if(strpos($mch[0], '<base ')!==false || strpos($mch[0], '<br')!==false || strpos($mch[0], '<param ')!==false){
 				return $mch[0];
 			}
-			return "<$mch[1] $mch[2]></$mch[1]>";
+			if(strlen(trim($mch[2]))){
+				return "<$mch[1] ".trim($mch[2])."></$mch[1]>";
+			}else{
+				return "<$mch[1]></$mch[1]>";
+			}
 		}, $str );
 		return $str;
 	}
