@@ -37,7 +37,7 @@ class Attribute_foreach extends Attribute {
 		$mch = $this->compiler->splitExpression ( $att->value, " as " );
 		$itname = "\$__tal_" . $name;
 
-		$code .= " $itname = " . ($mch [0] [0] == "$" && $mch [0] [strlen ( $mch [0] ) - 1] != ")" ? "&" . $mch [0] : $mch [0]) . "; \n ";
+		$code .= " $itname = " . ($mch [0] [0] == "$" && $mch [0] [strlen ( $mch [0] ) - 1] != ")" ? "" . $mch [0] : $mch [0]) . "; \n ";
 		$code .= " if ( is_array($itname) || ( $itname instanceof Traversable ) ) {\n";
 
 		if ($loopName) {
