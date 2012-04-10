@@ -10,7 +10,7 @@ class Attribute_simple_include extends Attribute{
 		$pi = $this->dom->createProcessingInstruction("php",
 
 		"\$__tal_odir = getcwd();".
-		" chdir(dirname(\$this->getTemplateRer()->getRealPath())); ".
+		" chdir(dirname(\$this->getTemplateRef()->getRealPath())); ".
 		" echo @file_get_contents(\"$att->value\");".
 		" chdir(\$__tal_odir);unset(\$__tal_odir); \n"
 		);
