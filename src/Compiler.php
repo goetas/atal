@@ -252,7 +252,7 @@ class Compiler extends BaseClass{
 	 * Ritorna una stringa del DOM presente in $xml
 	 * @param $xml
 	 */
-	protected function serializeXml( $destinationClass, xml\XMLDom $xml, TemplateRef $parentTemplate = null) {
+	protected function serializeXml( $destinationClass, xml\XMLDom $xml, xml\XMLDom $originalXML , TemplateRef $parentTemplate = null) {
 
 		$this->cleanXml($xml->documentElement);
 
@@ -315,8 +315,8 @@ class Compiler extends BaseClass{
 			if ($this->tal->xmlDeclaration) {
 				$cnt [] = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 			}
-			if ($xml->doctype) {
-				$cnt [] = $xml->saveXML ( $xml->doctype ) . "\n";
+			if ($originalXML->doctype) {
+				$cnt [] = $originalXML->saveXML ( $originalXML->doctype ) . "\n";
 			}
 			// mettendo queste 2 query xpath insieme il php genera i nodi in ordine sbagliato
 			foreach ( $xml->query ( "/processing-instruction()" ) as $node ) {
@@ -359,9 +359,10 @@ class Compiler extends BaseClass{
 	public function compile($destinationFile, $destinationClass) {
 
 		$xml = $this->toDom ( );
+		$originalXML = $xml;
 
 		$xml = $this->getPreXmlFilters ()->applyFilters ( $xml );
-
+		
 		$parentTemplatePath = $this->getExtensionTemplate ( $xml );
 
 		if ($parentTemplatePath) {
@@ -381,7 +382,7 @@ class Compiler extends BaseClass{
 		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
 		$xml = $this->getPostXmlFilters ()->applyFilters ( $xml );
 
-		$cnt = $this->serializeXml ( $destinationClass, $xml, $parentTemplate );
+		$cnt = $this->serializeXml ( $destinationClass, $xml, $originalXML, $parentTemplate );
 
 		$cnt = $this->getPostFilters ()->applyFilters ( $cnt );
 
