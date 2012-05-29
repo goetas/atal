@@ -22,7 +22,7 @@ class Attribute_include extends Attribute{
 			"\$__ntal->xmlDeclaration = false;\n".
 			"\$__ntal->dtdDeclaration = false;\n".
 
-			"\$__ntal->outputTemplate(\$this->getTal()->convertTemplateName('".addcslashes($att->value,"\\'")."', \$this->getTemplateRef()));\n".
+			"\$__ntal->outputTemplate(\$this->getTal()->convertTemplateName(\"".addcslashes($att->value,"\"")."\", \$this->getTemplateRef()));\n".
 		"}catch(\\Exception \$__tal_exception){\n".
 			"if(\$this->getTal()->debug) {\n".
 				"echo htmlspecialchars(\$__tal_exception->getMessage(),ENT_QUOTES,'utf-8');\n".
