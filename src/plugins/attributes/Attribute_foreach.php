@@ -28,7 +28,7 @@ class Attribute_foreach extends Attribute {
 		$this->prependPI ($node);
 
 		$name = uniqid ( 'l' );
-		$loopName = "'default'";
+		$loopName = null;
 		if (preg_match ( "/^([a-zA-Z_0-9]+)\\s*:\\s*([^:]+)/", $att->value, $mch )) {
 			$loopName = "'" . $mch [1] . "'";
 			$att->value = trim ( $mch [2] );
@@ -46,7 +46,7 @@ class Attribute_foreach extends Attribute {
 			$code .= "\t\$__foreach_{$name} = \$__foreach[$loopName];\n";
 			$code .= "\t\$__foreach_{$name}->total=(($itname instanceof Countable) || is_array($itname))?count($itname):null;\n";
 		} else {
-			$code .= "\t\$__foreach_loop{$name} = null;";
+			//$code .= "\t\$__foreach_loop{$name} = null;";
 		}
 
 		$code .= " foreach ( $itname as $mch[1]) { \n";
