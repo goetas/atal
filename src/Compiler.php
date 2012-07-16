@@ -583,7 +583,7 @@ class Compiler extends BaseClass{
 			$var = trim ( $mch [2] );
 		} else { //  usa il pre modificatre di default
 			$parts [] = '';
-		}
+		}		
 		foreach ( $parts as $part ) {
 			if (preg_match ( '#(^[a-z][a-z0-9_\\-]*\s*:)#i', $part, $mch )) { // modificatore con parametri
 				// modifier con parametri
@@ -605,7 +605,9 @@ class Compiler extends BaseClass{
 				}
 				$var = "\$this->modifiers->modifier('$modName')->modify($var, " . $this->dumpKeyed ( $modParams ) . " )";
 			} elseif ($part === '' || preg_match ( '#(^[a-z][a-z0-9_\\-]*$)#i', $part )) { // modificatore senza parametri o di default
-				$var = "\$this->modifiers->modifier('$part')->modify($var , array() )";
+				if($part!=='raw'){
+					$var = "\$this->modifiers->modifier('$part')->modify($var , array() )";
+				}
 			} else {
 				throw new Exception ( "Errore di sintassi vicino a '$part'" );
 			}
