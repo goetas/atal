@@ -16,7 +16,19 @@ class Modifier_strip2br extends Modifier {
 		$str = strip_tags($str, $params[0]);
 		*/
 
-		$str = strip_tags($str);
+		if(isset($params['allow'])){
+			$allow = implode("|",explode(",",$params['allow']));
+
+			$str = preg_replace_callback("~<($allow)[\\s]*>|</($allow)>~i", function($mch){
+				
+				return str_replace(array("<", ">"), array("[[[[~", "~]]]]"),  $mch[0]);
+				
+			}, $str);
+		}
+		
+		
+		$str = strip_tags($str, $allow);
+		
 
 		$str = preg_replace('~^[\p{Z}\t]+|[\p{Z}\t]+$~miu', "", $str);
 		$str = trim($str);
@@ -30,6 +42,10 @@ class Modifier_strip2br extends Modifier {
 		}
 		$str = htmlspecialchars((string) $str, ENT_QUOTES, 'UTF-8');
 		$str = nl2br($str);
+		
+		if(isset($params['allow'])){
+			$str = str_replace( array("[[[[~", "~]]]]"),array("<", ">"),  $str);
+		}
 		return $str;
 	}
 }
