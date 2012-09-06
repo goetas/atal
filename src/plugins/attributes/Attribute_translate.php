@@ -38,8 +38,11 @@ class Attribute_translate extends Attribute {
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
 
-		$nsp = " xmlns=\"".$node->lookupNamespaceURI(null)."\"";
-
+		if($node->prefix){
+			$nsp = " xmlns:".$node->prefix."=\"".$node->lookupNamespaceURI($node->prefix)."\"";
+		}else{
+			$nsp = " xmlns=\"".$node->lookupNamespaceURI(null)."\"";
+		}
 		$str = str_replace($nsp,"", trim( $node->saveXML( false )) ) ;
 
 
