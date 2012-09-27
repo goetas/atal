@@ -15,19 +15,15 @@ class Attribute_include extends Attribute{
 
 	protected function generatePI(xml\XMLDomElement $node, \DOMAttr $att) {
 		$piStr = "\n".
-		"try{\n".
-			"\$__ntal = clone(\$this->getTal());\n".
 
-			"\$__ntal->addScope(get_defined_vars());\n".
-			"\$__ntal->xmlDeclaration = false;\n".
-			"\$__ntal->dtdDeclaration = false;\n".
+		"\$__ntal = clone(\$this->getTal());\n".
 
-			"\$__ntal->outputTemplate(\$this->getTal()->convertTemplateName(\"".addcslashes($att->value,"\"")."\", \$this->getTemplateRef()));\n".
-		"}catch(\\Exception \$__tal_exception){\n".
-			"if(\$this->getTal()->debug) {\n".
-				"echo htmlspecialchars(\$__tal_exception->getMessage(),ENT_QUOTES,'utf-8');\n".
-			"}\n".
-		"}\n".
+		"\$__ntal->addScope(get_defined_vars());\n".
+		"\$__ntal->xmlDeclaration = false;\n".
+		"\$__ntal->dtdDeclaration = false;\n".
+
+		"\$__ntal->outputTemplate(\$this->getTal()->convertTemplateName(\"".addcslashes($att->value,"\"")."\", \$this->getTemplateRef()));\n".
+
 		"unset(\$__ntal,\$__tal_exception);\n";
 		return $piStr;
 	}
