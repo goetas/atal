@@ -13,7 +13,7 @@ class DataContainer {
 	public function __construct(){
 		$this->addScope ( );
 	}
-	
+
 	function __clone() {
 		$this->clear ();
 	}
@@ -30,13 +30,11 @@ class DataContainer {
 	 */
 	public function addScope(array $vars = array()) {
 		unset ( $vars ["this"], $vars ["__file"] );
-		$this->scope [] = &$this->data ;
-		end ( $this->scope );
-		$key = key ( $this->scope );
-		foreach ($vars as $k => &$v){
-			$this->scope [$key][$k]=&$v;
-		}
-		$this->data = &$this->scope [$key];
+
+		$scope = array_replace($this->data, $vars);
+
+		$this->data = &$scope;
+		$this->scope [] = &$scope;
 	}
 	/**
 	 * rimuovi uno stack
