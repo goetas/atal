@@ -15,7 +15,7 @@ class DataContainer {
 	}
 
 	function __clone() {
-		$this->clear ();
+		//$this->clear ();
 	}
 	/**
 	 * Ritorna lo stack corrente
