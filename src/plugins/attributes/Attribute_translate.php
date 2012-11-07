@@ -1,5 +1,7 @@
 <?php
 namespace goetas\atal\plugins\attributes;
+use goetas\xml\XMLDomElement;
+
 use goetas\xml;
 use goetas\atal\Attribute;
 use goetas\atal\ATal;
@@ -38,14 +40,9 @@ class Attribute_translate extends Attribute {
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
 
-		if($node->prefix){
-			$nsp = " xmlns:".$node->prefix."=\"".$node->lookupNamespaceURI($node->prefix)."\"";
-		}else{
-			$nsp = " xmlns=\"".$node->lookupNamespaceURI(null)."\"";
-		}
-		$str = str_replace($nsp,"", trim( $node->saveXML( false )) ) ;
+		$str = self::extractStringFromNode($node);
 
-
+		
 		$code ="";
 		if($options["nl2br"]){
 			$code .=" nl2br( ";
@@ -60,6 +57,20 @@ class Attribute_translate extends Attribute {
 		$node->removeChilds();
 		$node->appendChild( $pi );
 		return self::STOP_NODE;
+	}
+	public static function extractStringFromNode(XMLDomElement $node) {
+		if($node->prefix){
+			$nsp = " xmlns:".$node->prefix."=\"".$node->lookupNamespaceURI($node->prefix)."\"";
+		}else{
+			$nsp = " xmlns=\"".$node->lookupNamespaceURI(null)."\"";
+		}
+		$str = str_replace($nsp,"", trim( $node->saveXML( false )) ) ;
+		
+	
+		if(!class_exists('ambient\mvc\Ambiente', false) && strpos($attr->value, ':whitespace=true')===false && strpos($attr->value, ':whitespace = true')===false){
+			$str = preg_replace('/\s+/', " ", $str);
+		}
+		return $str;
 	}
 	public static function checkHtml($s) {
 		if(strpos($s,"&")!==false){
