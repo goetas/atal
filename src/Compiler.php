@@ -232,7 +232,9 @@ class Compiler extends BaseClass{
 		$root = $tplDom->addChildNS ( self::NS, "atal-content" );
 
 		foreach ( $nodes as $node ) {
-			$root->appendChild ( $tplDom->importNode ( $node, true ) );
+			if (!($node instanceof \DOMDocumentType)) {
+				$root->appendChild ( $tplDom->importNode ( $node, true ) );
+			}
 		}
 		return $tplDom;
 	}
