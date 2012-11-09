@@ -4,6 +4,7 @@ use DOMException;
 use DOMText;
 use DOMCdataSection;
 use DOMNode;
+use DOMProcessingInstruction;
 use goetas\xml;
 class Compiler extends BaseClass{
 
@@ -201,10 +202,10 @@ class Compiler extends BaseClass{
 
 
 		$xmlString = $this->getPostLoadFilters ()->applyFilters ( $this->getTemplate ()->getContent() );
-
+	
 		$tplDom = new xml\XMLDom ();
 		$tplDom->loadXMLStrict ( $xmlString );
-
+		
 		$nodes = array ();
 		$dtd = null;
 
@@ -215,13 +216,10 @@ class Compiler extends BaseClass{
 				$selector = $this->getSelectors ()->selector ( $ref->getSelectorType () );
 				$selector->setDom ( $tplDom );
 
-				$res = $selector->select ( $ref->getSelectorQuery () );
-				foreach ( $res as $node ) {
-					$nodes [] = $node;
-				}
+				$nodes = $selector->select ( $ref->getSelectorQuery () );
 			} else {
 				$dtd = $tplDom->doctype;
-				$nodes [] = $tplDom->documentElement;
+				$nodes = $tplDom->childNodes;
 			}
 		} catch (\Exception $e ) {
 			throw $e;
@@ -253,7 +251,7 @@ class Compiler extends BaseClass{
 	 * @param $xml
 	 */
 	protected function serializeXml( $destinationClass, xml\XMLDom $xml, xml\XMLDom $originalXML , TemplateRef $parentTemplate = null) {
-
+		
 		$this->cleanXml($xml->documentElement);
 
 
@@ -513,6 +511,8 @@ class Compiler extends BaseClass{
 				$this->applyTemplates ( $child );
 			} elseif ($child instanceof DOMText) {
 				$this->applyTextVars ( $child ); // applica le variabili sul testo
+			} elseif ($child instanceof DOMProcessingInstruction) {
+				$this->applyTextVars ( $child ); // applica le variabili sul testo
 			}
 		}
 	}
@@ -524,22 +524,26 @@ class Compiler extends BaseClass{
 	 * @param $attr
 	 * @return void
 	 */
-	public function applyTextVars(DOMText $nodo) {
+	public function applyTextVars(DOMNode $nodo) {
 		$mch = array ();
 		if (preg_match_all ( $this->currRegex, $nodo->data, $mch )) {
 			$xml = $nodo->data;
 			foreach ( $mch [0] as $k => $pattern ) {
 				$xml = str_replace ( $pattern, '<?php print( ' . $this->parsedExpression ( $mch [1] [$k] ) . "); ?>\n", $xml );
 			}
-			if (! ($nodo instanceof DOMCdataSection)) {
-				$xml = "{{__NOCDATA__{$xml}__NOCDATA__}}";
-			}
-			$newEl = $nodo->ownerDocument->createCDATASection ( $xml );
-
-			if ($nodo->parentNode instanceof DOMNode) {
-				$nodo->parentNode->replaceChild ( $newEl, $nodo );
-			} else {
-				throw new Exception ( $nodo->nodeName . ' non ha un padre. ' );
+			
+			if ($nodo instanceof \DOMText){
+				if (! ($nodo instanceof DOMCdataSection)) {
+					$xml = "{{__NOCDATA__{$xml}__NOCDATA__}}";
+				}
+				$newEl = $nodo->ownerDocument->createCDATASection ( $xml );
+				if ($nodo->parentNode instanceof DOMNode) {
+					$nodo->parentNode->replaceChild ( $newEl, $nodo );
+				} else {
+					throw new Exception ( $nodo->nodeName . ' non ha un padre. ' );
+				}
+			}else{
+				$nodo->data = $xml;
 			}
 		}
 	}
