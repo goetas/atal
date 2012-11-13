@@ -345,7 +345,7 @@ class ATal extends DataContainer{
 	
 			$this->runCompiled ( $info["class"], $template, $info["finder"] );
 		} catch ( DOMException $e ) {
-			throw new Exception ( "Errore durante la compilazione di '$templatePath' (" . $e->getMessage () . ")" , $e->getCode(), $e);
+			throw new Exception ( "Errore durante la compilazione di '$template' (" . $e->getMessage () . ")" , $e->getCode(), $e);
 		}
 	}
 	/**
