@@ -31,7 +31,7 @@ class Attribute_block_def extends Attribute{
 		$piSif = $this->dom->createProcessingInstruction( "php", "\nif (!\$__atal__parent){ // start self omit\n" );
 		$piEif = $this->dom->createProcessingInstruction( "php", " \n} // end self omit\n " );
 
-		$newNode = $node->ownerDocument->documentElement->addChildNs(ATal::NS, "atal-block");
+		$newNode = $node->ownerDocument->addChildNs(ATal::NS, "atal-block");
 
 
 		$newNode->appendChild($piS);

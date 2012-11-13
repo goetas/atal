@@ -206,40 +206,29 @@ class Compiler extends BaseClass{
 		$tplDom = new xml\XMLDom ();
 		$tplDom->loadXMLStrict ( $xmlString );
 		
-		$nodes = array ();
-		$dtd = null;
-
 		$ref = $this->getTemplate ()->getRef();
-
-		try {
-			if ($ref->getSelectorType ()) {
+		
+		if ($ref->getSelectorType ()) {
+			try {
+				
 				$selector = $this->getSelectors ()->selector ( $ref->getSelectorType () );
 				$selector->setDom ( $tplDom );
 
 				$nodes = $selector->select ( $ref->getSelectorQuery () );
-			} else {
-				$dtd = $tplDom->doctype;
-				$nodes = $tplDom->childNodes;
+				
+				$tplDom = new xml\XMLDom ();
+				foreach ( $nodes as $node ) {
+					$tplDom->appendChild ( $tplDom->importNode ( $node, true ) );
+				}
+					
+			} catch (\Exception $e ) {
+				throw $e;
 			}
-		} catch (\Exception $e ) {
-			throw $e;
-		}
-
-		if (! $dtd) {
-			$tplDom = new xml\XMLDom ();
-		}
-
-		$root = $tplDom->addChildNS ( self::NS, "atal-content" );
-
-		foreach ( $nodes as $node ) {
-			if (!($node instanceof \DOMDocumentType)) {
-				$root->appendChild ( $tplDom->importNode ( $node, true ) );
-			}
-		}
+		}		
 		return $tplDom;
 	}
 	protected function getExtensionTemplate(xml\XMLDom $xml) {
-		$res = $xml->query ( "/t:atal-content/*/@t:extends", array ("t" => self::NS ) );
+		$res = $xml->query ( "/*/@t:extends", array ("t" => self::NS ) );
 		if ($res->length) {
 			return $res->item ( 0 )->value;
 		}
@@ -322,7 +311,7 @@ class Compiler extends BaseClass{
 			foreach ( $xml->query ( "/processing-instruction()" ) as $node ) {
 				$cnt [] = $xml->saveXML ( $node );
 			}
-			foreach ( $xml->query ( "/t:atal-content/node()|/text()", array ("t" => self::NS ) ) as $node ) {
+			foreach ( $xml->query ( "/node()|/text()", array ("t" => self::NS ) ) as $node ) {
 				if ($node->namespaceURI != self::NS) {
 					$cnt [] = $xml->saveXML ( $node );
 				}
@@ -335,7 +324,7 @@ class Compiler extends BaseClass{
 		if ($ndRemove) {
 			$cnt [] = implode ( "", $init );
 		}
-		foreach ( $xml->query ( "/t:atal-content/t:atal-block", array ("t" => self::NS ) ) as $node ) {
+		foreach ( $xml->query ( "/t:atal-block", array ("t" => self::NS ) ) as $node ) {
 			$tcnt = '';
 			foreach ( $node->childNodes as $cn ) {
 				$tcnt .= $xml->saveXML ( $cn );
@@ -397,7 +386,7 @@ class Compiler extends BaseClass{
 
 	public function findDefBlocks(xml\XMLDomElement $node) {
 
-		$res = $node->query ( "/t:atal-content/*[@t:extends]/*", array ("t" => self::NS ) );
+		$res = $node->query ( "/*[@t:extends]/*", array ("t" => self::NS ) );
 
 		$parents = array ();
 		$nomi = array ();
