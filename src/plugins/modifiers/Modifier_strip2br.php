@@ -4,7 +4,9 @@ use goetas\atal\Modifier;
 class Modifier_strip2br extends Modifier {
 	function modify($str, array $params=array()){
 
-		$str = preg_replace('~[\\n\\r]+~m', ' ', $str);
+		if (!isset($params['new_lines'])){
+			$str = preg_replace('~[\\n\\r]+~m', ' ', $str);
+		}
 
 		$str = preg_replace('~\\n*<br\\s*/>\\n*~mi', "\n", $str);
 		/*
