@@ -367,7 +367,8 @@ class Compiler extends BaseClass{
 
 		$this->findBlocks ( $xml->documentElement );
 
-		$this->applyTemplates ( $xml->documentElement );
+		$this->applyTemplatesToChilds ( $xml->childNodes );
+
 		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
 		$xml = $this->getPostXmlFilters ()->applyFilters ( $xml );
 
