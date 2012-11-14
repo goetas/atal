@@ -14,18 +14,21 @@ class Attribute_attr_append extends Attribute_attr {
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
 
+
 		foreach ( $expressions as $expression ){
 			list ( $condition, $attName, $attExpr ) = $this->splitAttrExpression( $expression );
-			if($node->hasAttribute( $attName )){
+			if($node->hasAttribute( $attName ) && !isset($this->attrsToRemove  [spl_object_hash($node).$attName])){
 				$attVal = $node->getAttribute( $attName );
 
 				if(preg_match( $regex, $attVal )){
-					$precode = $varName . "['$attName']=(isset({$varName}['$attName']))?{$varName}['$attName']:\"" . addcslashes(preg_replace( $regex, "{\\1}", $attVal ),"\"\\") . "\";\n";
+					$precode = $varName . "['$attName'][]=\"" . addcslashes(preg_replace( $regex, "{\\1}", $attVal ),"\"\\") . "\";\n";
 				}else{
-					$precode .= $varName . "['$attName']=(isset({$varName}['$attName']))?{$varName}['$attName']:'" . addcslashes( $node->getAttribute( $attName ), "'" ) . "';\n";
+					$precode .= $varName . "['$attName'][]='" . addcslashes( $node->getAttribute( $attName ), "'" ) . "';\n";
 				}
-				$this->attrsToRemove  [] = array($node, $attName );
+				$this->attrsToRemove  [spl_object_hash($node).$attName] = array($node, $attName );
+				
 			}
+			
 
 			list ( $prefix, $name ) = explode( ":", $attName );
 
@@ -36,14 +39,7 @@ class Attribute_attr_append extends Attribute_attr {
 					$code .= $varName . "['xmlns:$prefix']='" . addcslashes($node->lookupNamespaceURI( $prefix ),"'")  . "'; \n";
 				}
 			}
-			$code .= "if ($condition) {
-				if(isset(" . $varName . "['$attName'])){
-					" . $varName . "['$attName'].=" . $this->compiler->parsedExpression( $attExpr ) . ";
-				}else{
-					" . $varName . "['$attName']=" . $this->compiler->parsedExpression( $attExpr ) . ";
-				}
-
-		 }\n";
+			$code .= "if ($condition) { " . $varName . "['$attName'][]=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
 		}
 
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );

@@ -5,7 +5,7 @@ use goetas\atal\Attribute;
 use goetas\atal\ATal;
 use Exception;
 class Attribute_attr extends Attribute {
-	protected $fatto = false;
+	private $fatto = false;
 
 	protected $attrsToRemove = array();
 	public static function impodeAttr($attrs) {
@@ -13,8 +13,8 @@ class Attribute_attr extends Attribute {
 			return '';
 		}
 		$ret = array();
-		foreach ($attrs as $name => $value){
-			$ret[] = $name.'="'.$value.'"';
+		foreach ($attrs as $name => $values){
+			$ret[] = $name.' = "'.(is_array($values)?implode("", $values):$values).'"';
 		}
 		return " ".implode(" ", $ret);
 	}
@@ -22,12 +22,10 @@ class Attribute_attr extends Attribute {
 		if(!$this->fatto){
 			$this->compiler->getPostApplyTemplatesFilters()->addFilter( array($this, "_removeAttrs" ) );
 			$this->compiler->getPostFilters()->addFilter( array(__CLASS__, "_replaceAttrs" ) );
-			
 			$init = $node->ownerDocument->documentElement->addChildNs(ATal::NS, 'init-function');
 			$init->setAttr("key", __CLASS__);
 			$init->setAttr("params", '$precedente');
-
-			$str = "\nif(!\$precedenteZZZ){";
+			$str = "\nif(!\$precedente){";
 			$str .= "\n\treturn require_once( '" . addslashes ( __FILE__ ) . "');\n";
 			$str .= "}\n";
 			$init->addTextChild($str);
@@ -42,7 +40,9 @@ class Attribute_attr extends Attribute {
 		return $xml;
 	}
 	public static function _replaceAttrs($stream) {
-		return preg_replace( "/" . preg_quote( ' atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', "<?php echo ".__CLASS__."::impodeAttr(\$\\1); unset(\$\\1); ?>", $stream );
+		return preg_replace(
+				 "/" . preg_quote( ' atal-attr="__atal-attr($', '/' ) . '([A-Za-z0-9_]+)' . preg_quote( ')"', '/' ) . '/', 
+				"<?php echo ".__CLASS__."::impodeAttr(\$\\1); unset(\$\\1); ?>", $stream );
 	}
 	function start(xml\XMLDomElement $node, \DOMAttr $att) {
 		$this->prependPI($node);
@@ -62,9 +62,9 @@ class Attribute_attr extends Attribute {
 				$attVal = $node->getAttribute( $attName );
 
 				if(preg_match( $regex, $attVal )){
-					$precode = $varName . "['$attName']='" . str_replace(array("___\\'.___","___.\\'___"),array("'.",".'"),addcslashes(  preg_replace( $regex, "___'.___\\1___.'___", $attVal ),"'" )) . "';\n";
+					$precode = $varName . "['$attName'][]='" . str_replace(array("___\\'.___","___.\\'___"),array("'.",".'"),addcslashes(  preg_replace( $regex, "___'.___\\1___.'___", $attVal ),"'" )) . "';\n";
 				}else{
-					$precode .= $varName . "['$attName']='" . addcslashes( $attVal, "'" ) . "';\n";
+					$precode .= $varName . "['$attName'][]='" . addcslashes( $attVal, "'" ) . "';\n";
 				}
 
 				$this->attrsToRemove [] = array($node, $attName );
@@ -79,7 +79,7 @@ class Attribute_attr extends Attribute {
 					$code .= $varName . "['xmlns:$prefix']='" . addcslashes($node->lookupNamespaceURI( $prefix ),"'")  . "'; \n";
 				}
 			}
-			$code .= "if ($condition) { " . $varName . "['$attName']=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
+			$code .= "if ($condition) { " . $varName . "['$attName'][]=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
 		}
 
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
