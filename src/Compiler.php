@@ -366,14 +366,14 @@ class Compiler extends BaseClass{
 		}
 
 		$this->findBlocks ( $xml->documentElement );
-
+		
 		$this->applyTemplatesToChilds ( $xml->childNodes );
-
+		
 		$this->getPostApplyTemplatesFilters()->applyFilters($xml);
 		$xml = $this->getPostXmlFilters ()->applyFilters ( $xml );
 
 		$cnt = $this->serializeXml ( $destinationClass, $xml, $originalXML, $parentTemplate );
-
+		
 		$cnt = $this->getPostFilters ()->applyFilters ( $cnt );
 
 		$cacheName = $destinationFile .".". md5(microtime()) .".tmp";
@@ -503,7 +503,7 @@ class Compiler extends BaseClass{
 				$this->applyTemplates ( $child );
 			} elseif ($child instanceof DOMText) {
 				$this->applyTextVars ( $child ); // applica le variabili sul testo
-			} elseif ($child instanceof DOMProcessingInstruction) {
+			} elseif ($child instanceof DOMProcessingInstruction && $child->target!=="php") {
 				$this->applyTextVars ( $child ); // applica le variabili sul testo
 			}
 		}
@@ -551,7 +551,7 @@ class Compiler extends BaseClass{
 
 			foreach ( $mch [1] as $k => $mc ) {
 				$attName = "\$__tal_attr_" . md5 ( $k . microtime () );
-				$code .= "$attName  =  " . $this->parsedExpression ( $mc ) . " ;\n ";
+				$code .= "$attName = " . $this->parsedExpression ( $mc ) . ";\n ";
 				$val = str_replace ( $mch [0] [$k], "[#tal_attr#" . $attName . "#tal_attr#]", $val );
 			}
 			$attr->value = htmlspecialchars ( $val, ENT_QUOTES, 'UTF-8' );
