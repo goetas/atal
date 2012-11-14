@@ -83,7 +83,7 @@ class Attribute_attr extends Attribute {
 		}
 
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
-		if(!$node->parentNode instanceof \DOMElement ){
+		if(!$node->parentNode){
 			throw new Exception("Errore di compilazione del nodo $node->nodeName. ($node->nodeValue)");
 		}
 		$node->parentNode->insertBefore( $pi, $node );
