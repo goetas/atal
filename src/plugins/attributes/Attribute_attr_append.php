@@ -9,19 +9,21 @@ class Attribute_attr_append extends Attribute_attr {
 		$this->prependPI($node);
 		$expressions = $this->compiler->splitExpression( $att->value, ";" );
 
-		$varName = "\$__attr_" . spl_object_hash($node);
+		$varName = "\$__attr_" . md5(microtime());
 		$precode =  "if(!isset($varName)){ $varName=array(); }\n";
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
 
-
 		foreach ( $expressions as $expression ){
 			list ( $condition, $attName, $attExpr ) = $this->splitAttrExpression( $expression );
+			
+			
 			if($node->hasAttribute( $attName ) && !isset($this->attrsToRemove  [spl_object_hash($node).$attName])){
+				
 				$attVal = $node->getAttribute( $attName );
 
 				if(preg_match( $regex, $attVal )){
-					$precode = $varName . "['$attName'][]=\"" . addcslashes(preg_replace( $regex, "{\\1}", $attVal ),"\"\\") . "\";\n";
+					$precode .= $varName . "['$attName'][]=\"" . addcslashes(preg_replace( $regex, "{\\1}", $attVal ),"\"\\") . "\";\n";
 				}else{
 					$precode .= $varName . "['$attName'][]='" . addcslashes( $node->getAttribute( $attName ), "'" ) . "';\n";
 				}
@@ -41,7 +43,7 @@ class Attribute_attr_append extends Attribute_attr {
 			}
 			$code .= "if ($condition) { " . $varName . "['$attName'][]=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
 		}
-
+		
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
 		$node->parentNode->insertBefore( $pi, $node );
 		$node->setAttribute( "atal-attr", "__atal-attr($varName)" );

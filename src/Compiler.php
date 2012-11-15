@@ -307,10 +307,12 @@ class Compiler extends BaseClass{
 			if ($originalXML->doctype) {
 				$cnt [] = $originalXML->saveXML ( $originalXML->doctype ) . "\n";
 			}
+			/*
 			// mettendo queste 2 query xpath insieme il php genera i nodi in ordine sbagliato
 			foreach ( $xml->query ( "/processing-instruction()" ) as $node ) {
 				$cnt [] = $xml->saveXML ( $node );
 			}
+			*/
 			foreach ( $xml->query ( "/node()|/text()", array ("t" => self::NS ) ) as $node ) {
 				if ($node->namespaceURI != self::NS) {
 					$cnt [] = $xml->saveXML ( $node );
@@ -375,6 +377,7 @@ class Compiler extends BaseClass{
 		$cnt = $this->serializeXml ( $destinationClass, $xml, $originalXML, $parentTemplate );
 		
 		$cnt = $this->getPostFilters ()->applyFilters ( $cnt );
+	
 
 		$cacheName = $destinationFile .".". md5(microtime()) .".tmp";
 
