@@ -14,7 +14,7 @@ class Attribute_attr extends Attribute {
 		}
 		$ret = array();
 		foreach ($attrs as $name => $values){
-			$ret[] = $name.' = "'.(is_array($values)?implode("", $values):$values).'"';
+			$ret[] = $name.'="'.(is_array($values)?implode("", $values):$values).'"';
 		}
 		return " ".implode(" ", $ret);
 	}
