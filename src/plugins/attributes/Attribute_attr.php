@@ -62,9 +62,9 @@ class Attribute_attr extends Attribute {
 				$attVal = $node->getAttribute( $attName );
 
 				if(preg_match( $regex, $attVal )){
-					$precode = $varName . "['$attName'][]='" . str_replace(array("___\\'.___","___.\\'___"),array("'.",".'"),addcslashes(  preg_replace( $regex, "___'.___\\1___.'___", $attVal ),"'" )) . "';\n";
+					$precode = $varName . "['$attName']['$attName']='" . str_replace(array("___\\'.___","___.\\'___"),array("'.",".'"),addcslashes(  preg_replace( $regex, "___'.___\\1___.'___", $attVal ),"'" )) . "';\n";
 				}else{
-					$precode .= $varName . "['$attName'][]='" . addcslashes( $attVal, "'" ) . "';\n";
+					$precode .= $varName . "['$attName']['$attName']='" . addcslashes( $attVal, "'" ) . "';\n";
 				}
 
 				$this->attrsToRemove [] = array($node, $attName );
@@ -79,7 +79,7 @@ class Attribute_attr extends Attribute {
 					$code .= $varName . "['xmlns:$prefix']='" . addcslashes($node->lookupNamespaceURI( $prefix ),"'")  . "'; \n";
 				}
 			}
-			$code .= "if ($condition) { " . $varName . "['$attName'][]=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
+			$code .= "if ($condition) { " . $varName . "['$attName']['$attName']=" . $this->compiler->parsedExpression( $attExpr ) . "; }\n";
 		}
 
 		$pi = $this->dom->createProcessingInstruction( "php", $precode . $code );
