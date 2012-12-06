@@ -30,7 +30,7 @@ class Modifier_strip2br extends Modifier {
 		
 		
 		$str = strip_tags($str, $allow);
-		
+		$str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
 
 		$str = preg_replace('~^[\p{Z}\t]+|[\p{Z}\t]+$~miu', "", $str);
 		$str = trim($str);
