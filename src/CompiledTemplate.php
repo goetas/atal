@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal;
-class CompiledTemplate extends DataContainer {
+abstract class CompiledTemplate extends DataContainer {
 	/**
 	 * @var IFinder
 	 */
@@ -29,7 +29,7 @@ class CompiledTemplate extends DataContainer {
 		return $this->templateRef;
 	}
 
-	public function __construct(ATal $tal, TemplateRef  $templateRef, IFinder $finder) {
+	public function __construct(ATal $tal, TemplateRef $templateRef, IFinder $finder) {
 		parent::__construct();
 		$this->templateRef = $templateRef;
 		$this->finder = $finder;
@@ -44,4 +44,5 @@ class CompiledTemplate extends DataContainer {
 	public function init() {
 		;
 	}
+	abstract function display();
 }

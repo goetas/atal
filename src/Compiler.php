@@ -234,7 +234,7 @@ class Compiler extends BaseClass{
 		}
 		return null;
 	}
-	protected function cleanXml(xml\XMLDomElement $el){
+	protected function cleanXml(xml\XMLDom $el){
 
 	}
 	/**
@@ -243,7 +243,7 @@ class Compiler extends BaseClass{
 	 */
 	protected function serializeXml( $destinationClass, xml\XMLDom $xml, xml\XMLDom $originalXML , TemplateRef $parentTemplate = null) {
 		
-		$this->cleanXml($xml->documentElement);
+		$this->cleanXml($xml);
 
 
 		foreach ( $xml->query ( "//processing-instruction()" ) as $node ) {
