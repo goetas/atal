@@ -31,4 +31,7 @@ class ATalXHTML extends ATal {
 	public function _replaceHtmlEntities($str) {
 		return str_replace (array_keys(static::$htmlEntities),array_values(static::$htmlEntities), $str );
 	}
+	public static function replaceHtmlEntities($str) {
+		return str_replace (array_keys(static::$htmlEntities),array_values(static::$htmlEntities), $str );
+	}
 }
