@@ -3,15 +3,16 @@ namespace goetas\atal\plugins\modifiers;
 use goetas\atal\Modifier;
 class Modifier_formatgeo extends Modifier {
 	function modify($radian, array $params=array()){
-		$grad = rad2deg(floatval($radian));
 		if($params[0]=="degsex"){
-			return self::totexxt( $grad/60, 0 , $params[1]=="LAT");
+			return self::totexxt( floatval($radian), 0 , $params[1]=="LAT");
 		}else{
-			return $grad;
+			return $radian;
 		}
 	}
 	static function  totexxt( $coordinate, $decSeconds , $h=true) {
 
+		$degrees = $coordinate;
+		
 		// Evitem que hi hagi menys de 0 decimals
 		if ($decSeconds < 0)
 			$decSeconds = 0;
