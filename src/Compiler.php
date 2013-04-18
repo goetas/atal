@@ -76,7 +76,7 @@ class Compiler extends BaseClass{
 		$this->tal = $tal;
 		$this->setTemplate ( $template );
 
-		$this->currRegex = '/\\{([\'a-z\$\\\\].*?)\\}/';
+		$this->currRegex = '/(?<!\{)\{([\'a-z\$\\\\].*?)\\}/';
 
 		$this->attributes = new loaders\Attributes ( $this->tal, $this );
 		$this->selectors = new loaders\Selectors ( $this->tal, $this );
