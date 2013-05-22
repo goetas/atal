@@ -93,15 +93,15 @@ class ATal extends DataContainer{
 		$this->finder = new finders\Aggregate();
 
 		$this->setup();
-		
+
 		spl_autoload_register (array($this, '_compiledTemplateLoader'));
 	}
-	
+
 	public function addExtension(IExtension $extension) {
 		$extension->setup($this);
 		$this->addCompilerSetup(array($extension, 'setupCompiler'));
 	}
-	
+
 	/**
 	 *
 	 * @return \goetas\atal\finders\Aggregate
@@ -109,7 +109,7 @@ class ATal extends DataContainer{
 	public function getFinder() {
 		return $this->finder;
 	}
-		
+
 	/**
 	 * Ritorna il gestore dei servizi
 	 * @return \goetas\atal\loaders\Services
@@ -117,17 +117,17 @@ class ATal extends DataContainer{
 	function getServices(){
 		return $this->services;
 	}
-	
+
 	/**
 	 * Configurazione di atal. Sovrascrivere la funzione per aggiungere funzionalità ad atal.
 	 * Chiamata nel costruttore
 	 */
 	protected function setup() {
-		
+
 		$this->addCompiledTemplateLoader(array($this,'_defaultCompiledTemplateLoader') );
-		
+
 		$this->finder->addFinder(new finders\Filesystem('.'));
-		
+
 		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') , __NAMESPACE__.'\IModifier');
 		$this->addExtension(new FixCdata());
 		foreach ($this->setups as $callback) {
@@ -141,7 +141,7 @@ class ATal extends DataContainer{
 			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
 		}
 	}
-	
+
 	public function addCompilerSetup($callback) {
 		if(is_callable($callback)){
 			$this->compilerSetups[]=$callback;
@@ -149,7 +149,7 @@ class ATal extends DataContainer{
 			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
 		}
 	}
-	
+
 	public function addSetup($callback) {
 		if(is_callable($callback)){
 			$this->setups[]=$callback;
@@ -157,7 +157,7 @@ class ATal extends DataContainer{
 			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
 		}
 	}
-	
+
 	/**
 	 * Metodo che serve a configurare il compilatore.
 	 * Utile in fase di estensione di ATal, per aggiungere nuove funzionalità.
@@ -179,7 +179,7 @@ class ATal extends DataContainer{
 			call_user_func($callback, $compiler, $this);
 		}
 	}
-	
+
 	/**
 	 * funzione che gestisce il tag "<t:t></t:t>" e gli aggiune l'attributo t:omit="true"
 	 * @param xml\XMLDom $xml
@@ -192,7 +192,7 @@ class ATal extends DataContainer{
 		}
 		return $xml;
 	}
-	
+
 	/**
 	 * Rimuove gli xmlns di ATal
 	 * @param string $str
@@ -201,7 +201,7 @@ class ATal extends DataContainer{
 	public function _removeXmlns($str) {
 		return preg_replace('#<(.*) xmlns:[a-zA-Z0-9]+=("|\')'.self::NS.'("|\')(.*)>#m',"<\\1\\4>", $str);
 	}
-	
+
 	/**
 	 * Sistema eventuali tag &lt;?php in semplice testo.
 	 * Questo impedisce l'inserimento di php processing instruction all'interno dei templates-
@@ -217,7 +217,7 @@ class ATal extends DataContainer{
 			}
 		}, $str );
 	}
-	
+
 	/**
 	 * Ritorna il gestore dei modificatori.
 	 * @return \goetas\atal\loaders\Modifiers
@@ -225,7 +225,7 @@ class ATal extends DataContainer{
 	public function getModifiers() {
 		return $this->modifiers;
 	}
-	
+
 	/**
 	 * Restituisce la ReflectionClass relativa al plugin "attributo" $attrName
 	 * @param string $attrName
@@ -238,7 +238,7 @@ class ATal extends DataContainer{
 			return new ReflectionClass($fullCname);
 		}
 	}
-	
+
 	/**
 	 * Restituisce la ReflectionClass relativa al plugin "modificatore" $attrName
 	 * @param string $attrName
@@ -255,7 +255,7 @@ class ATal extends DataContainer{
 			return new BasePhpModifier($attrName);
 		}
 	}
-	
+
 	/**
 	 * Restituisce la ReflectionClass relativa al plugin "selettore" $attrName
 	 * @param string $attrName
@@ -269,8 +269,11 @@ class ATal extends DataContainer{
 		}
 	}
 	public function _compiledTemplateLoader($class){
+		if(!isset(self::$templateInfo[$class])){
+			return;
+		}
 		$__tal_template_info = self::$templateInfo[$class];
-		foreach ($this->compiledTemplateLoaders as $loader){ 
+		foreach ($this->compiledTemplateLoaders as $loader){
 			call_user_func($loader, $class, $__tal_template_info);
 			if(class_exists($class, false)){
 				return;
@@ -294,7 +297,7 @@ class ATal extends DataContainer{
 		$ist->addScope($this->getData ());
 		$ist->display();
 	}
-	
+
 	public function & getPluginVars() {
 		return $this->pluginVars;
 	}
@@ -306,7 +309,7 @@ class ATal extends DataContainer{
 	protected function compile(TemplateRef $templateRef) {
 
 		$cachedFilename = $this->getCachePath($templateRef);
-		
+
 		$className = $this->getClassName($templateRef);
 		$finderRef = null;
 		if($this->needsRecompile($templateRef, $cachedFilename, $finderRef)) {
@@ -320,7 +323,7 @@ class ATal extends DataContainer{
 			"templateRef" => $templateRef
 		);
 	}
-	
+
 	protected function needsRecompile(TemplateRef $template, $cachedFilename, &$finderRef){
 		if($this->debug){
 			return true;
@@ -328,7 +331,7 @@ class ATal extends DataContainer{
 		$stat = @stat($cachedFilename);
 		return  !$stat || !$this->getFinder()->isFresh($template, $stat["mtime"], $finderRef);
 	}
-	
+
 	/**
 	 *
 	 * @return TemplateRef
@@ -342,7 +345,7 @@ class ATal extends DataContainer{
 	public function outputTemplate(TemplateRef $template) {
 		try {
 			$info = $this->compile( $template );
-	
+
 			$this->runCompiled ( $info["class"], $template, $info["finder"] );
 		} catch ( DOMException $e ) {
 			throw new Exception ( "Errore durante la compilazione di '$template' (" . $e->getMessage () . ")" , $e->getCode(), $e);
@@ -367,7 +370,7 @@ class ATal extends DataContainer{
 		$this->output ( $templatePath );
 		return ob_get_clean ();
 	}
-	
+
 	/**
 	 * Ritorna il path del file da usare come cache per il template $tpl
 	 * @return string
@@ -375,11 +378,11 @@ class ATal extends DataContainer{
 	public function getCachePath(TemplateRef $template) {
 		return $this->getCompileDir () . DIRECTORY_SEPARATOR . $this->getClassName($template).".php";
 	}
-	
+
 	public function getClassName(TemplateRef $template) {
 		return "ATal_".md5($template.$this->getFinder()->getCacheName($template));
 	}
-	
+
 	/**
 	 * Ritorna la cartella per la cache dei templates
 	 * @return string
@@ -390,7 +393,7 @@ class ATal extends DataContainer{
 		}
 		return $this->compileDir;
 	}
-	
+
 	/**
 	 * Imposta la cartella per la cache dei templates
 	 * @param unknown_type $dir

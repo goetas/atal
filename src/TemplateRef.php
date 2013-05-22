@@ -36,7 +36,13 @@ class TemplateRef {
 		list( $this->tpl,  $this->tipo, $this->query) = $this->parseUriParts($path);
 	}
 	protected function parseUriParts($path) {
-		list ( $tpl, $query ) = explode ( '#', $path, 2 );
+		if(strpos($path, '#')!==false){
+			list ( $tpl, $query ) = explode ( '#', $path, 2 );
+		}else{
+			$tpl = $path;
+			$query = null;
+		}
+
 		$mch = array ();
 		$tipo = null;
 
