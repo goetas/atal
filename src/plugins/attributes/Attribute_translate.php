@@ -40,9 +40,9 @@ class Attribute_translate extends Attribute {
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
 
-		$str = self::extractStringFromNode($node);
+		$str = self::extractStringFromNode($node, $att);
 
-		
+
 		$code ="";
 		if($options["nl2br"]){
 			$code .=" nl2br( ";
@@ -58,16 +58,16 @@ class Attribute_translate extends Attribute {
 		$node->appendChild( $pi );
 		return self::STOP_NODE;
 	}
-	public static function extractStringFromNode(XMLDomElement $node) {
+	public static function extractStringFromNode(XMLDomElement $node, $attr = null) {
 		if($node->prefix){
 			$nsp = " xmlns:".$node->prefix."=\"".$node->lookupNamespaceURI($node->prefix)."\"";
 		}else{
 			$nsp = " xmlns=\"".$node->lookupNamespaceURI(null)."\"";
 		}
 		$str = str_replace($nsp,"", trim( $node->saveXML( false )) ) ;
-		
-	
-		if(!class_exists('ambient\mvc\Ambiente', false) && strpos($attr->value, ':whitespace=true')===false && strpos($attr->value, ':whitespace = true')===false){
+
+
+		if(!class_exists('ambient\mvc\Ambiente', false) && $attr && strpos($attr->value, ':whitespace=true')===false && strpos($attr->value, ':whitespace = true')===false){
 			$str = preg_replace('/\s+/', " ", $str);
 		}
 		return $str;
