@@ -36,14 +36,14 @@ abstract class DynamicAttribute extends Attribute {
 				$params [] = $this->compiler->parsedExpression($part,true);
 			}
 		}
-		$code .=" \\".get_class($this)."::run( " . $this->compiler->dumpKeyed( $params ) . " , '" . addcslashes( $str , "\\'" ) . "')";
+		$code =" \\".get_class($this)."::run( " . $this->compiler->dumpKeyed( $params ) . " , '" . addcslashes( $str , "\\'" ) . "')";
 
 		$pi = $this->dom->createProcessingInstruction( "php", "print( $code );");
 
 		if(!$opt['preserveContent']){
 			$node->removeChilds();
 		}
-		if($opt['prepend']){
+		if(isset($opt['prepend']) && $opt['prepend']){
 			$node->prependChild( $pi );
 		}else{
 			$node->appendChild( $pi );
