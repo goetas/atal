@@ -3,7 +3,7 @@ namespace goetas\atal\loaders;
 use goetas\atal\Loader;
 use goetas\atal\IModifier;
 use goetas\atal\ATal;
-class Modifiers extends \goetas\pluginsys\Loader {
+class Modifiers extends \goetas\atal\Loader {
 	protected $defaultModifier;
 	/**
 	 * @var ATal

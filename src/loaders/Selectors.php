@@ -4,7 +4,7 @@ use goetas\atal\Loader;
 use goetas\atal\IModifier;
 use goetas\atal\ATal;
 use goetas\atal\Compiler;
-class Selectors extends \goetas\pluginsys\Loader {
+class Selectors extends \goetas\atal\Loader {
 	/**
 	 * @var ATal
 	 */

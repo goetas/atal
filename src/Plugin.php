@@ -1,6 +1,6 @@
 <?php
 namespace goetas\atal;
-abstract class Plugin extends  BaseClass implements IPlugin{
+abstract class Plugin extends BaseClass implements IPlugin{
 	/**
 	 *
 	 * @var ATal

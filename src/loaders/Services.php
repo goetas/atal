@@ -3,7 +3,7 @@ namespace goetas\atal\loaders;
 use goetas\atal\Loader;
 use goetas\atal\IService;
 use goetas\atal\ATal;
-class Services extends \goetas\pluginsys\Loader {
+class Services extends \goetas\atal\Loader {
 	/**
 	 * @var ATal
 	 */
