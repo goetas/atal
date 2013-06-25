@@ -1,0 +1,22 @@
+{
+    "name": "goetas/atal",
+    "description": "XML PHP Templating engine",
+    "keywords": ["php", "xml", "templating"],
+    "homepage": "http://opensource.mercuriosistemi.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Asmir Mustafic",
+            "email": "goetas@lignano.it"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "goetas/xmldom": "dev-master"
+    },
+    "autoload": {
+        "files": [
+            "src/autoload.php"
+        ]
+    }
+}
