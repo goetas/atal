@@ -24,7 +24,7 @@ class Attribute_translate extends Attribute {
 
 		$parts = $this->compiler->splitExpression( $att->value, ";" );
 		$params = array();
-		$options=array();
+		$options = array();
 		foreach ( $parts as $part ){
 			list ( $k, $v ) = $this->compiler->splitExpression( $part, "=" );
 			if($k[0]==":"){
@@ -33,9 +33,18 @@ class Attribute_translate extends Attribute {
 				}
 				$options[substr($k,1)]=$v;
 			}else{
+				if($k[0]==="'"){
+					$k = substr($k, 1, -1);
+				}else{
+					$k = "%{$k}";
+				}
+
 				$params [$k] = $this->compiler->parsedExpression( $v , true);
 			}
 		}
+
+		ksort($params);
+
 		foreach ( $node->query( ".//*[@t:id]/@t:id", array("t" => ATal::NS ) ) as $tt ){
 			$tt->ownerElement->removeAttributeNode( $tt );
 		}
