@@ -366,8 +366,9 @@ class Compiler extends BaseClass{
 		} else {
 			$parentTemplate = null;
 		}
-
-		$this->findBlocks ( $xml->documentElement );
+		if($xml->documentElement ){
+			$this->findBlocks ( $xml->documentElement );
+		}
 		
 		$this->applyTemplatesToChilds ( $xml->childNodes );
 		
