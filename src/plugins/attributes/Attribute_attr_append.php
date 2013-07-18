@@ -9,7 +9,7 @@ class Attribute_attr_append extends Attribute_attr {
 		$this->prependPI($node);
 		$expressions = $this->compiler->splitExpression( $att->value, ";" );
 
-		$varName = "\$__attr_" . md5(microtime());
+		$varName = "\$__attr_" . spl_object_hash($node);
 		$precode =  "if(!isset($varName)){ $varName=array(); }\n";
 		$code = '';
 		$regex = "/" . preg_quote( "[#tal_attr#", "/" ) . "(" . preg_quote( '$', "/" ) . "[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)" . preg_quote( "#tal_attr#]", "/" ) . "/";
