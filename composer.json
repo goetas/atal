@@ -12,11 +12,11 @@
     ],
     "require": {
         "php": ">=5.3.2",
-        "goetas/xmldom": "~1.0"
+        "goetas/xmldom": "dev-master"
     },
-	"extra":{
-	    "branch-alias": {
-	        "dev-trunk": "0.9-dev"
-	    }
+    "autoload": {
+        "files": [
+            "src/autoload.php"
+        ]
     }
 }

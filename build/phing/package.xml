@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="package" default="package" basedir="../../">
+    <property file="build/build.properties" />
+
+     <target name="package">
+		 <delete dir="${path.results}/pkg" />
+		 <delete dir="${path.package}" />
+     	
+		 <mkdir dir="${path.results}/pkg" />
+		 <mkdir dir="${path.package}" />
+     	
+     	<svnlastrevision workingcopy="${project.basedir}" propertyname="version.number"/>
+		<echo message="Versione: {version.number}"></echo>
+     	
+		<phingcall target="copyFilesToResultsLib" />
+        <phingcall target="packageFiles" />
+        <phingcall target="packagePear" />
+    </target>
+
+	<target name="copyFilesToResultsLib">
+		<delete dir="${path.results}/pkg/atal" />
+		<mkdir dir="${path.results}/pkg/atal" />
+		
+        <copy todir="${path.results}/pkg/atal">
+            <filterchain>
+                <replacetokens begintoken="@@" endtoken="@@">
+                    <token key="version" value="${version.number}" />
+                </replacetokens>
+            </filterchain>
+            <fileset dir="${path.lib}">
+                <include name="**/**" />
+            </fileset>
+        </copy>
+		
+		
+		<delete dir="${path.results}/pkg/xmldom" />
+		<mkdir dir="${path.results}/pkg/xmldom" />
+		<copy todir="${path.results}/pkg/xmldom">
+            <fileset dir="${path.vendors}/xmldom/src">
+                <include name="**/**" />
+            </fileset>
+        </copy>
+		
+		<delete dir="${path.results}/pkg/pluginsys" />
+		<mkdir dir="${path.results}/pkg/pluginsys" />
+		<copy todir="${path.results}/pkg/pluginsys">
+            <fileset dir="${path.vendors}/pluginsys/src">
+                <include name="**/**" />
+            </fileset>
+        </copy>
+		
+		<delete dir="${path.results}/pkg/api" />
+		<mkdir dir="${path.results}/pkg/api" />
+		<copy todir="${path.results}/pkg/api">
+            <fileset dir="${path.results}/api">
+                <include name="**/**" />
+            </fileset>
+        </copy>
+		
+		
+		<copy todir="${path.results}/pkg">
+            <fileset dir="${project.basedir}">
+                <include name="LICENSE" />
+            </fileset>
+        </copy>
+	</target>
+
+	<target name="packageFiles">
+		<zip destfile="${path.package}/ATal.zip">
+            <fileset dir="${path.results}/pkg">
+                <include name="**/**" />
+            </fileset>
+        </zip>
+        
+	</target>
+
+	<target name="packagePear">
+		<pearpkg name="ATal" dir="${path.results}/pkg" destfile="${path.results}/pkg/package.xml">
+            <fileset dir="${path.results}/pkg">
+                <include name="**/**" />
+            </fileset>
+            <option name="notes">Release Notes</option>
+            <option name="description">A Template engine for PHP</option>
+            <option name="summary">A Template engine for PHP</option>
+            <option name="version" value="${version.string}" />
+            <option name="state" value="stable" />
+			<option name="license" value="LGPL" />
+			
+            <mapping name="maintainers">
+                <element>
+                    <element key="handle" value="goetas" />
+                    <element key="name" value="Asmir Mustafic" />
+                    <element key="email" value="goetas@lignano.it" />
+                    <element key="role" value="lead" />
+                </element>
+            </mapping>
+        </pearpkg>
+	</target>
+
+</project>

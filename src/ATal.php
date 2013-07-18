@@ -1,252 +1,407 @@
 <?php
-class ATal {
-	const NS ="ATal";
+namespace goetas\atal;
+use goetas\atal\extensions\fixcdata\FixCdata;
+
+use DOMException;
+use InvalidArgumentException;
+use ReflectionClass;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use goetas\xml;
+/**
+ * SVN revision @@version@@
+ * PHP Template engine
+ * @author goetas
+ *
+ */
+class ATal extends DataContainer{
+	const NS = "ATal";
 	/**
-	 * directory di file comiplati
-	 *
+	 * Directory dei file comiplati
 	 * @var string
 	 */
 	protected $compileDir;
 
 	/**
-	 * @var ATalCompiler
+	 * @var goetas\atal\loaders\Modifiers
 	 */
-	protected $compiler;
-	protected $template ;
+	protected $modifiers;
+
 	/**
-	 * @var ATalModifier
+	 * @var \goetas\atal\BaseRuntimeAttribute
 	 */
-	protected $modifierManager ;
+	protected $baseRuntimeAttribute;
+
 	/**
-	 * @var ATalAttrRuntime
+	 * @var goetas\atal\loaders\Services
 	 */
-	protected $runtimeAttrManager;
-	protected $data=array();
+	protected $services;
+	/**
+	 * insieme di callback per configurare a runtime il compilatore
+	 * @var array
+	 */
+	protected $compilerSetups = array();
+	/**
+	 * insieme di callback per configurare atal
+	 * @var array
+	 */
+	protected $setups = array();
 
-	public $xmlDeclaration=false,$dtdDeclaration=true;
+	/**
+	 * Includi la dichiarazione XML nel file di output
+	 * @var bool
+	 */
+	public $xmlDeclaration = false;
+	/**
+	 * Attiva la modalità di debug (ricompila sempre i template)
+	 * @var bool
+	 */
+	public $debug = 0;
+	/**
+	 *
+	 * @var \goetas\atal\finders\Aggregate
+	 */
+	protected $finder;
+	/**
+	 * @var array
+	 */
+	protected $pluginVars = array();
+	/**
+	 * @var array
+	 */
+	protected static $templateInfo = array();
+	/**
+	 * Array di callback per caricare i template dalle possibili cache
+	 * @var array
+	 */
+	protected $compiledTemplateLoaders = array();
+	/**
+	 *
+	 * @param string $compileDir cartella da usare per la cache dei templates compilati
+	 * @param string $defaultModifier pre-modificatore di default. "escape" è il modificatore di default
+	 */
+	public function __construct($compileDir = null, $defaultModifier='escape') {
 
-	public $debug=0;
+		parent::__construct();
 
-	protected $scope=array();
-
-	public function __construct($compileDir = null){
-
-		$this->addScope(array(
-			'now'		=>	$_SERVER['REQUEST_TIME'],
-		));
 		if ($compileDir !== null) {
-			$this->setCompileDir($compileDir);
+			$this->setCompileDir ( $compileDir );
 		}
 
+		$this->modifiers = new loaders\Modifiers ( $this , $defaultModifier);
+		$this->services = new loaders\Services ( $this );
+		$this->finder = new finders\Aggregate();
 
-		$this->modifierManager = new ATalModifier($this);
-		$this->runtimeAttrManager = new ATalAttrRuntime($this);
+		$this->setup();
 
-		$this->compiler = new ATalCompiler($this);
-
-		//$this->compiler->addPostFilter(array(__CLASS__,'makeHXTML'));
-		$this->addSelector("id",'ATalIdSelector');
-		$this->addSelector("childid",'ATalChildIdSelector');
-		$this->addSelector("xpath",'ATalXPathSelector');
-		$this->addSelector("css",'ATalCssSelector');
+		spl_autoload_register (array($this, '_compiledTemplateLoader'));
 	}
 
-	function __clone(){
-		$this->clear();
-		$sel = $this->compiler->getSelectors();
-		$this->compiler = new ATalCompiler($this);
-		foreach ($sel as $name => $class) {
-			$this->addSelector($name,$class);
+	public function addExtension(IExtension $extension) {
+		$extension->setup($this);
+		$this->addCompilerSetup(array($extension, 'setupCompiler'));
+	}
+
+	/**
+	 *
+	 * @return \goetas\atal\finders\Aggregate
+	 */
+	public function getFinder() {
+		return $this->finder;
+	}
+
+	/**
+	 * Ritorna il gestore dei servizi
+	 * @return \goetas\atal\loaders\Services
+	 */
+	function getServices(){
+		return $this->services;
+	}
+
+	/**
+	 * Configurazione di atal. Sovrascrivere la funzione per aggiungere funzionalità ad atal.
+	 * Chiamata nel costruttore
+	 */
+	protected function setup() {
+
+		$this->addCompiledTemplateLoader(array($this,'_defaultCompiledTemplateLoader') );
+
+		$this->finder->addFinder(new finders\Filesystem('.'));
+
+		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') , __NAMESPACE__.'\IModifier');
+		$this->addExtension(new FixCdata());
+		foreach ($this->setups as $callback) {
+			call_user_func($callback, $this);
 		}
 	}
-	/*
-	public static function makeHXTML($str){
-		return $str; //preg_replace("//","",$str);
-	}
-*/
-	public function getModiferManager(){
-		return $this->modifierManager;
-	}
-	public function getRuntimeAttrManager(){
-		return $this->runtimeAttrManager;
-	}
-
-	protected static $paths=array();
-
-	public static function autoLoadAdd($cname, $path){
-		if(is_file($path)){
-			self::$paths[$cname]=realpath($path);
+	public function addCompiledTemplateLoader($callback) {
+		if(is_callable($callback)){
+			$this->compiledTemplateLoaders[]=$callback;
 		}else{
-			throw new ATalException(__CLASS__." persorso $path non valido per la classe $cname");
+			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
 		}
 	}
-	public static function autoLoad($cname){
-		$pname = str_replace("-","_",$cname);
 
-		if(in_array($cname,array("XMLAble","XMLDom","XMLDomElement","XPath"))){
-			$file = 'xml'.DIRECTORY_SEPARATOR.$pname.'.php';
-		}elseif(strpos($cname,"Selector")!==false && $cname!='ATalSelector' ){
-			$file = 'selectors'.DIRECTORY_SEPARATOR.$pname.'.php';
+	public function addCompilerSetup($callback) {
+		if(is_callable($callback)){
+			$this->compilerSetups[]=$callback;
 		}else{
-			$file = $pname.'.php';
+			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
 		}
-		if(is_readable(dirname(__FILE__).DIRECTORY_SEPARATOR.$file)){
-			include (dirname(__FILE__).DIRECTORY_SEPARATOR.$file);
+	}
+
+	public function addSetup($callback) {
+		if(is_callable($callback)){
+			$this->setups[]=$callback;
+		}else{
+			throw new InvalidArgumentException ( "Callback non valida per " . __METHOD__ );
+		}
+	}
+
+	/**
+	 * Metodo che serve a configurare il compilatore.
+	 * Utile in fase di estensione di ATal, per aggiungere nuove funzionalità.
+	 * @param \goetas\atal\Compiler $compiler
+	 */
+	protected function setupCompiler(Compiler $compiler) {
+
+		$compiler->getPreXmlFilters()->addFilter(array($this,'_handleT'));
+
+		$compiler->getPostFilters()->addFilter(array($this,'_removeXmlns'));
+
+		$compiler->getPostFilters()->addFilter(array($this,'_replaceShortPI'));
+
+		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultAttributes'), __NAMESPACE__.'\IAttribute' );
+
+		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') , __NAMESPACE__.'\ISelector');
+
+		foreach ($this->compilerSetups as $callback) {
+			call_user_func($callback, $compiler, $this);
+		}
+	}
+
+	/**
+	 * funzione che gestisce il tag "<t:t></t:t>" e gli aggiune l'attributo t:omit="true"
+	 * @param xml\XMLDom $xml
+	 * @return xml\XMLDom
+	 */
+	public function _handleT(xml\XMLDom $xml) {
+		foreach ( $xml->query ( "//t:t[not(@t:omit)]", array ("t" => self::NS ) ) as $node ) {
+			$node->setAttributeNS ( self::NS, "omit", 'true' );
+			$nds = $node->query("text()");
+		}
+		return $xml;
+	}
+
+	/**
+	 * Rimuove gli xmlns di ATal
+	 * @param string $str
+	 * @return string
+	 */
+	public function _removeXmlns($str) {
+		return preg_replace('#<(.*) xmlns:[a-zA-Z0-9]+=("|\')'.self::NS.'("|\')(.*)>#m',"<\\1\\4>", $str);
+	}
+
+	/**
+	 * Sistema eventuali tag &lt;?php in semplice testo.
+	 * Questo impedisce l'inserimento di php processing instruction all'interno dei templates-
+	 * @param string $str
+	 * @return string
+	 */
+	public function _replaceShortPI($str) {
+		return preg_replace_callback( "#\\<\\?([a-z]+) #", function($mch){
+			if($mch[1]=="php"){
+				return "<?php ";
+			}else{
+				return "<?php print( \"<?$mch[1] \" ); ?>";
+			}
+		}, $str );
+	}
+
+	/**
+	 * Ritorna il gestore dei modificatori.
+	 * @return \goetas\atal\loaders\Modifiers
+	 */
+	public function getModifiers() {
+		return $this->modifiers;
+	}
+
+	/**
+	 * Restituisce la ReflectionClass relativa al plugin "attributo" $attrName
+	 * @param string $attrName
+	 * @return ReflectionClass
+	 */
+	function _defaultAttributes($attrName) {
+		$cname = "Attribute_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
+		$fullCname = __NAMESPACE__."\\plugins\\attributes\\$cname";
+		if(class_exists($fullCname)){
+			return new ReflectionClass($fullCname);
+		}
+	}
+
+	/**
+	 * Restituisce la ReflectionClass relativa al plugin "modificatore" $attrName
+	 * @param string $attrName
+	 * @return ReflectionClass
+	 */
+	function _defaultModifiers($attrName) {
+		$cname = "Modifier_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
+		$fullCname = __NAMESPACE__."\\plugins\\modifiers\\$cname";
+		if(class_exists($fullCname)){
+			return new ReflectionClass($fullCname);
+		}
+		$attrName = str_replace("-", "_", $attrName);
+		if(is_callable($attrName)){ // funzione standard di php
+			return new BasePhpModifier($attrName);
+		}
+	}
+
+	/**
+	 * Restituisce la ReflectionClass relativa al plugin "selettore" $attrName
+	 * @param string $attrName
+	 * @return ReflectionClass
+	 */
+	function _defaultSelectors($attrName) {
+		$cname = "Selector_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
+		$fullCname = __NAMESPACE__."\\plugins\\selectors\\$cname";
+		if(class_exists($fullCname)){
+			return new ReflectionClass($fullCname);
+		}
+	}
+	public function _compiledTemplateLoader($class){
+		if(!isset(self::$templateInfo[$class])){
 			return;
 		}
-		if(is_readable(self::$paths[$cname])){
-			include (self::$paths[$cname]);
+		$__tal_template_info = self::$templateInfo[$class];
+		foreach ($this->compiledTemplateLoaders as $loader){
+			call_user_func($loader, $class, $__tal_template_info);
+			if(class_exists($class, false)){
+				return;
+			}
 		}
 	}
-	protected function runCompiled($__file){
-		extract($this->getData());
-		$__tal=$this;
-		include $__file;
-	}
-	public function output($tplFile){
-
-		list($tpl, $tipo,$query)=$this->compiler->parseUriParts($tplFile);
-
-		if(!is_file($tpl)){
-			throw new ATalException("non trovo il file '$tpl'");
+	public function _defaultCompiledTemplateLoader($class, $__tal_template_info) {
+		if(preg_match("/^ATal_[a-f0-9]{32}$/", $class)){
+			require $this->getCompileDir()."/". $class.".php";
 		}
-		$this->template = realpath($tpl);
+	}
+	/**
+	 * Esegue un template
+	 * @param string $__file nome dei file da eseguire
+	 */
+	protected function runCompiled($className, TemplateRef $templateRef, IFinder $finder) {
+		if(!class_exists($className)){
+			throw new Exception ( "Non trovo la classe $className" );
+		}
+		$ist = new $className($this, $templateRef, $finder);
+		$ist->addScope($this->getData ());
+		$ist->display();
+	}
+
+	public function & getPluginVars() {
+		return $this->pluginVars;
+	}
+	/**
+	 * @param TemplateRef $template
+	 * @param string $cachedFilename
+	 * @return string Class name to run
+	 */
+	protected function compile(TemplateRef $templateRef) {
+
+		$cachedFilename = $this->getCachePath($templateRef);
+
+		$className = $this->getClassName($templateRef);
+		$finderRef = null;
+		if($this->needsRecompile($templateRef, $cachedFilename, $finderRef)) {
+			$compiler = new Compiler ( $this, $this->finder->getTemplate($templateRef, $finderRef) );
+			$this->setupCompiler($compiler);
+			$compiler->compile ($cachedFilename, $className);
+		}
+		return self::$templateInfo[$className]=array(
+			"finder" => $finderRef,
+			"class" => $className,
+			"templateRef" => $templateRef
+		);
+	}
+
+	protected function needsRecompile(TemplateRef $template, $cachedFilename, &$finderRef){
+		if($this->debug){
+			return true;
+		}
+		$stat = @stat($cachedFilename);
+		return  !$stat || !$this->getFinder()->isFresh($template, $stat["mtime"], $finderRef);
+	}
+
+	/**
+	 *
+	 * @return TemplateRef
+	 */
+	public function convertTemplateName($template, TemplateRef $parent = null) {
+		return new TemplateRef($this, $template, $parent);
+	}
+	/**
+	 * Esegui il template e mostra il relativo output
+	 */
+	public function outputTemplate(TemplateRef $template) {
 		try {
-			$compiledFile = $this->compiler->compile($this->template,$tipo?$tipo:false,$tipo?$query:false);
-		}catch (DOMException $e){
-			throw new ATalException("Errore durante la compilazione del file '$this->template' (".$e->getMessage().")");
-		}
+			$info = $this->compile( $template );
 
-		$this->runCompiled($compiledFile);
-	}
-	public function get($tpl){
-		ob_start();
-		$this->output($tpl);
-		return ob_get_clean();
-	}
-	function addCompiledAttr($name, ATalDynamicClass $plugin){
-		$this->compiler->addCompiledAttr( $name, $plugin);
-	}
-	public function addRuntimeAttr($name, ATalDynamicClass $plugin){
-		$this->runtimeAttrManager->add( $name, $plugin);
-	}
-
-	public function addModifier($name, $plugin){
-		if( $plugin instanceof ATalDynamicLoader ){
-			$this->modifierManager->add( $name, $plugin);
-		}elseif(is_string($plugin)){
-			$this->modifierManager->add( $name, new ATalDynamicFunction($plugin));
-		}else{
-			throw new ATalException(__CLASS__." modifier $name non valido");
+			$this->runCompiled ( $info["class"], $template, $info["finder"] );
+		} catch ( DOMException $e ) {
+			throw new Exception ( "Errore durante la compilazione di '$template' (" . $e->getMessage () . ")" , $e->getCode(), $e);
 		}
 	}
-
-	public function setDefaultModifier($plugin){
-		$this->compiler->setDefaultModifier($plugin);
-	}
-	public function unsetDefaultModifier(){
-		$this->compiler->unsetDefaultModifier();
-	}
-	public function addSelector($name, $class){
-		$this->compiler->addSelector($name, $class);
+	/**
+	 * Esegui il template e mostra il relativo output
+	 * @param string $templatePath
+	 */
+	public function output($templatePath) {
+		$template = $this->convertTemplateName($templatePath);
+		$this->outputTemplate($template);
 	}
 
-	public function getCompileDir(){
+	/**
+	 * Esegui il template e ritorna il relativo output
+	 * @param string $templatePath
+	 * @return string
+	 */
+	public function get($templatePath) {
+		ob_start ();
+		$this->output ( $templatePath );
+		return ob_get_clean ();
+	}
+
+	/**
+	 * Ritorna il path del file da usare come cache per il template $tpl
+	 * @return string
+	 */
+	public function getCachePath(TemplateRef $template) {
+		return $this->getCompileDir () . DIRECTORY_SEPARATOR . $this->getClassName($template).".php";
+	}
+
+	public function getClassName(TemplateRef $template) {
+		return "ATal_".md5($template.$this->getFinder()->getCacheName($template));
+	}
+
+	/**
+	 * Ritorna la cartella per la cache dei templates
+	 * @return string
+	 */
+	public function getCompileDir() {
 		if ($this->compileDir === null) {
-			$this->setCompileDir(dirname(__FILE__).DIRECTORY_SEPARATOR.'compiled');
+			throw new Exception ( 'The compile directory must be set' );
 		}
-
 		return $this->compileDir;
 	}
-	public function setCompileDir($dir){
-		$this->compileDir = rtrim($dir, '/\\');
-		if (is_writable($this->compileDir) === false) {
-			throw new ATalException('The compile directory must be writable, chmod "'.$this->compileDir.'" to make it writable');
+
+	/**
+	 * Imposta la cartella per la cache dei templates
+	 * @param unknown_type $dir
+	 */
+	public function setCompileDir($dir) {
+		$this->compileDir = rtrim ( $dir, '/\\' );
+		if (is_writable ( $this->compileDir ) === false) {
+			throw new Exception ( 'The compile directory must be writable, chmod "' . $this->compileDir . '" to make it writable' );
 		}
 	}
-	public function getTemplate(){
-		return $this->template;
-	}
-	public function clearCache($olderThan=-1){
-		$cacheDirs = new RecursiveDirectoryIterator($this->getCompileDir());
-		$cache = new RecursiveIteratorIterator($cacheDirs);
-		$expired = time() - $olderThan;
-		$count = 0;
-		foreach ($cache as $file) {
-			if ($cache->isDot() || $cache->isDir() || substr($file, -5) !== '.html') {
-				continue;
-			}
-			if ($cache->getCTime() < $expired) {
-				$count += unlink((string) $file) ? 1 : 0;
-			}
-		}
-		return $count;
-	}
-
-	public function &getData(){
-		return $this->data;
-	}
-
-	public function addScope(array $vars=array()){
-		unset($vars["this"],$vars["__file"]);
-		$this->scope[]=array_merge($this->data,$vars);
-		end($this->scope);
-		$this->data=&$this->scope[key($this->scope)];
-	}
-	public function removeScope(){
-		array_pop($this->scope);
-		end($this->scope);
-		$this->data=&$this->scope[key($this->scope)];
-	}
-    function assign($varName, $value = null){
-		if ($varName != ''){
-			return $this->data[$varName] = $value;
-		}
-		return NULL;
-    }
-	public function __set($varName, $value){
-		$this->data[$varName] = $value;
-	}
-	public function & __get($varName){
-		return $this->data[$varName];
-	}
-
-    /**
-     * assigns values to template variables by reference
-     *
-     * @param string $tpl_var the template variable name
-     * @param mixed $value the referenced value to assign
-     */
-    function assignByRef($varName, &$value){
-        if ($varName != ''){
-            $this->data[$varName] = &$value;
-		}
-    }
-	public function clear() {
-		$this->scope = array();
-		$this->data = array();
-		$this->addScope();
-	}
-
-    /**
-     * appends values to template variables
-     *
-     * @param array|string $tpl_var the template variable name(s)
-     * @param mixed $value the value to append
-     */
-    function append($varName, $value=null, $merge=false){
-            if ($varName != '' && isset($value)) {
-                if(!@is_array($this->data[$varName])) {
-                    settype($this->data[$varName],'array');
-                }
-                if($merge && is_array($value)) {
-                    foreach($value as $_mkey => $_mval) {
-                        $this->data[$varName][$_mkey] = $_mval;
-                    }
-                } else {
-                    $this->data[$varName][] = $value;
-                }
-            }
-    }
 }
-spl_autoload_register(array('ATal','autoLoad'));

@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:t="ATal">
+	<head>
+		<title>Hello world</title>
+	</head>
+	<body>
+		<h1>{$users|count} total users</h1>
+		<ul t:if="count($users)">
+			<li t:foreach="$users as $user => $age" t:if="$age>25">
+				<a t:attr="$age>60?class='over60'" href="?username={$user|urlencode}" t:content="$user">example name</a>
+			</li>
+		</ul>
+		<hr/>
+		<div class="details" t:block="listdetail">
+			<div t:foreach="$users as $user => $age">
+				<h2>{$user}</h2>			
+				<span class="age " t:attr-append="$age>60?class=' over60'" t:content="$age">99</span>
+			</div>
+		</div>
+	</body>
+</html>
