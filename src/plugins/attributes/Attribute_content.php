@@ -5,8 +5,7 @@ use goetas\atal\Attribute;
 class Attribute_content extends Attribute{
 	function start(xml\XMLDomElement $node, \DOMAttr $att){
 		if(strlen(trim($att->value))>0){
-			$att->value = $this->compiler->parsedExpression( $att->value );
-			$pi = $this->dom->createProcessingInstruction("php"," print( $att->value );");
+			$pi = $this->dom->createTextnode("{{ $att->value }}");
 			$node->removeChilds();
 			$node->appendChild($pi);
 		}else{
@@ -14,6 +13,4 @@ class Attribute_content extends Attribute{
 		}
 		return self::STOP_NODE;
 	}
-
-
 }

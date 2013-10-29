@@ -23,11 +23,6 @@ class ATal extends DataContainer{
 	protected $compileDir;
 
 	/**
-	 * @var goetas\atal\loaders\Modifiers
-	 */
-	protected $modifiers;
-
-	/**
 	 * @var \goetas\atal\BaseRuntimeAttribute
 	 */
 	protected $baseRuntimeAttribute;
@@ -78,17 +73,15 @@ class ATal extends DataContainer{
 	/**
 	 *
 	 * @param string $compileDir cartella da usare per la cache dei templates compilati
-	 * @param string $defaultModifier pre-modificatore di default. "escape" è il modificatore di default
 	 */
-	public function __construct($compileDir = null, $defaultModifier='escape') {
+	public function __construct($compileDir = null) {
 
 		parent::__construct();
 
 		if ($compileDir !== null) {
 			$this->setCompileDir ( $compileDir );
 		}
-
-		$this->modifiers = new loaders\Modifiers ( $this , $defaultModifier);
+		
 		$this->services = new loaders\Services ( $this );
 		$this->finder = new finders\Aggregate();
 
@@ -128,7 +121,6 @@ class ATal extends DataContainer{
 
 		$this->finder->addFinder(new finders\Filesystem('.'));
 
-		$this->modifiers->addDefaultPlugin( array($this,'_defaultModifiers') , __NAMESPACE__.'\IModifier');
 		$this->addExtension(new FixCdata());
 		foreach ($this->setups as $callback) {
 			call_user_func($callback, $this);
@@ -172,8 +164,6 @@ class ATal extends DataContainer{
 		$compiler->getPostFilters()->addFilter(array($this,'_replaceShortPI'));
 
 		$compiler->getAttributes()->addDefaultPlugin( array($this,'_defaultAttributes'), __NAMESPACE__.'\IAttribute' );
-
-		$compiler->getSelectors()->addDefaultPlugin( array($this,'_defaultSelectors') , __NAMESPACE__.'\ISelector');
 
 		foreach ($this->compilerSetups as $callback) {
 			call_user_func($callback, $compiler, $this);
@@ -219,14 +209,6 @@ class ATal extends DataContainer{
 	}
 
 	/**
-	 * Ritorna il gestore dei modificatori.
-	 * @return \goetas\atal\loaders\Modifiers
-	 */
-	public function getModifiers() {
-		return $this->modifiers;
-	}
-
-	/**
 	 * Restituisce la ReflectionClass relativa al plugin "attributo" $attrName
 	 * @param string $attrName
 	 * @return ReflectionClass
@@ -239,35 +221,6 @@ class ATal extends DataContainer{
 		}
 	}
 
-	/**
-	 * Restituisce la ReflectionClass relativa al plugin "modificatore" $attrName
-	 * @param string $attrName
-	 * @return ReflectionClass
-	 */
-	function _defaultModifiers($attrName) {
-		$cname = "Modifier_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
-		$fullCname = __NAMESPACE__."\\plugins\\modifiers\\$cname";
-		if(class_exists($fullCname)){
-			return new ReflectionClass($fullCname);
-		}
-		$attrName = str_replace("-", "_", $attrName);
-		if(is_callable($attrName)){ // funzione standard di php
-			return new BasePhpModifier($attrName);
-		}
-	}
-
-	/**
-	 * Restituisce la ReflectionClass relativa al plugin "selettore" $attrName
-	 * @param string $attrName
-	 * @return ReflectionClass
-	 */
-	function _defaultSelectors($attrName) {
-		$cname = "Selector_".preg_replace("/[^a-z0-9_]/i","_", $attrName);
-		$fullCname = __NAMESPACE__."\\plugins\\selectors\\$cname";
-		if(class_exists($fullCname)){
-			return new ReflectionClass($fullCname);
-		}
-	}
 	public function _compiledTemplateLoader($class){
 		if(!isset(self::$templateInfo[$class])){
 			return;

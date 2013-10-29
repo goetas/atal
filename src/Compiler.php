@@ -25,11 +25,6 @@ class Compiler extends BaseClass{
 	 * @var loaders\Attributes
 	 */
 	protected $attributes;
-	/**
-	 *
-	 * @var loaders\Selectors
-	 */
-	protected $selectors;
 
 	/**
 	 *
@@ -79,8 +74,7 @@ class Compiler extends BaseClass{
 		$this->currRegex = '/(?<!\{)\{([\'a-z\$\\\\].*?)\\}/';
 
 		$this->attributes = new loaders\Attributes ( $this->tal, $this );
-		$this->selectors = new loaders\Selectors ( $this->tal, $this );
-
+		
 		$this->preXmlFilters = new filters\XmlFilter ( $this );
 		$this->postXmlFilters = new filters\XmlFilter ( $this );
 		$this->postApplyTemplatesFilters = new filters\DomFilter ( $this );
@@ -129,13 +123,7 @@ class Compiler extends BaseClass{
 	public function getAttributes() {
 		return $this->attributes;
 	}
-
-	/**
-	 * @return \goetas\atal\loaders\Selectors
-	 */
-	public function getSelectors() {
-		return $this->selectors;
-	}
+	
 	/**
 	 * @return \goetas\atal\filters\StringFilter
 	 */
@@ -199,32 +187,11 @@ class Compiler extends BaseClass{
 	 */
 	protected function toDom() {
 
-
-
 		$xmlString = $this->getPostLoadFilters ()->applyFilters ( $this->getTemplate ()->getContent() );
 	
 		$tplDom = new xml\XMLDom ();
 		$tplDom->loadXMLStrict ( $xmlString );
-		
-		$ref = $this->getTemplate ()->getRef();
-		
-		if ($ref->getSelectorType ()) {
-			try {
-				
-				$selector = $this->getSelectors ()->selector ( $ref->getSelectorType () );
-				$selector->setDom ( $tplDom );
-
-				$nodes = $selector->select ( $ref->getSelectorQuery () );
-				
-				$tplDom = new xml\XMLDom ();
-				foreach ( $nodes as $node ) {
-					$tplDom->appendChild ( $tplDom->importNode ( $node, true ) );
-				}
-					
-			} catch (\Exception $e ) {
-				throw $e;
-			}
-		}		
+			
 		return $tplDom;
 	}
 	protected function getExtensionTemplate(xml\XMLDom $xml) {
@@ -258,87 +225,39 @@ class Compiler extends BaseClass{
 		}
 
 		$cnt = array ();
-
-		$cnt [] = "<?php\n";
-		$cnt [] = "// ATal generated template. Do not edit.\n";
-		$cnt [] = "// Compiled form : " . $this->getTemplate ()->getRef()->getRealPath(). "\n";
+		$cnt [] = "{# Compiled form : " . $this->getTemplate ()->getRef()->getRealPath(). " #}\n";
 		if($parentTemplate){
-			$cnt [] = "// Parent : " . $parentTemplate->getRealPath(). "\n";
+			$cnt [] = "{# Parent : " . $parentTemplate->getRealPath(). "#}\n";
 		}
-
-		$initNodes = $xml->query ( "//t:init-function", array ("t" => self::NS ) );
-
-		$init = array ();
-		$init [] = "\tfunction init(){\n";
-		$init [] = "\t\tparent::init();\n";
-		$ndRemove = array ();
-		$ndRemove2 = array ();
-		foreach ( $initNodes as $node ) {
-			if (! isset ( $ndRemove [$node->getAttribute ( 'key' )] )) {
-				$init [] = '$this->pluginVars[\'' . $node->getAttribute ( 'key' ) . '\'] = call_user_func(function(' . $node->getAttribute ( 'params' ) . '){';
-				$init [] = $node->saveXML ( false );
-				$init [] = '}, $this->pluginVars[\'' . $node->getAttribute ( 'key' ) . '\']);' . "\n";
-			}
-			$ndRemove [$node->getAttribute ( 'key' )] = true;
-			$ndRemove2 [] = $node;
-		}
-		$init [] = "\t}\n";
-
-		foreach ( $ndRemove2 as $node ) {
-			$node->remove ();
-		}
-
+		
 		if ($parentTemplate) {
 			$parentCacheName = addcslashes ( $this->tal->getCachePath( $parentTemplate ), "\\" );
 			$parentClassName = addcslashes ( $this->tal->getClassName ( $parentTemplate ), "\\" );
 			$parentBaseName = addcslashes ( $parentTemplate->getBaseName (), "\\" );
 
 			$cnt [] = "\$this->compile(\$this->convertTemplateName('" . $parentBaseName . "', \$__tal_template_info['templateRef']));\n";
-			$cnt [] = "class $destinationClass extends $parentClassName {\n";
+			
 		} else {
-			$cnt [] = "class $destinationClass extends \\goetas\\atal\\CompiledTemplate{\n";
-
-			$cnt [] = "function display(){\n";
-			$cnt [] = "extract(\$this->getData()); \$__tal = \$this->getTal(); ?>\n";
-
 			if ($this->tal->xmlDeclaration) {
 				$cnt [] = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
 			}
 			if ($originalXML->doctype) {
 				$cnt [] = $originalXML->saveXML ( $originalXML->doctype ) . "\n";
 			}
-			/*
-			// mettendo queste 2 query xpath insieme il php genera i nodi in ordine sbagliato
-			foreach ( $xml->query ( "/processing-instruction()" ) as $node ) {
-				$cnt [] = $xml->saveXML ( $node );
-			}
-			*/
+
 			foreach ( $xml->query ( "/node()|/text()", array ("t" => self::NS ) ) as $node ) {
 				if ($node->namespaceURI != self::NS) {
 					$cnt [] = $xml->saveXML ( $node );
 				}
 			}
-			// fine bug
-
-			$cnt [] = "<?php\t}\n";
 		}
 
-		if ($ndRemove) {
-			$cnt [] = implode ( "", $init );
-		}
 		foreach ( $xml->query ( "/t:atal-block", array ("t" => self::NS ) ) as $node ) {
 			$tcnt = '';
 			foreach ( $node->childNodes as $cn ) {
 				$tcnt .= $xml->saveXML ( $cn );
 			}
-			if (substr ( $tcnt, 0, 5 ) == '<?php' && substr ( $tcnt, - 2 ) == '?>') {
-				$cnt [] = substr ( $tcnt, 5, - 2 );
-			} else {
-				throw new \Exception ( "errore atal block" );
-			}
-
 		}
-		$cnt [] = "}"; // fine classe
 		$cnt = implode ( "", $cnt );
 
 		return $cnt;
@@ -381,7 +300,7 @@ class Compiler extends BaseClass{
 	
 
 		$cacheName = $destinationFile .".". md5(microtime()) .".tmp";
-
+		die($cnt);
 		if (file_put_contents ($cacheName , $cnt )) {
 			rename ( $cacheName , $destinationFile );
 		} else {
@@ -525,7 +444,7 @@ class Compiler extends BaseClass{
 		if (preg_match_all ( $this->currRegex, $nodo->data, $mch )) {
 			$xml = $nodo->data;
 			foreach ( $mch [0] as $k => $pattern ) {
-				$xml = str_replace ( $pattern, '<?php print( ' . $this->parsedExpression ( $mch [1] [$k] ) . "); ?>\n", $xml );
+				$xml = str_replace ( $pattern, '{{ ' . $mch [1] [$k]  . " }}", $xml );
 			}
 			
 			if ($nodo instanceof \DOMText){
@@ -660,12 +579,5 @@ class Compiler extends BaseClass{
 			throw new Exception ( "Apici non bilanciati nell'espressione '" . implode ( "", $str ) . "'" );
 		}
 		return $parts;
-	}
-	public function dumpKeyed(array $parts) {
-		$r = ' array(';
-		foreach ( $parts as $key => $val ) {
-			$r .= "'$key'=>" . $val . ", ";
-		}
-		return $r . " ) ";
 	}
 }

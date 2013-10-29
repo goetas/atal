@@ -1,13 +1,13 @@
 <?php 
 
-require __DIR__."/../vendors/pluginsys/src/autoload.php";
+
 require __DIR__."/../src/autoload.php";
 
 
 
 //psr-0 autoloader
 foreach(array(
-		"goetas\\xml\\"=>__DIR__."/../vendors/xmldom/src/",
+		"goetas\\xml\\"=>__DIR__."/../../xmldom/src/",
 		//"goetas\\atal\\"=>__DIR__."/../src/",
 		) as $ns => $dir){
 
@@ -19,4 +19,9 @@ foreach(array(
 	});
 }
 
-	
+
+$tal = new \goetas\atal\ATalXHTML(sys_get_temp_dir());
+$tal->debug = true;
+
+echo $tal->get(__DIR__."/suite/templates/set.xml");
+
