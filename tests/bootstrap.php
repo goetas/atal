@@ -1,13 +1,10 @@
 <?php 
 
 
-require __DIR__."/../src/autoload.php";
-
-
-
 //psr-0 autoloader
 foreach(array(
-		"goetas\\xml\\"=>__DIR__."/../../xmldom/src/",
+		"Goetas\\ATal\\"=>__DIR__."/../src/",
+		"goetas\\xml\\"=>__DIR__."/../../xmldom/src/",	
 		//"goetas\\atal\\"=>__DIR__."/../src/",
 		) as $ns => $dir){
 
@@ -18,10 +15,26 @@ foreach(array(
 		}
 	});
 }
+//psr-0 autoloader
+foreach(array(
+		"Twig_"=>(__DIR__."/../../twig/lib/"),
+
+		//"goetas\\atal\\"=>__DIR__."/../src/",
+) as $ns => $dir){
+
+	spl_autoload_register ( function($cname)use($ns, $dir){
+		if(strpos($cname,$ns)===0){
+			$path = $dir.strtr($cname, "\\_","//").".php";
+			require_once ($path);
+		}
+	});
+}
+
+$loader = new Twig_Loader_Filesystem(array(__DIR__."/suite/templates"));
 
 
-$tal = new \goetas\atal\ATalXHTML(sys_get_temp_dir());
-$tal->debug = true;
-
-echo $tal->get(__DIR__."/suite/templates/set.xml");
+$tal = new \Goetas\ATal\ATal($loader);
+echo $tal->getSource("include.xml");
+echo "\n\n";
+//echo $tal->compile(__DIR__."/suite/templates/foreach.xml");
 

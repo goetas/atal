@@ -1,1 +1,9 @@
-<div xmlns:t="ATal" t:if="true">Test</div>
+<div xmlns:t="ATal">
+	<span 
+		t:attr="cont?clss='asmir'"
+		t:attr-append="cont?clss='asmir'"
+		t:content="xxx|raw"
+		>
+		
+	</span>
+</div>

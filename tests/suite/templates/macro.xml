@@ -1,0 +1,5 @@
+<div xmlns:t="ATal">
+	<t:macro name="input" args="a,b,c">
+		<span t:if="xxx">xx</span>
+	</t:macro>
+</div>
