@@ -1,4 +1,6 @@
 <?php
 namespace Goetas\ATal;
-class Exception extends \Exception{
+
+class Exception extends \Exception
+{
 }
